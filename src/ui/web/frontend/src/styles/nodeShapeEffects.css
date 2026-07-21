@@ -1,0 +1,536 @@
+/**
+ * Node Shape Effects - Animation styles for each shape type
+ *
+ * Usage:
+ * 1. Add shape class to node: class="shape-rectangle" or "shape-diamond" etc.
+ * 2. Add state class: "node-selected", "has-checkpoint", "execution-running"
+ * 3. Effects automatically apply based on shape type
+ *
+ * Effect Types:
+ * - Standard shapes (rectangle, square, circle, oval, pill): Border animations
+ * - Special shapes (semicircle, diamond, hexagon): Glow animations
+ *
+ * Z-Index Layers (use these CSS variables):
+ * --z-effect: 0      Effect pseudo-elements (::before glow/border)
+ * --z-card: 1        Main card element
+ * --z-content: 2     Card content (icons, text)
+ * --z-handle: 5      Connection handles
+ * --z-add-btn: 10    Add buttons
+ * --z-badge: 15      Category badges & indicators
+ * --z-delete-btn: 20 Delete buttons
+ * --z-tooltip: 30    Tooltips
+ */
+
+:root {
+  /* Z-Index Layer System */
+  --z-effect: 0;
+  --z-card: 1;
+  --z-content: 2;
+  --z-handle: 5;
+  --z-add-btn: 10;
+  --z-badge: 15;
+  --z-indicator: 15;
+  --z-delete-btn: 20;
+  --z-tooltip: 30;
+  --z-popover: 35;
+  --z-modal: 100;
+}
+
+/* =============================================================================
+   KEYFRAMES - All animation definitions
+   ============================================================================= */
+
+/* Border flow animation (for standard shapes) */
+@keyframes effect-border-flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* Ripple ring animation (for standard shapes) */
+@keyframes effect-ripple {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+/* Box-shadow pulse (for standard shapes) */
+@keyframes effect-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--effect-color, rgba(139, 92, 246, 0.3)); }
+  50% { box-shadow: 0 0 0 4px var(--effect-color, rgba(139, 92, 246, 0.4)); }
+}
+
+/* Glow pulse - semicircle (orange/trigger) */
+@keyframes effect-glow-orange {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px #F59E0B,
+      0 0 20px rgba(245, 158, 11, 0.6),
+      0 0 40px rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px #FBBF24,
+      0 0 30px rgba(245, 158, 11, 0.8),
+      0 0 60px rgba(245, 158, 11, 0.4);
+  }
+}
+
+/* Glow pulse - semicircle right (green/end) */
+@keyframes effect-glow-green {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px #10B981,
+      0 0 20px rgba(16, 185, 129, 0.6),
+      0 0 40px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px #34D399,
+      0 0 30px rgba(16, 185, 129, 0.8),
+      0 0 60px rgba(16, 185, 129, 0.4);
+  }
+}
+
+/* Glow pulse - diamond (pink) */
+@keyframes effect-glow-pink {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px #EC4899,
+      0 0 20px rgba(236, 72, 153, 0.6),
+      0 0 40px rgba(236, 72, 153, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px #F472B6,
+      0 0 30px rgba(236, 72, 153, 0.8),
+      0 0 60px rgba(236, 72, 153, 0.4);
+  }
+}
+
+/* Glow pulse - purple (default) */
+@keyframes effect-glow-purple {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px #8B5CF6,
+      0 0 15px rgba(139, 92, 246, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px #A78BFA,
+      0 0 25px rgba(139, 92, 246, 0.7);
+  }
+}
+
+/* Glow pulse - red (checkpoint) */
+@keyframes effect-glow-red {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px #EF4444,
+      0 0 15px rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px #EF4444,
+      0 0 30px rgba(239, 68, 68, 0.7),
+      0 0 50px rgba(239, 68, 68, 0.3);
+  }
+}
+
+/* Filter glow - for hexagon (cyan) */
+@keyframes effect-filter-cyan {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px rgba(6, 182, 212, 0.8)) drop-shadow(0 0 30px rgba(6, 182, 212, 0.4));
+  }
+}
+
+/* Filter glow - for hexagon (red) */
+@keyframes effect-filter-red {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.8)) drop-shadow(0 0 30px rgba(239, 68, 68, 0.4));
+  }
+}
+
+/* Filter glow - for hexagon (purple) */
+@keyframes effect-filter-purple {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.7));
+  }
+}
+
+
+/* =============================================================================
+   STANDARD SHAPES - Border animation effects
+   Rectangle, Square, Circle, Oval, Pill, Container
+   ============================================================================= */
+
+/* Selected state - animated gradient border */
+.shape-rectangle.node-selected::before,
+.shape-square.node-selected::before,
+.shape-circle.node-selected::before,
+.shape-oval.node-selected::before,
+.shape-pill.node-selected::before,
+.shape-container.node-selected::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: var(--shape-outer-radius);
+  padding: 2px;
+  background: linear-gradient(90deg, #8B5CF6, #06B6D4, #EC4899, #8B5CF6);
+  background-size: 300% 100%;
+  animation: effect-border-flow 3s linear infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.shape-rectangle.node-selected > *,
+.shape-square.node-selected > *,
+.shape-circle.node-selected > *,
+.shape-oval.node-selected > *,
+.shape-pill.node-selected > *,
+.shape-container.node-selected > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Checkpoint state - ripple rings */
+.shape-rectangle.has-checkpoint .node-card::before,
+.shape-rectangle.has-checkpoint .node-card::after,
+.shape-square.has-checkpoint .node-card::before,
+.shape-square.has-checkpoint .node-card::after,
+.shape-circle.has-checkpoint .node-card::before,
+.shape-circle.has-checkpoint .node-card::after,
+.shape-oval.has-checkpoint .node-card::before,
+.shape-oval.has-checkpoint .node-card::after,
+.shape-pill.has-checkpoint .node-card::before,
+.shape-pill.has-checkpoint .node-card::after,
+.shape-container.has-checkpoint .node-card::before,
+.shape-container.has-checkpoint .node-card::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: var(--shape-outer-radius);
+  border: 2px solid #EF4444;
+  pointer-events: none;
+}
+
+.shape-rectangle.has-checkpoint .node-card::before,
+.shape-square.has-checkpoint .node-card::before,
+.shape-circle.has-checkpoint .node-card::before,
+.shape-oval.has-checkpoint .node-card::before,
+.shape-pill.has-checkpoint .node-card::before,
+.shape-container.has-checkpoint .node-card::before {
+  animation: effect-ripple 2.5s ease-out infinite;
+}
+
+.shape-rectangle.has-checkpoint .node-card::after,
+.shape-square.has-checkpoint .node-card::after,
+.shape-circle.has-checkpoint .node-card::after,
+.shape-oval.has-checkpoint .node-card::after,
+.shape-pill.has-checkpoint .node-card::after,
+.shape-container.has-checkpoint .node-card::after {
+  animation: effect-ripple 2.5s ease-out infinite 0.8s;
+}
+
+/* Running state - box-shadow pulse */
+.shape-rectangle.execution-running .node-card,
+.shape-square.execution-running .node-card,
+.shape-circle.execution-running .node-card,
+.shape-oval.execution-running .node-card,
+.shape-pill.execution-running .node-card,
+.shape-container.execution-running .node-card {
+  animation: effect-pulse 1.5s ease-in-out infinite;
+  --effect-color: rgba(139, 92, 246, 0.4);
+}
+
+
+/* =============================================================================
+   SEMICIRCLE (Left rounded) - Glow effects
+   Used for: Trigger nodes
+   ============================================================================= */
+
+.shape-semicircle {
+  --shape-border-radius: 38px 0 0 38px;
+  --shape-outer-radius: 40px 0 0 40px;
+}
+
+/* Selected - orange glow */
+.shape-semicircle.node-selected .node-card,
+.shape-semicircle.node-selected .trigger-card {
+  animation: effect-glow-orange 1.5s ease-in-out infinite;
+  border-color: transparent;
+}
+
+/* Checkpoint - red glow */
+.shape-semicircle.has-checkpoint .node-card,
+.shape-semicircle.has-checkpoint .trigger-card {
+  animation: effect-glow-red 1.5s ease-in-out infinite;
+  border-color: #EF4444;
+}
+
+/* Running - purple glow */
+.shape-semicircle.execution-running .node-card,
+.shape-semicircle.execution-running .trigger-card {
+  animation: effect-glow-purple 1.5s ease-in-out infinite;
+}
+
+
+/* =============================================================================
+   SEMICIRCLE RIGHT (Right rounded) - Glow effects
+   Used for: End nodes
+   ============================================================================= */
+
+.shape-semicircle-right {
+  --shape-border-radius: 0 38px 38px 0;
+  --shape-outer-radius: 0 40px 40px 0;
+}
+
+/* Selected - green glow */
+.shape-semicircle-right.node-selected .node-card {
+  animation: effect-glow-green 1.5s ease-in-out infinite;
+  border-color: transparent;
+}
+
+/* Checkpoint - red glow */
+.shape-semicircle-right.has-checkpoint .node-card {
+  animation: effect-glow-red 1.5s ease-in-out infinite;
+  border-color: #EF4444;
+}
+
+/* Running - purple glow */
+.shape-semicircle-right.execution-running .node-card {
+  animation: effect-glow-purple 1.5s ease-in-out infinite;
+}
+
+
+/* =============================================================================
+   DIAMOND - Glow effects (avoids rotation issues)
+   Used for: Decision/condition nodes
+   ============================================================================= */
+
+.shape-diamond {
+  --shape-border-radius: 8px;
+  --shape-outer-radius: 10px;
+}
+
+/* Selected - pink glow */
+.shape-diamond.node-selected .node-card,
+.shape-diamond.node-selected .diamond-card {
+  animation: effect-glow-pink 1.5s ease-in-out infinite;
+  border-color: transparent;
+}
+
+/* Checkpoint - red glow */
+.shape-diamond.has-checkpoint .node-card,
+.shape-diamond.has-checkpoint .diamond-card {
+  animation: effect-glow-red 1.5s ease-in-out infinite;
+  border-color: #EF4444;
+}
+
+/* Running - purple glow */
+.shape-diamond.execution-running .node-card,
+.shape-diamond.execution-running .diamond-card {
+  animation: effect-glow-purple 1.5s ease-in-out infinite;
+}
+
+
+/* =============================================================================
+   HEXAGON - Filter effects (clip-path compatible)
+   Used for: Special action nodes
+   ============================================================================= */
+
+.shape-hexagon {
+  --shape-clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+/* Selected - cyan filter glow */
+.shape-hexagon.node-selected .node-card,
+.shape-hexagon.node-selected .hexagon-card {
+  animation: effect-filter-cyan 1.5s ease-in-out infinite;
+}
+
+/* Checkpoint - red filter glow */
+.shape-hexagon.has-checkpoint .node-card,
+.shape-hexagon.has-checkpoint .hexagon-card {
+  animation: effect-filter-red 1.5s ease-in-out infinite;
+}
+
+/* Running - purple filter glow */
+.shape-hexagon.execution-running .node-card,
+.shape-hexagon.execution-running .hexagon-card {
+  animation: effect-filter-purple 1.5s ease-in-out infinite;
+}
+
+
+/* =============================================================================
+   COMPLETED STATE - All shapes
+   ============================================================================= */
+
+.node-completed .node-card,
+.execution-completed .node-card,
+.execution-completed .trigger-card,
+.execution-completed .diamond-card,
+.execution-completed .hexagon-card {
+  border-color: #10B981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+}
+
+
+/* =============================================================================
+   ERROR STATE - All shapes
+   ============================================================================= */
+
+.node-error .node-card,
+.execution-error .node-card,
+.execution-error .trigger-card,
+.execution-error .diamond-card,
+.execution-error .hexagon-card {
+  border-color: #EF4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+}
+
+
+/* =============================================================================
+   BADGES & LABELS - Must appear above effects (z-index: 15)
+   ============================================================================= */
+
+.category-badge,
+.node-badge,
+[class*="-badge"] {
+  position: relative;
+  z-index: var(--z-badge, 15);
+}
+
+/* Status indicators */
+.status-indicator,
+.execution-indicator,
+[class*="-indicator"] {
+  z-index: var(--z-indicator, 15);
+}
+
+/* Delete buttons - topmost interactive */
+.delete-btn,
+[class*="delete-btn"] {
+  z-index: var(--z-delete-btn, 20);
+}
+
+/* Add buttons */
+.add-btn,
+[class*="add-btn"] {
+  z-index: var(--z-add-btn, 10);
+}
+
+/* Handles */
+.handle,
+[class*="-handle"] {
+  z-index: var(--z-handle, 5);
+}
+
+
+/* =============================================================================
+   THEME VARIANTS - Selected state color overrides
+   ============================================================================= */
+
+/* Trigger theme (orange) - for semicircle */
+.trigger-theme.node-selected::before {
+  background: linear-gradient(90deg, #F59E0B, #EF4444, #F59E0B);
+  background-size: 200% 100%;
+}
+
+/* Branch theme (purple) */
+.branch-theme.node-selected::before {
+  background: linear-gradient(90deg, #8B5CF6, #A78BFA, #8B5CF6);
+  background-size: 200% 100%;
+}
+
+/* Loop theme (orange-yellow) */
+.loop-theme.node-selected::before {
+  background: linear-gradient(90deg, #F59E0B, #FBBF24, #F59E0B);
+  background-size: 200% 100%;
+}
+
+/* Switch theme (pink) */
+.switch-theme.node-selected::before {
+  background: linear-gradient(90deg, #EC4899, #F472B6, #EC4899);
+  background-size: 200% 100%;
+}
+
+/* Fork theme (cyan) */
+.fork-theme.node-selected::before {
+  background: linear-gradient(90deg, #06B6D4, #22D3EE, #06B6D4);
+  background-size: 200% 100%;
+}
+
+/* Container theme (purple gradient) */
+.container-theme.node-selected::before {
+  background: linear-gradient(90deg, #8B5CF6, #A78BFA, #C4B5FD, #8B5CF6);
+  background-size: 300% 100%;
+}
+
+/* =============================================================================
+   WINDOWS / WebView2 FALLBACKS
+
+   The selected-node gradient border above relies on layered masks
+   (-webkit-mask + mask-composite: xor/exclude) to produce a stroke-only
+   gradient. WebKit and Blink-on-mac render this correctly; WebView2 (Edge
+   on Windows) and the Tauri Windows runtime do not — the mask is applied
+   incompletely and the ::before pseudo-element fills the inset with a
+   solid colour block, producing a chunky, opaque ring around every
+   selected node. Drop the mask trick on Windows and use a coloured
+   outline + glow instead — same visual intent, no broken mask.
+   ============================================================================= */
+
+.is-windows .shape-rectangle.node-selected::before,
+.is-windows .shape-square.node-selected::before,
+.is-windows .shape-circle.node-selected::before,
+.is-windows .shape-oval.node-selected::before,
+.is-windows .shape-pill.node-selected::before,
+.is-windows .shape-container.node-selected::before {
+  /* Discard the gradient + mask stack; the outline below replaces it. */
+  background: none;
+  -webkit-mask: none;
+  mask: none;
+  animation: none;
+  inset: 0;
+  padding: 0;
+  border-radius: var(--shape-border-radius);
+  outline: 2px solid #8B5CF6;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.25);
+}
+
+/* Theme-coloured selected outlines on Windows. */
+.is-windows .switch-theme.node-selected::before { outline-color: #EC4899; box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.25); }
+.is-windows .fork-theme.node-selected::before { outline-color: #06B6D4; box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.25); }
+.is-windows .container-theme.node-selected::before { outline-color: #A78BFA; box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.25); }
+
+/* Stacked filter: drop-shadow() chains are slow and noisy on WebView2 —
+ * a single large drop-shadow gives the same "glow" effect without the
+ * banding artefacts. */
+.is-windows .shape-diamond.node-selected .diamond-card,
+.is-windows .shape-hexagon.node-selected .hexagon-card {
+  filter: drop-shadow(0 0 12px rgba(6, 182, 212, 0.7));
+  animation: none;
+}
+
+.is-windows .shape-diamond.has-checkpoint .diamond-card,
+.is-windows .shape-hexagon.has-checkpoint .hexagon-card {
+  filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.7));
+  animation: none;
+}
+
+.is-windows .shape-diamond.execution-running .diamond-card,
+.is-windows .shape-hexagon.execution-running .hexagon-card {
+  filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.7));
+  animation: none;
+}

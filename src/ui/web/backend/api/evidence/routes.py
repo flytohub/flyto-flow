@@ -1,0 +1,453 @@
+"""
+Evidence API Routes
+
+Provides REST endpoints for accessing workflow execution evidence:
+- List executions with evidence
+- Get evidence for a specific execution
+- Get screenshot/DOM for a specific step
+- Delete evidence
+
+This is a capability n8n lacks - full execution evidence with visual debugging.
+"""
+import json
+import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import FileResponse, HTMLResponse
+from pydantic import BaseModel
+
+from capabilities import Feature, require_feature
+
+logger = logging.getLogger(__name__)
+
+# DEPRECATED: Not used by frontend. Retained for potential future use.
+router = APIRouter(
+    dependencies=[
+        Depends(require_feature(Feature.EVIDENCE_VIEW)),
+    ],
+)
+
+# Default evidence directory - relative to project root
+# The evidence is stored at flyto-cloud/evidence/, not in the backend directory
+def get_evidence_path() -> Path:
+    """Get evidence base path, configurable via environment"""
+    import os
+    custom_path = os.getenv("FLYTO_EVIDENCE_PATH")
+    if custom_path:
+        return Path(custom_path)
+
+    # Find project root by looking for flyto-cloud directory name
+    current = Path(__file__).resolve()
+    for _ in range(10):
+        current = current.parent
+        if current.name == "flyto-cloud":
+            evidence_dir = current / "evidence"
+            if evidence_dir.exists():
+                return evidence_dir
+            break
+
+    # Fallback to relative path (original behavior)
+    return Path("./evidence")
+
+
+# =============================================================================
+# Response Models
+# =============================================================================
+
+class StepEvidenceResponse(BaseModel):
+    """Single step evidence response"""
+    step_id: str
+    execution_id: str
+    timestamp: str
+    duration_ms: int
+    status: str
+    module_id: Optional[str] = None
+    step_index: Optional[int] = None
+    error_message: Optional[str] = None
+    has_screenshot: bool = False
+    has_dom_snapshot: bool = False
+    screenshot_url: Optional[str] = None
+    dom_url: Optional[str] = None
+
+
+class ExecutionEvidenceResponse(BaseModel):
+    """Execution evidence response"""
+    execution_id: str
+    step_count: int
+    steps: List[StepEvidenceResponse]
+    total_duration_ms: int = 0
+    success_count: int = 0
+    error_count: int = 0
+
+
+class ExecutionListItem(BaseModel):
+    """Execution list item"""
+    execution_id: str
+    step_count: int
+    total_duration_ms: int
+    has_errors: bool
+    first_step_timestamp: Optional[str] = None
+
+
+# =============================================================================
+# API Endpoints
+# =============================================================================
+
+@router.get("/")
+async def list_executions(
+    limit: int = Query(default=50, le=200),
+    offset: int = Query(default=0, ge=0),
+) -> Dict[str, Any]:
+    """
+    List all executions with evidence.
+
+    Returns a paginated list of execution IDs with summary info.
+    """
+    evidence_path = get_evidence_path()
+
+    if not evidence_path.exists():
+        return {
+            "executions": [],
+            "total": 0,
+            "limit": limit,
+            "offset": offset,
+        }
+
+    # Get all execution directories
+    executions = []
+    for exec_dir in evidence_path.iterdir():
+        if not exec_dir.is_dir():
+            continue
+
+        jsonl_path = exec_dir / "evidence.jsonl"
+        if not jsonl_path.exists():
+            continue
+
+        # Read evidence summary
+        try:
+            step_count = 0
+            total_duration = 0
+            has_errors = False
+            first_timestamp = None
+
+            with open(jsonl_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        data = json.loads(line)
+                        step_count += 1
+                        total_duration += data.get('duration_ms', 0)
+                        if data.get('status') == 'error':
+                            has_errors = True
+                        if first_timestamp is None:
+                            first_timestamp = data.get('timestamp')
+                    except json.JSONDecodeError:
+                        continue
+
+            executions.append(ExecutionListItem(
+                execution_id=exec_dir.name,
+                step_count=step_count,
+                total_duration_ms=total_duration,
+                has_errors=has_errors,
+                first_step_timestamp=first_timestamp,
+            ))
+
+        except Exception as e:
+            logger.warning(f"Failed to read evidence for {exec_dir.name}: {e}")
+            continue
+
+    # Sort by timestamp (most recent first)
+    executions.sort(
+        key=lambda x: x.first_step_timestamp or "",
+        reverse=True
+    )
+
+    # Apply pagination
+    total = len(executions)
+    paginated = executions[offset:offset + limit]
+
+    return {
+        "executions": [e.dict() for e in paginated],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
+
+
+@router.get("/{execution_id}")
+async def get_execution_evidence(
+    execution_id: str,
+    include_context: bool = Query(default=False),
+) -> ExecutionEvidenceResponse:
+    """
+    Get all evidence for a specific execution.
+
+    Args:
+        execution_id: Execution ID
+        include_context: Whether to include full context snapshots (large)
+
+    Returns:
+        Full evidence for the execution
+    """
+    evidence_path = get_evidence_path()
+    exec_dir = evidence_path / execution_id
+
+    if not exec_dir.exists():
+        raise HTTPException(status_code=404, detail="Execution not found")
+
+    jsonl_path = exec_dir / "evidence.jsonl"
+    if not jsonl_path.exists():
+        raise HTTPException(status_code=404, detail="No evidence found for execution")
+
+    steps = []
+    total_duration = 0
+    success_count = 0
+    error_count = 0
+
+    try:
+        with open(jsonl_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+
+                try:
+                    data = json.loads(line)
+
+                    step_id = data.get('step_id', 'unknown')
+
+                    # Check for screenshot/DOM files
+                    has_screenshot = (exec_dir / f"{step_id}.png").exists()
+                    has_dom = (exec_dir / f"{step_id}.html").exists()
+
+                    step = StepEvidenceResponse(
+                        step_id=step_id,
+                        execution_id=execution_id,
+                        timestamp=data.get('timestamp', ''),
+                        duration_ms=data.get('duration_ms', 0),
+                        status=data.get('status', 'unknown'),
+                        module_id=data.get('module_id'),
+                        step_index=data.get('step_index'),
+                        error_message=data.get('error_message'),
+                        has_screenshot=has_screenshot,
+                        has_dom_snapshot=has_dom,
+                        screenshot_url=f"/api/evidence/{execution_id}/steps/{step_id}/screenshot" if has_screenshot else None,
+                        dom_url=f"/api/evidence/{execution_id}/steps/{step_id}/dom" if has_dom else None,
+                    )
+
+                    steps.append(step)
+                    total_duration += data.get('duration_ms', 0)
+
+                    if data.get('status') == 'error':
+                        error_count += 1
+                    else:
+                        success_count += 1
+
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Failed to parse evidence line: {e}")
+                    continue
+
+    except Exception as e:
+        logger.error(f"Failed to read evidence for {execution_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to read evidence: {e}")
+
+    return ExecutionEvidenceResponse(
+        execution_id=execution_id,
+        step_count=len(steps),
+        steps=steps,
+        total_duration_ms=total_duration,
+        success_count=success_count,
+        error_count=error_count,
+    )
+
+
+@router.get("/{execution_id}/steps/{step_id}")
+async def get_step_evidence(
+    execution_id: str,
+    step_id: str,
+    include_context: bool = Query(default=True),
+) -> Dict[str, Any]:
+    """
+    Get detailed evidence for a specific step.
+
+    Includes full context before/after if requested.
+    """
+    evidence_path = get_evidence_path()
+    exec_dir = evidence_path / execution_id
+    jsonl_path = exec_dir / "evidence.jsonl"
+
+    if not jsonl_path.exists():
+        raise HTTPException(status_code=404, detail="Execution not found")
+
+    # Find the specific step
+    try:
+        with open(jsonl_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+
+                try:
+                    data = json.loads(line)
+                    if data.get('step_id') == step_id:
+                        # Remove context if not requested
+                        if not include_context:
+                            data.pop('context_before', None)
+                            data.pop('context_after', None)
+
+                        # Add file availability info
+                        data['has_screenshot'] = (exec_dir / f"{step_id}.png").exists()
+                        data['has_dom_snapshot'] = (exec_dir / f"{step_id}.html").exists()
+
+                        return data
+
+                except json.JSONDecodeError:
+                    continue
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read evidence: {e}")
+
+    raise HTTPException(status_code=404, detail="Step not found")
+
+
+@router.get("/{execution_id}/steps/{step_id}/screenshot")
+async def get_step_screenshot(
+    execution_id: str,
+    step_id: str,
+) -> FileResponse:
+    """
+    Get screenshot for a specific step.
+
+    Returns PNG image.
+    """
+    evidence_path = get_evidence_path()
+    screenshot_path = evidence_path / execution_id / f"{step_id}.png"
+
+    if not screenshot_path.exists():
+        raise HTTPException(status_code=404, detail="Screenshot not found")
+
+    return FileResponse(
+        path=screenshot_path,
+        media_type="image/png",
+        filename=f"{execution_id}_{step_id}.png",
+    )
+
+
+@router.get("/{execution_id}/steps/{step_id}/dom")
+async def get_step_dom(
+    execution_id: str,
+    step_id: str,
+) -> HTMLResponse:
+    """
+    Get DOM snapshot for a specific step.
+
+    Returns HTML content.
+    """
+    evidence_path = get_evidence_path()
+    dom_path = evidence_path / execution_id / f"{step_id}.html"
+
+    if not dom_path.exists():
+        raise HTTPException(status_code=404, detail="DOM snapshot not found")
+
+    try:
+        with open(dom_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return HTMLResponse(content=content)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read DOM: {e}")
+
+
+@router.delete("/{execution_id}")
+async def delete_execution_evidence(
+    execution_id: str,
+) -> Dict[str, Any]:
+    """
+    Delete all evidence for an execution.
+
+    This permanently removes all screenshots, DOM snapshots, and metadata.
+    """
+    import shutil
+
+    evidence_path = get_evidence_path()
+    exec_dir = evidence_path / execution_id
+
+    if not exec_dir.exists():
+        raise HTTPException(status_code=404, detail="Execution not found")
+
+    try:
+        shutil.rmtree(exec_dir)
+        return {
+            "ok": True,
+            "message": f"Evidence for {execution_id} deleted",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete evidence: {e}")
+
+
+@router.get("/{execution_id}/context-diff")
+async def get_context_diff(
+    execution_id: str,
+    step_id: str,
+) -> Dict[str, Any]:
+    """
+    Get context difference for a step.
+
+    Shows what changed in the context between before and after execution.
+    Useful for debugging data flow issues.
+    """
+    evidence_path = get_evidence_path()
+    exec_dir = evidence_path / execution_id
+    jsonl_path = exec_dir / "evidence.jsonl"
+
+    if not jsonl_path.exists():
+        raise HTTPException(status_code=404, detail="Execution not found")
+
+    try:
+        with open(jsonl_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+
+                try:
+                    data = json.loads(line)
+                    if data.get('step_id') == step_id:
+                        before = data.get('context_before', {})
+                        after = data.get('context_after', {})
+
+                        # Calculate diff
+                        added = {}
+                        removed = {}
+                        modified = {}
+
+                        all_keys = set(before.keys()) | set(after.keys())
+                        for key in all_keys:
+                            if key not in before:
+                                added[key] = after[key]
+                            elif key not in after:
+                                removed[key] = before[key]
+                            elif before[key] != after[key]:
+                                modified[key] = {
+                                    "before": before[key],
+                                    "after": after[key],
+                                }
+
+                        return {
+                            "step_id": step_id,
+                            "added": added,
+                            "removed": removed,
+                            "modified": modified,
+                            "unchanged_count": len(all_keys) - len(added) - len(removed) - len(modified),
+                        }
+
+                except json.JSONDecodeError:
+                    continue
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read evidence: {e}")
+
+    raise HTTPException(status_code=404, detail="Step not found")

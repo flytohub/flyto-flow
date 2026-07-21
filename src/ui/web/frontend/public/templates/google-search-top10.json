@@ -1,0 +1,112 @@
+{
+  "id": "google-search-top10",
+  "name": "Google 搜尋前10筆",
+  "description": "在 Google 搜尋關鍵字並抓取前10筆結果",
+  "icon": "",
+  "version": "1.0.0",
+  "author": "Flyto2",
+  "category": "搜尋引擎",
+  "tags": [
+    "google",
+    "搜尋",
+    "爬蟲"
+  ],
+  "ui": {
+    "title": "Google 搜尋前10筆",
+    "description": "輸入關鍵字，自動在 Google 搜尋並抓取前10筆結果",
+    "fields": [
+      {
+        "name": "search_keyword",
+        "type": "text",
+        "label": "搜尋關鍵字",
+        "placeholder": "請輸入要搜尋的關鍵字",
+        "required": true,
+        "default": "Python 教學",
+        "description": "要在 Google 搜尋的關鍵字",
+        "validation": {
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      {
+        "name": "result_format",
+        "type": "select",
+        "label": "結果格式",
+        "options": [
+          {
+            "value": "json",
+            "label": "JSON 格式"
+          },
+          {
+            "value": "csv",
+            "label": "CSV 格式"
+          },
+          {
+            "value": "markdown",
+            "label": "Markdown 格式"
+          }
+        ],
+        "default": "json",
+        "required": true,
+        "description": "選擇搜尋結果的輸出格式"
+      },
+      {
+        "name": "save_to_file",
+        "type": "checkbox",
+        "label": "儲存到檔案",
+        "default": true,
+        "description": "是否將結果儲存為檔案"
+      },
+      {
+        "name": "output_path",
+        "type": "text",
+        "label": "輸出路徑",
+        "placeholder": "./results/search_results.json",
+        "default": "./results/search_results.json",
+        "required": false,
+        "description": "結果檔案的儲存路徑",
+        "showIf": {
+          "field": "save_to_file",
+          "value": true
+        }
+      }
+    ],
+    "submitButton": {
+      "text": "開始搜尋",
+      "icon": ""
+    }
+  },
+  "permissions": [
+    "browser.launch",
+    "browser.navigate",
+    "browser.interact",
+    "data.process",
+    "file.write"
+  ],
+  "output": {
+    "type": "array",
+    "description": "搜尋結果列表",
+    "fields": [
+      {
+        "name": "title",
+        "type": "string",
+        "description": "標題"
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "description": "網址"
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "描述"
+      },
+      {
+        "name": "position",
+        "type": "number",
+        "description": "排名位置"
+      }
+    ]
+  }
+}

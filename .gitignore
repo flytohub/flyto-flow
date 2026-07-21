@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+!install/.env.ce.example
+.pytest_cache/
+__pycache__/
+coverage/
+dist/
+htmlcov/
+node_modules/
+sbom.cdx.json
+THIRD_PARTY_DEPENDENCIES.md

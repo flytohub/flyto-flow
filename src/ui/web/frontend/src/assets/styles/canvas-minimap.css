@@ -1,0 +1,186 @@
+/* Cyber MiniMap Override - MUST be unscoped for VueFlow MiniMap */
+.cyber-minimap {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%) !important;
+  border: 1px solid rgba(139, 92, 246, 0.5) !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(139, 92, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  overflow: hidden !important;
+  margin: 12px !important;
+}
+
+/* Animated border effect */
+.cyber-minimap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(135deg, #8B5CF6 0%, transparent 30%, transparent 70%, #06B6D4 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: minimapBorderRotate 8s linear infinite;
+}
+
+@keyframes minimapBorderRotate {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+/* Grid overlay */
+.cyber-minimap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+  background-size: 12px 12px;
+  pointer-events: none;
+  border-radius: 12px;
+}
+
+/* Corner decorations */
+.cyber-minimap .vue-flow__minimap-svg {
+  position: relative;
+}
+
+/* Viewport mask glow */
+.cyber-minimap .vue-flow__minimap-mask {
+  filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.6)) !important;
+}
+
+/* Base node styling - glowing cyber effect */
+.cyber-minimap .vue-flow__minimap-node {
+  rx: 6 !important;
+  ry: 6 !important;
+  filter:
+    drop-shadow(0 0 2px currentColor)
+    drop-shadow(0 0 4px currentColor)
+    drop-shadow(0 0 6px rgba(255,255,255,0.3)) !important;
+  opacity: 0.9;
+  transition: all 0.2s ease;
+}
+
+.cyber-minimap .vue-flow__minimap-node:hover {
+  opacity: 1;
+  filter:
+    drop-shadow(0 0 4px currentColor)
+    drop-shadow(0 0 8px currentColor)
+    drop-shadow(0 0 12px currentColor) !important;
+}
+
+/* Trigger nodes - pulse animation */
+.cyber-minimap .minimap-trigger {
+  animation: minimapPulse 2s ease-in-out infinite;
+}
+
+@keyframes minimapPulse {
+  0%, 100% {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 3px #22D3EE) drop-shadow(0 0 6px #22D3EE);
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px #22D3EE) drop-shadow(0 0 12px #22D3EE) drop-shadow(0 0 18px #22D3EE);
+  }
+}
+
+/* Branch nodes - blink animation */
+.cyber-minimap .minimap-branch {
+  animation: minimapBlink 1.5s ease-in-out infinite;
+}
+
+@keyframes minimapBlink {
+  0%, 100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Switch nodes - rainbow shimmer */
+.cyber-minimap .minimap-switch {
+  animation: minimapShimmer 3s linear infinite;
+}
+
+@keyframes minimapShimmer {
+  0% {
+    filter: drop-shadow(0 0 4px #F472B6) drop-shadow(0 0 8px #F472B6) hue-rotate(0deg);
+  }
+  100% {
+    filter: drop-shadow(0 0 4px #F472B6) drop-shadow(0 0 8px #F472B6) hue-rotate(360deg);
+  }
+}
+
+/* Loop nodes - rotate glow */
+.cyber-minimap .minimap-loop {
+  animation: minimapRotateGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes minimapRotateGlow {
+  0%, 100% {
+    filter: drop-shadow(3px 0 4px #FB923C) drop-shadow(-3px 0 4px transparent);
+  }
+  25% {
+    filter: drop-shadow(0 3px 4px #FB923C) drop-shadow(0 -3px 4px transparent);
+  }
+  50% {
+    filter: drop-shadow(-3px 0 4px #FB923C) drop-shadow(3px 0 4px transparent);
+  }
+  75% {
+    filter: drop-shadow(0 -3px 4px #FB923C) drop-shadow(0 3px 4px transparent);
+  }
+}
+
+/* AI Agent nodes - breathing glow */
+.cyber-minimap .minimap-agent {
+  animation: minimapBreathe 3s ease-in-out infinite;
+}
+
+@keyframes minimapBreathe {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px #2DD4BF) drop-shadow(0 0 4px #2DD4BF);
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 6px #2DD4BF) drop-shadow(0 0 12px #2DD4BF) drop-shadow(0 0 18px rgba(45, 212, 191, 0.5));
+    transform: scale(1.05);
+  }
+}
+
+/* HTTP nodes - data flow animation */
+.cyber-minimap .minimap-http {
+  animation: minimapDataFlow 2s linear infinite;
+}
+
+@keyframes minimapDataFlow {
+  0% {
+    filter: drop-shadow(0 -4px 4px #60A5FA) drop-shadow(0 4px 4px transparent);
+  }
+  50% {
+    filter: drop-shadow(0 4px 4px #60A5FA) drop-shadow(0 -4px 4px transparent);
+  }
+  100% {
+    filter: drop-shadow(0 -4px 4px #60A5FA) drop-shadow(0 4px 4px transparent);
+  }
+}
+
+/* Code nodes - flicker animation */
+.cyber-minimap .minimap-code {
+  animation: minimapFlicker 0.1s ease-in-out infinite alternate;
+}
+
+@keyframes minimapFlicker {
+  0% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 1;
+  }
+}

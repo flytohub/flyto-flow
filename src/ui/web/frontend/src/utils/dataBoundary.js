@@ -1,0 +1,308 @@
+/**
+ * Small frontend data-boundary helpers.
+ *
+ * Keep API/store hydration stable when initial data is null, partial, stale, or
+ * still crossing the loading boundary.
+ */
+
+export function isPlainObject(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+export function asObject(value) {
+  return isPlainObject(value) ? value : {}
+}
+
+export function asArray(value) {
+  return Array.isArray(value) ? value : []
+}
+
+export function asRecordArray(value) {
+  return asArray(value).filter(isPlainObject)
+}
+
+export function asString(value, fallback = '') {
+  return typeof value === 'string' ? value : fallback
+}
+
+export function asBoolean(value, fallback = false) {
+  return typeof value === 'boolean' ? value : fallback
+}
+
+export function asNumber(value, fallback = 0) {
+  return Number.isFinite(value) ? value : fallback
+}
+
+export function asInteger(value, fallback = 0) {
+  const number = Number(value)
+  return Number.isInteger(number) ? number : fallback
+}
+
+export function asNonNegativeInteger(value, fallback = 0) {
+  return Math.max(0, asInteger(value, fallback))
+}
+
+export function pickFirst(source, keys, fallback = undefined) {
+  const obj = asObject(source)
+  for (const key of keys) {
+    if (obj[key] !== undefined && obj[key] !== null) {
+      return obj[key]
+    }
+  }
+  return fallback
+}
+
+export function pickArray(source, keys) {
+  return asArray(pickFirst(source, keys, []))
+}
+
+export function pickObject(source, keys) {
+  return asObject(pickFirst(source, keys, {}))
+}
+
+export function pickString(source, keys, fallback = '') {
+  return asString(pickFirst(source, keys, fallback), fallback)
+}
+
+export function pickBoolean(source, keys, fallback = false) {
+  return asBoolean(pickFirst(source, keys, fallback), fallback)
+}
+
+export function pickNumber(source, keys, fallback = 0) {
+  return asNumber(pickFirst(source, keys, fallback), fallback)
+}
+
+export function pickInteger(source, keys, fallback = 0) {
+  return asInteger(pickFirst(source, keys, fallback), fallback)
+}
+
+export function hasRecords(value) {
+  return asRecordArray(value).length > 0
+}
+
+export function cloneBoundaryValue(value, fallback = {}) {
+  try {
+    return JSON.parse(JSON.stringify(value ?? fallback))
+  } catch {
+    if (Array.isArray(fallback)) return [...fallback]
+    if (isPlainObject(fallback)) return { ...fallback }
+    return fallback
+  }
+}
+
+export function normalizeOkEnvelope(payload) {
+  const raw = asObject(payload)
+  return {
+    ok: raw.ok !== false,
+    error: asString(raw.error || raw.message, ''),
+    raw
+  }
+}
+
+export function normalizeListEnvelope(payload, listKeys = ['items'], options = {}) {
+  const raw = asObject(payload)
+  const templates = asRecordArray(pickFirst(raw, listKeys, []))
+  const page = asNonNegativeInteger(raw.page, options.page ?? 1) || 1
+  const pageSize = asNonNegativeInteger(raw.pageSize ?? raw.page_size, options.pageSize ?? templates.length)
+  const total = asNonNegativeInteger(raw.total ?? raw.totalCount ?? raw.total_count, templates.length)
+  return {
+    ok: raw.ok !== false,
+    items: templates,
+    total,
+    totalCount: total,
+    page,
+    pageSize,
+    hasNext: asBoolean(raw.hasNext ?? raw.has_next, pageSize > 0 ? page * pageSize < total : false),
+    error: asString(raw.error || raw.message, ''),
+    raw
+  }
+}
+
+export function normalizeTieredCatalogResponse(response) {
+  const raw = asObject(response)
+  const defaultBucket = asObject(raw.default)
+  const expertBucket = asObject(raw.expert)
+
+  return {
+    defaultModules: asRecordArray(defaultBucket.modules ?? raw.defaultModules),
+    expertModules: asRecordArray(expertBucket.modules ?? raw.expertModules),
+    modulesByCategory: pickObject(raw, ['modulesByCategory', 'modules_by_category']),
+    moduleCategories: pickArray(raw, ['moduleCategories', 'module_categories']),
+    modulesMetadata: pickObject(raw, ['modulesMetadata', 'modules_metadata']),
+    version: asString(raw.version, '')
+  }
+}
+
+export function normalizeTemplateListResponse(result) {
+  if (Array.isArray(result)) {
+    const templates = asRecordArray(result)
+    return {
+      ok: true,
+      templates,
+      enabledCount: templates.length,
+      totalCount: templates.length,
+      raw: result
+    }
+  }
+
+  const raw = asObject(result)
+  const templates = asRecordArray(raw.templates)
+  return {
+    ok: raw.ok !== false,
+    templates,
+    enabledCount: asNumber(raw.enabledCount ?? raw.enabled_count, templates.length),
+    totalCount: asNumber(raw.totalCount ?? raw.total_count, templates.length),
+    error: asString(raw.error || raw.message, ''),
+    raw
+  }
+}
+
+export function normalizeWorkflowListResponse(result) {
+  const normalized = normalizeListEnvelope(result, ['workflows', 'items'], {
+    page: 1,
+    pageSize: 0
+  })
+  return {
+    ...normalized,
+    workflows: normalized.items,
+    enabledCount: asNonNegativeInteger(asObject(result).enabledCount ?? asObject(result).enabled_count, normalized.items.length),
+    totalCount: asNonNegativeInteger(asObject(result).totalCount ?? asObject(result).total_count, normalized.totalCount)
+  }
+}
+
+export function normalizeWorkflowPayload(workflow) {
+  const raw = asObject(workflow)
+  return Object.keys(raw).length > 0 ? raw : null
+}
+
+export function normalizeMyTemplatesResponse(result, options = {}) {
+  const normalized = normalizeListEnvelope(result, ['templates', 'items'], options)
+  const raw = asObject(result)
+  return {
+    ...normalized,
+    templates: normalized.items,
+    draftCount: asNonNegativeInteger(raw.draftCount ?? raw.draft_count, 0),
+    publishedCount: asNonNegativeInteger(raw.publishedCount ?? raw.published_count, 0)
+  }
+}
+
+export function normalizeFoldersResponse(result) {
+  const raw = asObject(result)
+  const folders = asRecordArray(raw.folders).map(folder => {
+    const parentId = folder.parentId ?? folder.parent_id ?? null
+    const path = asArray(folder.path).filter(item => typeof item === 'string' && item.length > 0)
+    return {
+      ...folder,
+      id: asString(folder.id, ''),
+      name: asString(folder.name, ''),
+      parentId,
+      parent_id: parentId,
+      order: asInteger(folder.order, 0),
+      count: asNonNegativeInteger(folder.count, 0),
+      directCount: asNonNegativeInteger(folder.directCount ?? folder.direct_count, 0),
+      direct_count: asNonNegativeInteger(folder.direct_count ?? folder.directCount, 0),
+      hasChildren: asBoolean(folder.hasChildren ?? folder.has_children, false),
+      has_children: asBoolean(folder.has_children ?? folder.hasChildren, false),
+      path
+    }
+  }).filter(folder => folder.id)
+  return {
+    ok: raw.ok !== false,
+    folders,
+    defaultPosition: asNonNegativeInteger(raw.defaultPosition ?? raw.default_position, 0),
+    defaultCount: asNonNegativeInteger(raw.defaultCount ?? raw.default_count, 0),
+    totalCount: asNonNegativeInteger(raw.totalCount ?? raw.total_count, folders.length),
+    error: asString(raw.error || raw.message, ''),
+    raw
+  }
+}
+
+export function normalizeTemplatePayload(template) {
+  const raw = asObject(template)
+  return {
+    id: asString(raw.id, ''),
+    templateName: asString(raw.templateName || raw.template_name || raw.name, ''),
+    templateId: asString(raw.templateId || raw.template_id || raw.id, 'new_template'),
+    templateDescription: asString(raw.templateDescription || raw.template_description || raw.description, ''),
+    creatorId: raw.creatorId || raw.creator_id || null,
+    mutability: asString(raw.mutability, 'fork_on_use'),
+    visibility: asString(raw.visibility, 'private'),
+    listed: raw.listed !== false,
+    isWorkflowVisible: raw.isWorkflowVisible !== false && raw.is_workflow_visible !== false,
+    sections: asArray(raw.ui?.sections)
+  }
+}
+
+export function normalizeRecordingStopResponse(result) {
+  const raw = asObject(result)
+  const steps = asRecordArray(raw.steps)
+  const warnings = asRecordArray(raw.warnings).map(warning => ({
+    ...warning,
+    code: asString(warning.code, 'recording_warning'),
+    message: asString(warning.message, ''),
+  })).filter(warning => warning.message)
+  const summary = asObject(raw.recordingSummary ?? raw.recording_summary)
+  return {
+    ok: raw.ok !== false,
+    workflowResult: Object.keys(raw).length > 0 ? raw : null,
+    steps,
+    compiledSteps: raw.ok === false ? null : steps,
+    recordingSummary: Object.keys(summary).length > 0 ? summary : null,
+    warnings,
+    error: asString(raw.error || raw.message, '')
+  }
+}
+
+export function normalizeCreatorProfile(profile) {
+  const raw = asObject(profile)
+  return Object.keys(raw).length > 0 ? {
+    ...raw,
+    id: asString(raw.id || raw.uid, ''),
+    uid: asString(raw.uid || raw.id, ''),
+    displayName: asString(raw.displayName || raw.display_name || raw.name, ''),
+    email: raw.email || null,
+    avatarUrl: raw.avatarUrl || raw.avatar_url || null,
+    followersCount: asNonNegativeInteger(raw.followersCount ?? raw.followers_count, 0),
+    followingCount: asNonNegativeInteger(raw.followingCount ?? raw.following_count, 0),
+    isFollowing: asBoolean(raw.isFollowing ?? raw.is_following, false),
+    isCreator: asBoolean(raw.isCreator ?? raw.is_creator, false)
+  } : {}
+}
+
+export function normalizeCreatorTemplatesResponse(result, options = {}) {
+  const normalized = normalizeListEnvelope(result, ['templates', 'items'], options)
+  return {
+    ...normalized,
+    templates: normalized.items
+  }
+}
+
+export function normalizePeopleListResponse(result, key, options = {}) {
+  const normalized = normalizeListEnvelope(result, [key, 'items'], options)
+  return {
+    ...normalized,
+    [key]: normalized.items.map(normalizeCreatorProfile)
+  }
+}
+
+export function normalizeRecipeBundlesResponse(result) {
+  const raw = asObject(result)
+  const bundles = asRecordArray(raw.bundles)
+  return {
+    ok: raw.ok !== false,
+    bundles,
+    error: asString(raw.error || raw.message, ''),
+    raw
+  }
+}
+
+export function normalizeWorkflowElements(elements) {
+  return asRecordArray(elements).reduce((acc, element) => {
+    if (element.source && element.target) {
+      acc.edges.push(element)
+    } else if (element.id) {
+      acc.nodes.push(element)
+    }
+    return acc
+  }, { nodes: [], edges: [] })
+}

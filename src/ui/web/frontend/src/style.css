@@ -1,0 +1,707 @@
+/* ========================================
+   WebBot 2.0 - Key animations and effects
+   Main styles provided by UnoCSS
+   ======================================== */
+
+/* === Keyframe Animations === */
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(50px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-50px, 50px) scale(0.9);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(10px); }
+}
+
+@keyframes nodeAppear {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+}
+
+@keyframes statPop {
+  0% { transform: scale(0.9); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* === Modal Animations === */
+.modal {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  animation: slideUp 0.2s ease-out;
+}
+
+/* === Smooth Scrolling & Full Viewport === */
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+  /* Crisper text across platforms — without this, body text falls through
+   * to the browser default (Times-ish) on Windows because nothing else in
+   * this stylesheet sets font-family at the root. Stack matches
+   * flyto-design-tokens (--flyto-font-sans) so the desktop app and the
+   * console look identical. */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont,
+               'Segoe UI Variable', 'Segoe UI', system-ui, Roboto,
+               'PingFang TC', 'Microsoft JhengHei UI', 'Hiragino Sans',
+               sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  height: 100%;
+  background-color: #ffffff;
+}
+
+/* Match body background to app in dark mode — prevents white flash on resize */
+html.dark body {
+  background-color: #111827; /* gray-900 */
+}
+
+/* === Custom Scrollbar === */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}
+
+/* === Button Styles === */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #4f46e5 0%, #a855f7 100%);
+  color: white;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  color: #4b5563;
+  font-weight: 600;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* === Card Styles === */
+.card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* === Input Styles === */
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* === Hide Number Input Spinners Globally === */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* === VueFlow Dark Theme Override === */
+/* Main canvas container has dark background */
+.vue-flow {
+  background: #0a0e1a !important;
+}
+
+/* Inner containers must be transparent to not block edges */
+.vue-flow__pane,
+.vue-flow__viewport,
+.vue-flow__container,
+.vue-flow__renderer,
+.vue-flow__transformationpane,
+.vue-flow__zoompane,
+.vue-flow__selectionpane,
+.vue-flow__pane.draggable,
+.vue-flow__pane.vue-flow__container.draggable {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Background pattern layer */
+.vue-flow__background {
+  background: transparent !important;
+}
+
+.vue-flow__background pattern rect {
+  fill: #0a0e1a !important;
+}
+
+.vue-flow__minimap {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.vue-flow__minimap-mask {
+  fill: rgba(255, 255, 255, 0.1) !important;
+}
+
+.vue-flow__controls {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.vue-flow__controls button,
+.vue-flow__controls-button {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  fill: white !important;
+}
+
+.vue-flow__controls button:hover,
+.vue-flow__controls-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.vue-flow__controls-button svg {
+  fill: white !important;
+}
+
+/* === Global Focus Visible Styles === */
+/* Ensure keyboard navigation is visible */
+:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+}
+
+/* Remove default focus for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Button focus states */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+}
+
+/* Input focus states */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+/* Skip to main content link for screen readers */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #8b5cf6;
+  color: white;
+  padding: 8px 16px;
+  z-index: 10000;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* ========================================
+   n8n + UiPath Style Enhancements
+   Modern, Tech, Enterprise-grade
+   ======================================== */
+
+/* === Enhanced Dark Mode Colors === */
+:root {
+  --flyto-primary: #8b5cf6;
+  --flyto-primary-light: #a78bfa;
+  --flyto-primary-dark: #7c3aed;
+  --flyto-accent: #06b6d4;
+  --flyto-success: #10b981;
+  --flyto-warning: #f59e0b;
+  --flyto-error: #ef4444;
+  --flyto-bg-dark: #0f172a;
+  --flyto-bg-card: rgba(30, 41, 59, 0.8);
+  --flyto-border: rgba(148, 163, 184, 0.1);
+  --flyto-text-primary: #f1f5f9;
+  --flyto-text-secondary: #94a3b8;
+  --flyto-glow: rgba(139, 92, 246, 0.4);
+}
+
+/* === Glass Morphism Cards === */
+.glass-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--flyto-border);
+  border-radius: 16px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(139, 92, 246, 0.1) inset,
+    0 0 30px -5px var(--flyto-glow);
+}
+
+/* === Enhanced Buttons === */
+.btn-lg {
+  padding: 0.875rem 1.75rem;
+  font-size: 1rem;
+  border-radius: 12px;
+}
+
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 20px var(--flyto-glow);
+}
+
+.btn-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-glow:hover::before {
+  left: 100%;
+}
+
+/* === Empty State Enhancements === */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.empty-state-icon {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.2));
+  border-radius: 20px;
+  margin-bottom: 1.5rem;
+  color: var(--flyto-primary-light);
+  animation: pulse 3s infinite;
+}
+
+.empty-state-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--flyto-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-desc {
+  color: var(--flyto-text-secondary);
+  max-width: 320px;
+  line-height: 1.6;
+}
+
+/* === Sidebar Enhancement === */
+.sidebar-enhanced {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+  border-right: 1px solid var(--flyto-border);
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  color: var(--flyto-text-secondary);
+  transition: all 0.2s;
+}
+
+.sidebar-item:hover {
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--flyto-text-primary);
+}
+
+.sidebar-item.active {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.1));
+  color: var(--flyto-primary-light);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* === Stats Card Enhancement === */
+.stat-card {
+  position: relative;
+  padding: 1.5rem;
+  background: var(--flyto-bg-card);
+  border: 1px solid var(--flyto-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--flyto-primary), var(--flyto-accent));
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--flyto-text-primary) 0%, var(--flyto-primary-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* === Table Enhancement === */
+.table-enhanced {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table-enhanced th {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--flyto-text-secondary);
+  background: rgba(30, 41, 59, 0.5);
+  border-bottom: 1px solid var(--flyto-border);
+}
+
+.table-enhanced td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--flyto-border);
+  color: var(--flyto-text-primary);
+}
+
+.table-enhanced tr:hover td {
+  background: rgba(139, 92, 246, 0.05);
+}
+
+/* === Badge Styles === */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+}
+
+.badge-primary {
+  background: rgba(139, 92, 246, 0.2);
+  color: var(--flyto-primary-light);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.badge-success {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-warning {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-error {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* === Tooltip Enhancement === */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  padding: 0.5rem 0.75rem;
+  background: rgba(15, 23, 42, 0.95);
+  color: var(--flyto-text-primary);
+  font-size: 0.75rem;
+  border-radius: 8px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s;
+  border: 1px solid var(--flyto-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+/* === Gradient Text === */
+.gradient-text {
+  background: linear-gradient(135deg, var(--flyto-primary) 0%, var(--flyto-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-gold {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* === Loading Skeleton === */
+.skeleton {
+  background: linear-gradient(90deg, rgba(30, 41, 59, 0.8) 25%, rgba(51, 65, 85, 0.8) 50%, rgba(30, 41, 59, 0.8) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* === Enterprise Security Badge === */
+.security-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  color: #34d399;
+}
+
+.security-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* === Workflow Node Enhancements === */
+/* NOTE: Main .workflow-node styles are in WorkflowNode.vue (scoped) */
+/* These are additional utility classes that don't conflict */
+
+/* Generic node card style for non-Vue Flow contexts */
+.flyto-node-card {
+  background: var(--flyto-bg-card);
+  border: 2px solid var(--flyto-border);
+  border-radius: 12px;
+  padding: 1rem;
+  min-width: 180px;
+  transition: all 0.2s;
+}
+
+.flyto-node-card:hover {
+  border-color: var(--flyto-primary);
+  box-shadow: 0 0 20px var(--flyto-glow);
+}
+
+/* === Footer Compact Mode === */
+.footer-compact {
+  padding: 1.5rem 0;
+  font-size: 0.875rem;
+}
+
+.footer-compact .footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* === Responsive Typography === */
+@media (max-width: 768px) {
+  .text-responsive-xl {
+    font-size: 1.5rem;
+  }
+
+  .text-responsive-2xl {
+    font-size: 1.75rem;
+  }
+
+  .text-responsive-3xl {
+    font-size: 2rem;
+  }
+}
+
+/* === Print Styles === */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}

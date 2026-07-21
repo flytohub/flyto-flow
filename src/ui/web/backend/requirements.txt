@@ -1,0 +1,75 @@
+# Flyto2 Backend Dependencies
+
+# Web Framework
+# CVE-2024-24762: multipart DoS fixed in 0.115.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.18
+
+# Async HTTP
+# CVE-2024-52303: HTTP request smuggling fixed in 3.11.0
+aiohttp>=3.14.0
+httpx>=0.26.0
+
+# Firebase Admin SDK
+firebase-admin>=6.4.0
+
+# Google APIs (GA4 + Search Console for SEO Analytics)
+google-api-python-client>=2.100.0
+google-auth-httplib2>=0.2.0
+google-auth-oauthlib>=1.0.0
+google-analytics-data>=0.18.0
+
+# Data validation (included with FastAPI but pinned for compatibility)
+pydantic[email]>=2.5.0
+email-validator>=2.1.0
+
+# Security
+PyJWT>=2.10.1,<3.0.0
+passlib[bcrypt]>=1.7.4
+bcrypt<5.0  # Pin to avoid bcrypt 5.0+ password length changes
+# CVE-2024-0727: PKCS7 DoS fixed in 44.0.1
+cryptography>=46.0.6
+
+# Utilities
+python-dotenv>=1.0.0
+PyYAML>=6.0.1
+tenacity>=8.2.0
+
+# Image processing (Module Appearance icons + QR code generation)
+Pillow>=10.0.0
+qrcode>=7.4
+
+# Document processing (PDF/Word/Excel modules)
+pypdf>=5.1.0
+python-docx>=1.0
+openpyxl>=3.1.0
+reportlab>=4.0
+
+# Cache / Queue (Redis-backed modules)
+redis>=5.0
+
+# Database connectors (PostgreSQL / MySQL modules)
+asyncpg>=0.29
+aiomysql>=0.3.0
+
+# SSH / SFTP modules
+asyncssh>=2.14.2
+
+# AWS S3 modules
+boto3>=1.34
+
+# DNS lookup modules
+dnspython>=2.4
+
+# Markdown to HTML
+markdown>=3.5
+
+# AI LLM Providers (BYOK - Bring Your Own Key)
+openai>=1.12.0
+anthropic>=0.39.0
+
+# Flyto2 packages
+flyto-core>=2.25.26
+flyto-ai
+flyto-blueprint

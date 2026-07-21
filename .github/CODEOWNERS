@@ -1,0 +1,7 @@
+* @flytohub/platform
+
+/LICENSE @flytohub/platform
+/NOTICE @flytohub/platform
+/OPEN_CORE_MANIFEST.json @flytohub/platform
+/.github/ @flytohub/platform
+/scripts/audit-cloud-ce-boundary.py @flytohub/platform

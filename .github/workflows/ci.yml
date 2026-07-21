@@ -1,0 +1,92 @@
+name: CE Verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ce-verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dco:
+    name: DCO sign-off
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python scripts/check_dco.py --base "${{ github.event.pull_request.base.sha }}" --head "${{ github.event.pull_request.head.sha }}"
+
+  boundary:
+    name: Boundary and inventory
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install packaging
+      - run: python scripts/audit-cloud-ce-boundary.py . --release-tree
+      - run: python scripts/audit_ce_dependencies.py .
+
+  backend:
+    name: Backend CE smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: src/ui/web/backend/requirements-ce.lock
+      - run: pip install --require-hashes -r src/ui/web/backend/requirements-ce.lock
+      - run: pip install pytest pytest-asyncio packaging
+      - run: python scripts/audit_ce_dependencies.py . --python-installed
+      - run: python scripts/generate_ce_sbom.py . --python-installed
+      - run: python -m pytest -q tests/ce
+        env:
+          DEPLOYMENT_MODE: offline
+          FLYTO_EDITION_PROFILE: cloud_ce
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ce-compliance
+          path: |
+            sbom.cdx.json
+            THIRD_PARTY_DEPENDENCIES.md
+          if-no-files-found: error
+
+  frontend:
+    name: Frontend CE build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: src/ui/web/frontend/package-lock.json
+      - run: npm --prefix src/ui/web/frontend ci
+      - run: npm --prefix src/ui/web/frontend audit --audit-level=high
+      - run: npm --prefix src/ui/web/frontend run test:run
+      - run: npm --prefix src/ui/web/frontend run build
+
+  container:
+    name: CE container
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: install/Dockerfile.ce
+          push: false
+          tags: flyto-cloud-ce:test

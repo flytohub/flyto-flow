@@ -1,0 +1,567 @@
+/**
+ * VueFlow Theme Overrides
+ * Fixes edge visibility by making blocking layers transparent
+ */
+
+/* Override theme backgrounds to transparent - they block edges */
+.vue-flow__pane.vue-flow__container,
+.vue-flow__viewport.vue-flow__container,
+.vue-flow__transformationpane.vue-flow__container {
+  background: transparent !important;
+}
+
+/* SVG containers must be transparent */
+.vue-flow svg.vue-flow__edges,
+.vue-flow svg.vue-flow__connection-line,
+.vue-flow .vue-flow__edge-textwrapper {
+  background: transparent !important;
+}
+
+/* Nodes container */
+.vue-flow__nodes.vue-flow__container {
+  background: transparent !important;
+}
+
+/* ============================================
+   High-Tech Edge Styling - Energy Flow Effect
+   Sharp core + animated energy trail
+   ============================================ */
+
+/* Base edge - crisp core line */
+/* NOTE: stroke has NO !important — GlowEdge inline style overrides for custom colors (switch cases etc.) */
+.vue-flow__edge-path {
+  stroke: #8B5CF6;
+  stroke-width: 2px !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  fill: none !important;
+  cursor: pointer;
+  transition: stroke-width 0.2s ease, stroke 0.2s ease;
+}
+
+/* Energy flow animation - dashes moving along path */
+.vue-flow__edge-path {
+  stroke-dasharray: 8 4 2 4 !important;
+  animation: energyFlow 1.2s linear infinite !important;
+}
+
+@keyframes energyFlow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -18; }
+}
+
+/* Edge container - GlowEdge handles its own drop-shadow via inline style */
+
+/* Hover - brighter, faster flow */
+/* NOTE: stroke no !important — let GlowEdge custom colors persist on hover */
+.vue-flow__edge:hover .vue-flow__edge-path {
+  stroke-width: 2.5px !important;
+  animation-duration: 0.8s !important;
+}
+
+/* Selected edge - intense glow */
+.vue-flow__edge.selected .vue-flow__edge-path {
+  stroke-width: 2.5px !important;
+  animation-duration: 0.6s !important;
+}
+
+/* Edge marker (arrow) styling */
+/* NOTE: fill has NO !important — Vue Flow sets per-marker color via markerEnd.color */
+.vue-flow__edge marker path {
+  fill: #8B5CF6;
+}
+
+/* ============================================
+   Animated Edge (Loop edges)
+   ============================================ */
+.vue-flow__edge.animated .vue-flow__edge-path,
+.vue-flow__edge.animated path {
+  stroke: #F59E0B !important;
+  stroke-dasharray: 5 !important;
+  animation: dashdraw 0.5s linear infinite !important;
+}
+
+@keyframes dashdraw {
+  from { stroke-dashoffset: 10; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* Loop edge - explicit class fallback */
+.vue-flow__edge.loop-edge .vue-flow__edge-path,
+.vue-flow__edge.loop-edge path {
+  stroke: #F59E0B !important;
+  stroke-dasharray: 5 5 !important;
+  animation: dashdraw 0.5s linear infinite !important;
+}
+
+/* Loop edge arrow marker */
+.vue-flow__edge.loop-edge marker path,
+.vue-flow__edge.animated marker path {
+  fill: #F59E0B !important;
+}
+
+/* ============================================
+   Execution Flow Animation (data flowing through edges)
+   ============================================ */
+
+/* Edge with data flowing through it during execution */
+.vue-flow__edge.executing .vue-flow__edge-path {
+  stroke: #8B5CF6 !important;
+  stroke-dasharray: 8 4 !important;
+  animation: flowAnimation 0.8s linear infinite !important;
+}
+
+@keyframes flowAnimation {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -12; }
+}
+
+/* Completed edge - subtle glow effect */
+.vue-flow__edge.completed .vue-flow__edge-path {
+  stroke: #10B981 !important;
+  filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.4));
+}
+
+/* Error edge */
+.vue-flow__edge.error .vue-flow__edge-path {
+  stroke: #EF4444 !important;
+  filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.4));
+}
+
+/* ============================================
+   EdgeType Visual Distinction
+   ============================================ */
+
+/* Control Edge - solid line for execution flow */
+.vue-flow__edge.edge-control .vue-flow__edge-path {
+  stroke: #8B5CF6 !important;
+  stroke-dasharray: none !important;
+}
+
+/* Resource Edge - dashed line for data injection */
+.vue-flow__edge.edge-resource .vue-flow__edge-path {
+  stroke: #06B6D4 !important;
+  stroke-dasharray: 6 4 !important;
+}
+
+/* Edge type hover states */
+.vue-flow__edge.edge-control:hover .vue-flow__edge-path {
+  stroke: #A78BFA !important;
+}
+
+.vue-flow__edge.edge-resource:hover .vue-flow__edge-path {
+  stroke: #22D3EE !important;
+}
+
+/* Edge type selected states */
+.vue-flow__edge.edge-control.selected .vue-flow__edge-path {
+  stroke: #C4B5FD !important;
+  filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.5));
+}
+
+.vue-flow__edge.edge-resource.selected .vue-flow__edge-path {
+  stroke: #67E8F9 !important;
+  filter: drop-shadow(0 0 4px rgba(6, 182, 212, 0.5));
+}
+
+/* ============================================
+   Port Type Visual Distinction
+   ============================================ */
+
+/* Control Port - round shape */
+.vue-flow__handle.port-control {
+  border-radius: 50% !important;
+  width: 10px !important;
+  height: 10px !important;
+}
+
+/* Resource Port - square shape */
+.vue-flow__handle.port-resource {
+  border-radius: 2px !important;
+  width: 10px !important;
+  height: 10px !important;
+}
+
+/* Port importance styling */
+.vue-flow__handle.port-primary {
+  opacity: 1;
+}
+
+.vue-flow__handle.port-secondary {
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.vue-flow__handle.port-advanced {
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+/* Show secondary ports on hover */
+.vue-flow__node:hover .vue-flow__handle.port-secondary {
+  opacity: 1;
+}
+
+/* Show all ports when node is selected */
+.vue-flow__node.selected .vue-flow__handle.port-secondary,
+.vue-flow__node.selected .vue-flow__handle.port-advanced {
+  opacity: 1;
+}
+
+/* ============================================
+   Node Type Specific Styles
+   ============================================ */
+
+/* Merge node styling */
+.vue-flow__node.merge-node {
+  border-color: #10B981;
+}
+
+/* Fork node styling */
+.vue-flow__node.fork-node {
+  border-color: #F59E0B;
+}
+
+/* Join node styling */
+.vue-flow__node.join-node {
+  border-color: #3B82F6;
+}
+
+/* Subflow node styling */
+.vue-flow__node.subflow-node {
+  border-color: #8B5CF6;
+  border-style: dashed;
+}
+
+/* Trigger node styling */
+.vue-flow__node.trigger-node {
+  border-color: #F59E0B;
+  border-width: 2px;
+}
+
+/* Start node styling */
+.vue-flow__node.start-node {
+  border-color: #10B981;
+  border-radius: 50%;
+}
+
+/* End node styling */
+.vue-flow__node.end-node {
+  border-color: #EF4444;
+  border-radius: 4px;
+}
+
+/* ============================================
+   n8n-Style Drag & Drop Enhancements
+   ============================================ */
+
+/* Drop zone highlighting during drag */
+.workflow-dragging .vue-flow {
+  background: linear-gradient(
+    rgba(139, 92, 246, 0.02),
+    rgba(139, 92, 246, 0.02)
+  ) !important;
+}
+
+.workflow-dragging .vue-flow__pane {
+  border: 2px dashed rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
+}
+
+.workflow-dragging .vue-flow__pane:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+  background: rgba(139, 92, 246, 0.05) !important;
+}
+
+/* Grid overlay during drag */
+.vue-flow.show-grid-overlay .vue-flow__background {
+  opacity: 0.8;
+}
+
+/* Snap guide lines */
+.vue-flow__snap-guide {
+  position: absolute;
+  background: rgba(139, 92, 246, 0.5);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.vue-flow__snap-guide-x {
+  width: 1px;
+  height: 100%;
+  top: 0;
+}
+
+.vue-flow__snap-guide-y {
+  height: 1px;
+  width: 100%;
+  left: 0;
+}
+
+/* Ghost preview during drag */
+.vue-flow__drag-ghost {
+  position: absolute;
+  width: 180px;
+  height: 60px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 2px dashed #8B5CF6;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 999;
+  transition: all 0.1s ease;
+}
+
+/* ============================================
+   n8n-Style Connection Preview
+   ============================================ */
+
+/* Connection line during drag */
+.vue-flow__connection-line path {
+  stroke: #8B5CF6 !important;
+  stroke-width: 2px !important;
+  stroke-dasharray: 5 5;
+  animation: connectionDash 0.5s linear infinite;
+}
+
+@keyframes connectionDash {
+  from { stroke-dashoffset: 10; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* Handle hover effect — subtle glow only, no position shift */
+.vue-flow__handle:hover {
+  box-shadow: 0 0 6px rgba(139, 92, 246, 0.5);
+}
+
+/* Connection validation styling */
+.vue-flow__connection.valid .vue-flow__connection-path {
+  stroke: #10B981 !important;
+}
+
+.vue-flow__connection.invalid .vue-flow__connection-path {
+  stroke: #EF4444 !important;
+}
+
+/* ============================================
+   n8n-Style Node Execution States
+   ============================================ */
+
+/* Running node animation */
+.vue-flow__node.executing {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3),
+              0 0 20px rgba(59, 130, 246, 0.2);
+  animation: nodeExecuting 1.5s ease-in-out infinite;
+}
+
+@keyframes nodeExecuting {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.2); }
+  50% { box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 30px rgba(59, 130, 246, 0.4); }
+}
+
+/* Completed node */
+.vue-flow__node.completed {
+  border-color: #10B981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+
+/* Failed node */
+.vue-flow__node.failed {
+  border-color: #EF4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+/* Paused at node (breakpoint) */
+.vue-flow__node.paused {
+  border-color: #F59E0B;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+  animation: nodePaused 2s ease-in-out infinite;
+}
+
+@keyframes nodePaused {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.1); }
+}
+
+/* ============================================
+   n8n-Style Output Preview Enhancement
+   ============================================ */
+
+/* Node output preview on hover */
+.vue-flow__node .node-output-preview {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.vue-flow__node:hover .node-output-preview,
+.vue-flow__node.selected .node-output-preview {
+  max-height: 200px;
+}
+
+/* Output item count badge */
+.node-output-badge {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  background: #8B5CF6;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* ============================================
+   n8n-Style Mini Map Enhancement
+   ============================================ */
+
+.vue-flow__minimap {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 1px solid #374151 !important;
+  border-radius: 8px !important;
+}
+
+.vue-flow__minimap-mask {
+  fill: rgba(139, 92, 246, 0.1) !important;
+}
+
+.vue-flow__minimap-node {
+  fill: #8B5CF6 !important;
+}
+
+/* ============================================
+   n8n-Style Controls Enhancement
+   ============================================ */
+
+.vue-flow__controls {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 1px solid #374151 !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+.vue-flow__controls-button {
+  background: transparent !important;
+  border: none !important;
+  color: #9CA3AF !important;
+  transition: all 0.2s ease;
+}
+
+.vue-flow__controls-button:hover {
+  background: rgba(139, 92, 246, 0.2) !important;
+  color: #8B5CF6 !important;
+}
+
+.vue-flow__controls-button svg {
+  fill: currentColor !important;
+}
+
+/* ============================================
+   MiniMap Styling - Cyber/Tech Theme
+   ============================================ */
+
+.vue-flow__minimap {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%) !important;
+  border: 1px solid rgba(139, 92, 246, 0.4) !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(139, 92, 246, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  overflow: hidden !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Cyber corner effect */
+.vue-flow__minimap::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.6) 0%, transparent 40%, transparent 60%, rgba(6, 182, 212, 0.6) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Grid pattern overlay */
+.vue-flow__minimap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(rgba(139, 92, 246, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.03) 1px, transparent 1px);
+  background-size: 10px 10px;
+  pointer-events: none;
+  border-radius: 12px;
+}
+
+/* Viewport indicator - the visible area box */
+.vue-flow__minimap-mask {
+  fill: rgba(139, 92, 246, 0.15) !important;
+  stroke: rgba(139, 92, 246, 0.6) !important;
+  stroke-width: 1px !important;
+  rx: 4 !important;
+  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));
+}
+
+/* Node representations */
+.vue-flow__minimap-node {
+  fill: #8B5CF6 !important;
+  stroke: rgba(139, 92, 246, 0.8) !important;
+  stroke-width: 0.5px !important;
+  rx: 2 !important;
+  filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.5));
+  transition: fill 0.2s ease;
+}
+
+/* Trigger nodes - amber/orange */
+.vue-flow__minimap-node.trigger,
+.vue-flow__minimap rect[class*="trigger"] {
+  fill: #F59E0B !important;
+  stroke: rgba(245, 158, 11, 0.8) !important;
+  filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.5));
+}
+
+/* Branch/Switch nodes - emerald */
+.vue-flow__minimap-node.branch,
+.vue-flow__minimap-node.switch,
+.vue-flow__minimap rect[class*="branch"],
+.vue-flow__minimap rect[class*="switch"] {
+  fill: #10B981 !important;
+  stroke: rgba(16, 185, 129, 0.8) !important;
+  filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.5));
+}
+
+/* AI nodes - cyan accent */
+.vue-flow__minimap-node.ai-agent,
+.vue-flow__minimap rect[class*="ai"] {
+  fill: #06B6D4 !important;
+  stroke: rgba(6, 182, 212, 0.8) !important;
+  filter: drop-shadow(0 0 3px rgba(6, 182, 212, 0.5));
+}
+
+/* SVG container styling */
+.vue-flow__minimap svg {
+  border-radius: 10px !important;
+}
+
+/* ============================================
+   Edge Label Clickability Fix
+   ============================================ */
+
+/* Ensure edge labels (including insert buttons) are clickable */
+.vue-flow__edge-labels .edge-insert-button {
+  pointer-events: all !important;
+}
