@@ -60,7 +60,7 @@ asyncssh>=2.14.2
 boto3>=1.34
 
 # DNS lookup modules
-dnspython>=2.4
+dnspython>=2.8.0
 
 # Markdown to HTML
 markdown>=3.5
