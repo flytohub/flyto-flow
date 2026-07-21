@@ -12,7 +12,7 @@
     "LICENSE": "8adacbcbeee91421d2d5c866c765abb8cce3ce6c780f12c42bfdb756f5df8e08",
     "Makefile": "f3e085a15c86d39ecfb32dec803fc96944b3d929a1aa2de70c6b9fba63568ecd",
     "NOTICE": "2ee0780aea66ab66d8442920580d7075418662c9a1295b2ac4ba99ae965f6992",
-    "OPEN_CORE_MANIFEST.json": "00cab8772fe0f8f7944eae516db3f3198679905b44ffac6ec73393a22edca0a1",
+    "OPEN_CORE_MANIFEST.json": "b29985c0d899af12fe1ed94de3fd1d3654b8847d708a53ec7a49aa982207c591",
     "README.md": "6008bf310d325e565b4fba4e675bb5198e30be7d92f65a6ffc060d161be4451d",
     "SECURITY.md": "68223134bb9b089ab6fa7188d77991bbb8a2ef511024d724340309f337f29391",
     "TRADEMARKS.md": "4445c221b9708d7719b914d0aceaf3e85e2fa1cffe0998423bca922985388d5b",
@@ -366,8 +366,6 @@
     "src/ui/web/backend/middleware/trailing_slash.py": "3a1ecb894255ef08d909f809cbde009112bcc85421c1764a1bffe30f6502aefd",
     "src/ui/web/backend/pytest.ini": "566eae4fa26f6c05647069c4188fbea61141fd26271b5fa7b0d4f8d0317a02c5",
     "src/ui/web/backend/requirements-ce.lock": "8f6aee265cc8fdd13eb9112b79ec31c4cc9aef2541942aa7c64c239c853debb2",
-    "src/ui/web/backend/requirements-local.txt": "385979085d7562c279a75e918b29c6087be20f56443e5c7702aa5f579f28089c",
-    "src/ui/web/backend/requirements.txt": "15da1caa8ee8aaebba692fa7e5f39d46603bc38af39d7516dcd2bf5e9b18a551",
     "src/ui/web/backend/services/__init__.py": "74c95a4e2989a9b8efa6922bfcd90806443e327a046d9ddb791569ff3580bcdc",
     "src/ui/web/backend/services/audit/__init__.py": "651d6266d42d876845e265c8e4a22b07635d6a41b84f69dbcf85c03049d21afe",
     "src/ui/web/backend/services/audit/archiver.py": "074be6a07bc0ac244bc740977ddf3a912a18aefd9c036269f1d85e4026f35aed",
@@ -1734,7 +1732,7 @@
   },
   "package_name": "flyto-cloud-ce",
   "schema": "flyto.ce-release.v1",
-  "source_commit": "e7917887cafaca922555b3d9a913085084b96f9b",
+  "source_commit": "8bb4a84924a8ebea23319712968a2ddb4c739c5e",
   "source_repository": "https://github.com/flytohub/flyto-cloud",
-  "tree_sha256": "7762a7e07943ef1011620bfa41f9788ca7ef3fb301d6f366f11f4418ea618ec3"
+  "tree_sha256": "2029a40403a24a0dd629dfdd51e0775e190e7528299f28a8745beb857ad10cf9"
 }
