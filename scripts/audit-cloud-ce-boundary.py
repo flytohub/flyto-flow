@@ -140,10 +140,19 @@ def _audit_source_tree(root: Path, manifest: dict, blockers: list[str]) -> None:
             blockers.append(f"CE replacement overlay is missing: {rel}")
 
 
+def _release_paths(root: Path):
+    """Yield release contents while ignoring the checkout's own Git directory."""
+    for path in sorted(root.rglob("*")):
+        rel = path.relative_to(root).as_posix()
+        if rel == ".git" or rel.startswith(".git/"):
+            continue
+        yield path
+
+
 def _inventory(root: Path) -> tuple[dict[str, str], str]:
     hashes: dict[str, str] = {}
     digest = hashlib.sha256()
-    for path in sorted(root.rglob("*")):
+    for path in _release_paths(root):
         if not path.is_file() or path.name == EXPORT_MANIFEST_NAME:
             continue
         rel = path.relative_to(root).as_posix()
@@ -223,11 +232,11 @@ def _audit_release_tree(root: Path, manifest: dict, blockers: list[str]) -> None
         if not (root / rel).is_file():
             blockers.append(f"missing required CE release file: {rel}")
 
-    for path in root.rglob("*"):
+    for path in _release_paths(root):
         rel = path.relative_to(root).as_posix()
         if path.is_symlink():
             blockers.append(f"CE release contains symlink: {rel}")
-        if rel == ".git" or rel.startswith(".git/"):
+        if ".git" in path.relative_to(root).parts:
             blockers.append(f"CE release contains Git metadata: {rel}")
         if path.name == "__pycache__" or path.suffix == ".pyc":
             blockers.append(f"CE release contains generated Python bytecode: {rel}")
@@ -236,7 +245,7 @@ def _audit_release_tree(root: Path, manifest: dict, blockers: list[str]) -> None
     for pattern in manifest.get("ce_deny_path_patterns", []):
         matches = [
             path.relative_to(root).as_posix()
-            for path in root.rglob("*")
+            for path in _release_paths(root)
             if _matches(path.relative_to(root).as_posix(), [pattern])
             and path.relative_to(root).as_posix() not in replacements
         ]
@@ -244,7 +253,7 @@ def _audit_release_tree(root: Path, manifest: dict, blockers: list[str]) -> None
             blockers.append(f"private path escaped into CE tree: {pattern} ({matches[0]})")
 
     denied_markers = [str(item) for item in manifest.get("ce_deny_content_markers", [])]
-    for path in root.rglob("*"):
+    for path in _release_paths(root):
         if not path.is_file() or path.suffix.lower() not in TEXT_SUFFIXES:
             continue
         rel = path.relative_to(root).as_posix()

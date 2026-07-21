@@ -24,7 +24,7 @@
     "install/Dockerfile.ce.dockerignore": "0f59d685d4e0fab92b697bba7571204251c93c3e73892089d2b11b053a5e7d4a",
     "install/docker-compose.ce.yml": "26f3e64dce4546048b81bcf76943d3879105fcd00e8aa07b7f65c2abb7290791",
     "logo.png": "3d91273904c0eb001fa402e7f4c180b819784fed9e9e099217fc7f755b397490",
-    "scripts/audit-cloud-ce-boundary.py": "8d7f467a965e80af5af5d6dedcd62d386c0642aeb8a7aeae4fc4abf34be13067",
+    "scripts/audit-cloud-ce-boundary.py": "9cb179b5d547512ca40175177a9f63f401440b4056b74f20a24df9629e4f6f15",
     "scripts/audit_ce_dependencies.py": "c4919e64eb3466f621e4ce4ad570565227b34e2df9a3d37563836fe25e399ff1",
     "scripts/check_dco.py": "581c18cb56f31dfae9a27a84a953fd751c96e19c1355144e4490cd30b19c1489",
     "scripts/generate_ce_sbom.py": "76e7c07afb97892d9bc32906a42af2d1a10d604e685d6d08706bf4aee366a962",
@@ -1734,7 +1734,7 @@
   },
   "package_name": "flyto-cloud-ce",
   "schema": "flyto.ce-release.v1",
-  "source_commit": "f1e38c2d6cd95a3c9f68b0b8cf3f44f1e1432189",
-  "source_repository": "https://github.com/flytohub/flyto-cloud.git",
-  "tree_sha256": "bc9d1d5f7b0effe9090721d3bdd013ff0f20ad717f41b667d0247cb8d655bdd8"
+  "source_commit": "e7917887cafaca922555b3d9a913085084b96f9b",
+  "source_repository": "https://github.com/flytohub/flyto-cloud",
+  "tree_sha256": "7762a7e07943ef1011620bfa41f9788ca7ef3fb301d6f366f11f4418ea618ec3"
 }
