@@ -55,7 +55,7 @@ jobs:
         env:
           DEPLOYMENT_MODE: offline
           FLYTO_EDITION_PROFILE: cloud_ce
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ce-compliance
           path: |
