@@ -38,7 +38,7 @@ tenacity>=8.2.0
 
 # Image processing (Module Appearance icons + QR code generation)
 Pillow>=10.0.0
-qrcode>=7.4
+qrcode>=8.2
 
 # Document processing (PDF/Word/Excel modules)
 pypdf>=5.1.0
