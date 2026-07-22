@@ -4,7 +4,7 @@
     ".github/CODEOWNERS": "e4481ee7bcc625b98f80533d1993c6a5126cb99990b795829aa5e213e30719b1",
     ".github/dependabot.yml": "ff6f8ba6ffa432d4d49fd48063cedb28516023ef36959763e9b553390090d290",
     ".github/pull_request_template.md": "6997d8fd13374e73677fcc1128c2ca36c2678cad2a4e738ad1faa4416b0841a7",
-    ".github/workflows/ci.yml": "9c9b4c5e68068db67300ee757f0ab657a13a05c556b59d1310726bd3957da9cb",
+    ".github/workflows/ci.yml": "25a36370ee0d1b14aff9292cb493a88f2ff4fe842acb1b0e1f7c676a51570b31",
     ".gitignore": "e685787b414c04207ee883bddb4b5aa9418203d375f55910bf9c2885b0456c69",
     "CODE_OF_CONDUCT.md": "2d01aa65f07e939ab3376b90b4f35590b0f453c7a04b2409924ec342db2eba06",
     "CONTRIBUTING.md": "7232e92a2df04dcea42e96113a45ed366cce3e9af4445dbcf54a8c48042914fb",
@@ -1733,7 +1733,7 @@
   },
   "package_name": "flyto-cloud-ce",
   "schema": "flyto.ce-release.v1",
-  "source_commit": "ffef989a482315ba2d65ad56b74551b51ea797e8",
+  "source_commit": "3006e6faa0aadbf835d3e32569321019f181ac63",
   "source_repository": "https://github.com/flytohub/flyto-cloud",
-  "tree_sha256": "84e7caf03a6c53cfd8cd96e119c62e0fffc96efdeafea6d95031645b9f1c9bad"
+  "tree_sha256": "eea35ee3eeebc1c90e17091e4c34ad02f06ad2a1cc16c2448e364f549ef6d224"
 }
