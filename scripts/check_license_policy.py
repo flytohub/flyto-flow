@@ -72,6 +72,8 @@ def check(root: Path) -> list[str]:
             policy = sync.get("license_policy", {})
             if policy.get("flow") != "PolyForm-Shield-1.0.0":
                 failures.append("sync contract has the wrong Flow license")
+            if policy.get("cloud") != "Flyto2-Source-Available-1.1":
+                failures.append("sync contract has the wrong Cloud license")
             if policy.get("historical_flow_boundary") != HISTORICAL_APACHE_BOUNDARY:
                 failures.append("sync contract has the wrong historical license boundary")
 

@@ -54,7 +54,7 @@
   ],
   "license_policy": {
     "flow": "PolyForm-Shield-1.0.0",
-    "cloud": "Flyto2-Source-Available-1.0",
+    "cloud": "Flyto2-Source-Available-1.1",
     "historical_flow_boundary": "9398a622a2b53bde6df5e661d71735d1cefdbabc"
   }
 }
