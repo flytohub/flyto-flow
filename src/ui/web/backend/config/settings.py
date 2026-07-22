@@ -17,6 +17,7 @@ ENV_REGISTRY = {
     "FLYTO_OFFLINE_DB_PATH": {"default": "", "required": False},
     "FLYTO_BACKEND_URL": {"default": "http://127.0.0.1:9000", "required": False},
     "FLYTO_FLOW_MCP_TOKEN": {"default": "", "required": False},
+    "FLYTO_FLOW_MCP_TRUST_LOOPBACK_PROXY": {"default": "false", "required": False},
     "FLYTO_MCP_CACHE_TTL": {"default": "30", "required": False},
     "FLYTO_MCP_MAX_WAIT": {"default": "300", "required": False},
     "PLAYWRIGHT_BROWSERS_PATH": {"default": "", "required": False},

@@ -22,6 +22,7 @@ import json
 import os
 import sys
 import time as _time
+from hashlib import sha256
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
@@ -124,6 +125,33 @@ _tool_cache_time: float = 0
 _workflow_map: Dict[str, dict] = {}  # tool_name → workflow info
 
 
+def _build_tool_metadata(template: dict, trigger_params: dict, input_schema: dict) -> dict:
+    """Build additive audit metadata without changing the MCP tool contract."""
+    source = {
+        "type": "workflow",
+        "id": template.get("id"),
+        "name": template.get("name"),
+    }
+    fingerprint_payload = {
+        "source": source,
+        "toolName": trigger_params.get("tool_name"),
+        "inputSchema": input_schema,
+    }
+    evidence_refs = trigger_params.get("evidence_refs", [])
+    if not isinstance(evidence_refs, list):
+        evidence_refs = []
+    return {
+        "flyto2/source": source,
+        "flyto2/contractVersion": "flyto.mcp.workflow-tool.v1",
+        "flyto2/fingerprint": sha256(
+            json.dumps(fingerprint_payload, sort_keys=True, default=str).encode()
+        ).hexdigest(),
+        "flyto2/riskLevel": trigger_params.get("risk_level", "operator-defined"),
+        "flyto2/approvalPolicy": trigger_params.get("approval_policy", "workflow-defined"),
+        "flyto2/evidenceRefs": evidence_refs,
+    }
+
+
 def _refresh_tools(
     bearer_token: Optional[str] = None,
     *,
@@ -178,6 +206,7 @@ def _refresh_tools(
             "name": tool_name,
             "description": trigger_params.get("tool_description", f"Run workflow: {tmpl.get('name', '')}"),
             "inputSchema": input_schema,
+            "_meta": _build_tool_metadata(tmpl, trigger_params, input_schema),
         }
         tools.append(tool)
 

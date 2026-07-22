@@ -13,6 +13,12 @@ organizations, collaboration, marketplace, billing, telemetry, Firebase,
 managed runners, and Cloud routing remain Cloud-only even when a similarly
 named Flow file exists.
 
+The allowlist covers the edition-neutral workflow canvas and MCP Studio view,
+model, HTTP client, styles, and focused tests. Each edition owns its router,
+navigation shell, authentication interceptor, backend composition, and runtime
+status payload. This lets Cloud inherit the same MCP product surface without
+copying hosted concerns into Flow or maintaining a second implementation.
+
 ## Propagation
 
 ```text

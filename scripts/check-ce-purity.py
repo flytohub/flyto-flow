@@ -87,6 +87,7 @@ ALLOWED_FRONTEND_ROUTES = {
     "/templates/builder/:id",
     "/templates/runner/:id",
     "/executions/:id",
+    "/mcp",
     "/variables",
     "/observability",
     "/:pathMatch(.*)*",

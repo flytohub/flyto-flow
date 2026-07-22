@@ -84,6 +84,70 @@ def test_application_exposes_only_local_route_families():
     assert not [path for path in paths if path.startswith(forbidden)]
 
 
+def test_mcp_tools_include_portable_audit_metadata(monkeypatch):
+    import mcp_server
+
+    monkeypatch.setattr(mcp_server, "_tool_cache", [])
+    monkeypatch.setattr(mcp_server, "_workflow_map", {})
+    monkeypatch.setattr(
+        mcp_server,
+        "_api_request",
+        lambda *_args, **_kwargs: {
+            "items": [{
+                "id": "wf-audit",
+                "name": "Audit project",
+                "steps": [{
+                    "module": "flow.trigger",
+                    "params": {
+                        "trigger_type": "mcp",
+                        "tool_name": "audit_project",
+                        "risk_level": "review",
+                        "approval_policy": "operator",
+                        "evidence_refs": ["execution"],
+                    },
+                }],
+            }]
+        },
+    )
+
+    tool = mcp_server._refresh_tools(force=True)[0]
+
+    assert tool["_meta"]["flyto2/source"] == {
+        "type": "workflow", "id": "wf-audit", "name": "Audit project"
+    }
+    assert tool["_meta"]["flyto2/contractVersion"] == "flyto.mcp.workflow-tool.v1"
+    assert len(tool["_meta"]["flyto2/fingerprint"]) == 64
+    assert tool["_meta"]["flyto2/riskLevel"] == "review"
+    assert tool["_meta"]["flyto2/approvalPolicy"] == "operator"
+    assert tool["_meta"]["flyto2/evidenceRefs"] == ["execution"]
+
+
+def test_mcp_origin_guard_allows_loopback_development_ports():
+    from api.mcp import _assert_origin_allowed
+
+    _assert_origin_allowed("http://127.0.0.1:3000", "127.0.0.1:9000")
+    with pytest.raises(Exception) as error:
+        _assert_origin_allowed("https://evil.example", "127.0.0.1:9000")
+    assert getattr(error.value, "status_code", None) == 403
+
+
+def test_mcp_loopback_proxy_trust_is_explicit_and_host_bound(monkeypatch):
+    from types import SimpleNamespace
+
+    from api.mcp import _request_is_loopback
+
+    bridge_request = SimpleNamespace(client=SimpleNamespace(host="172.17.0.1"))
+    external_request = SimpleNamespace(client=SimpleNamespace(host="8.8.8.8"))
+
+    monkeypatch.delenv("FLYTO_FLOW_MCP_TRUST_LOOPBACK_PROXY", raising=False)
+    assert not _request_is_loopback(bridge_request, "127.0.0.1:9000")
+
+    monkeypatch.setenv("FLYTO_FLOW_MCP_TRUST_LOOPBACK_PROXY", "1")
+    assert _request_is_loopback(bridge_request, "127.0.0.1:9000")
+    assert not _request_is_loopback(bridge_request, "flow.example:9000")
+    assert not _request_is_loopback(external_request, "127.0.0.1:9000")
+
+
 @pytest.mark.asyncio
 async def test_runtime_is_accountless_and_offline():
     from main_offline import app

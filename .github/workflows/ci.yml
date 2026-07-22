@@ -36,10 +36,22 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
-      - run: pip install packaging
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: flytohub/flyto-indexer
+          ref: 6769a3f2d9333784d2a8ca2acc025617aa4a4990
+          path: .audit-tools/flyto-indexer
+      - run: pip install packaging ruff==0.15.15 './.audit-tools/flyto-indexer'
       - run: python scripts/check-ce-purity.py .
       - run: python scripts/check_license_policy.py .
       - run: python scripts/audit_ce_dependencies.py .
+      - name: Run focused Python lint
+        run: ruff check --ignore E402,F401 src/ui/web/backend scripts tests
+      - name: Run Flyto2 Indexer verify gate
+        run: |
+          flyto-index scan .
+          flyto-index verify . --strict \
+            --query "MCP Studio workflow tool origin security sync"
 
   backend:
     name: Backend CE smoke
@@ -80,7 +92,9 @@ jobs:
       - run: npm --prefix src/ui/web/frontend audit --audit-level=high
       - run: npm --prefix src/ui/web/frontend run check:i18n-static
       - run: npm --prefix src/ui/web/frontend run test:run
-      - run: npm --prefix src/ui/web/frontend run build
+      - name: Build frontend
+        working-directory: src/ui/web/frontend
+        run: npm run build
 
   container:
     name: CE container

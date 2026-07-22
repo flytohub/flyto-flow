@@ -10,6 +10,7 @@ const routes = [
   { path: '/templates/builder/:id', component: () => import('./views/TemplateBuilder.vue') },
   { path: '/templates/runner/:id', redirect: to => `/templates/builder/${to.params.id}` },
   { path: '/executions/:id', component: () => import('./views/ExecutionDetail.vue') },
+  { path: '/mcp', component: () => import('./views/MCPStudio.vue') },
   { path: '/variables', component: () => import('./views/Variables.vue') },
   {
     path: '/observability',

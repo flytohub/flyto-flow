@@ -7,6 +7,7 @@
   "cloud_backports": "allowlisted-shared-files-only",
   "shared_paths": [
     "FLOW_CLOUD_SYNC.json",
+    "src/ui/web/frontend/src/api/mcp.js",
     "src/ui/web/frontend/src/components/workflowCanvas/CanvasControls.vue",
     "src/ui/web/frontend/src/components/workflowCanvas/CaseSelectorModal.vue",
     "src/ui/web/frontend/src/components/workflowCanvas/CheckpointMarker.vue",
@@ -30,9 +31,14 @@
     "src/ui/web/frontend/src/components/workflowCanvas/nodes/NodeExecutionBadges.vue",
     "src/ui/web/frontend/src/components/workflowCanvas/nodes/StickyNote.vue",
     "src/ui/web/frontend/src/components/workflowCanvas/nodes/SwitchNode.vue",
+    "src/ui/web/frontend/src/features/mcp/studio.css",
+    "src/ui/web/frontend/src/features/mcp/studioModel.js",
     "src/ui/web/frontend/src/styles/nodeDesignSystem.css",
     "src/ui/web/frontend/src/styles/nodeShapeEffects.css",
-    "src/ui/web/frontend/src/styles/vueflow-overrides.css"
+    "src/ui/web/frontend/src/styles/vueflow-overrides.css",
+    "src/ui/web/frontend/src/views/MCPStudio.vue",
+    "src/ui/web/frontend/tests/unit/api/mcp.spec.js",
+    "src/ui/web/frontend/tests/unit/features/mcp/studioModel.spec.js"
   ],
   "forbidden_cloud_to_flow_markers": [
     "firebase",

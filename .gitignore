@@ -4,6 +4,7 @@
 !install/.env.ce.example
 .pytest_cache/
 .pytest-tmp-*/
+.flyto-index/
 __pycache__/
 coverage/
 dist/

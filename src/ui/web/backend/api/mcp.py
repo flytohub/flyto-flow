@@ -52,7 +52,11 @@ def _assert_origin_allowed(origin: Optional[str], host: Optional[str]) -> None:
     normalized = origin.rstrip("/")
     if normalized in _allowed_origins():
         return
-    if host and urlparse(normalized).netloc == host:
+    parsed = urlparse(normalized)
+    if host and parsed.netloc == host:
+        return
+    host_name = urlparse(f"//{host}").hostname if host else None
+    if _is_loopback_host(parsed.hostname) and _is_loopback_host(host_name):
         return
     raise HTTPException(status_code=403, detail="Origin is not allowed for MCP access")
 
@@ -69,10 +73,28 @@ def _is_loopback_host(value: Optional[str]) -> bool:
         return False
 
 
+def _trust_loopback_proxy() -> bool:
+    return os.environ.get("FLYTO_FLOW_MCP_TRUST_LOOPBACK_PROXY", "").strip().lower() in {
+        "1", "true", "yes", "on",
+    }
+
+
 def _request_is_loopback(request: Request, host: Optional[str]) -> bool:
     client_host = request.client.host if request.client else None
     host_name = urlparse(f"//{host}").hostname if host else None
-    return _is_loopback_host(client_host) and _is_loopback_host(host_name)
+    if not _is_loopback_host(host_name):
+        return False
+    if _is_loopback_host(client_host):
+        return True
+    if not _trust_loopback_proxy() or not client_host:
+        return False
+    try:
+        client_ip = ipaddress.ip_address(client_host)
+    except ValueError:
+        return False
+    return client_ip.is_private and not (
+        client_ip.is_unspecified or client_ip.is_multicast or client_ip.is_reserved
+    )
 
 
 def _assert_mcp_access(
