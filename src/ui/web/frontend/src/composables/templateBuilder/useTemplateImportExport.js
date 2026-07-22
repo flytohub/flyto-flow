@@ -9,7 +9,6 @@ import yaml from 'js-yaml'
 import { importFromFile } from '../../services/templateDataService'
 import { elementsToBackendStepsAsync, ConversionError } from '../../utils/converter'
 import { downloadText } from '@/services/domUtils'
-import { telemetry } from '@/services/telemetry'
 
 /** Flatten params fields to component level for builder compatibility */
 const _FLATTEN_FIELDS = ['inputType', 'placeholder', 'default', 'required']
@@ -112,12 +111,6 @@ export function useTemplateImportExport(options) {
           sections.value = result.data.ui.sections
         }
 
-        // Track import event
-        telemetry.track('template.import', {
-          format: 'json',
-          templateId: templateId.value,
-          fileSize: file.size
-        })
 
         showToast(t('templateBuilder.messages.jsonImportSuccess'), 'success')
       } else if (result.format === 'yaml') {
@@ -151,13 +144,6 @@ export function useTemplateImportExport(options) {
           onAutoLayout()
         }
 
-        // Track import event
-        telemetry.track('template.import', {
-          format: 'yaml',
-          templateId: templateId.value,
-          nodeCount: result.nodes.length,
-          fileSize: file.size
-        })
 
         showToast(t('templateBuilder.messages.yamlImportSuccess', { count: result.nodes.length }), 'success')
       }
@@ -182,7 +168,7 @@ export function useTemplateImportExport(options) {
    * Export workflow as YAML (unified format: execution + _ui)
    *
    * The _ui block contains positions and builder sections.
-   * flyto-core ignores _ui; flyto-cloud reads it on import.
+   * flyto-core ignores _ui; Flyto2 Flow restores it on import.
    */
   async function exportYAML() {
     const allElements = elements.value
@@ -251,12 +237,6 @@ export function useTemplateImportExport(options) {
       const yamlContent = yaml.dump(workflow, { indent: 2, lineWidth: -1 })
       downloadText(yamlContent, `${templateId.value || 'workflow'}.yaml`, 'text/yaml')
 
-      // Track export event
-      telemetry.track('template.export', {
-        format: 'yaml',
-        templateId: templateId.value,
-        nodeCount: nodes.length
-      })
 
       showToast(t('templateBuilder.messages.yamlExportSuccess'), 'success')
     } catch (err) {

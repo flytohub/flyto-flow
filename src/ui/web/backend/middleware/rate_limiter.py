@@ -2,15 +2,9 @@
 Rate Limiter Middleware
 
 Implements token bucket algorithm for API rate limiting.
-Supports per-user and per-IP limits with configurable windows.
-
-Backends:
-- In-memory (default): single-instance, good for local/dev
-- Redis (when REDIS_URL is set): distributed sliding window counter,
-  works across multiple Cloud Run instances
+Uses a process-local token bucket. CE never discovers or connects to Redis.
 """
 import logging
-import os
 import time
 from dataclasses import dataclass
 from typing import Dict, Optional, Callable, Protocol
@@ -26,14 +20,8 @@ class RateLimitConfig:
     """Configuration for rate limiting"""
     # Default limits (requests per minute)
     default_rpm: int = 60
-    # Authenticated user limits (higher)
-    auth_rpm: int = 120
-    # Webhook limits (even higher for automated systems)
-    webhook_rpm: int = 300
-    # Auth endpoint limits (SECURITY: stricter to prevent brute force)
-    auth_login_rpm: int = 5  # 5 login attempts per minute
-    auth_register_rpm: int = 3  # 3 registration attempts per minute
-    auth_password_reset_rpm: int = 3  # 3 password reset attempts per minute
+    # Local workspace limit
+    local_rpm: int = 120
     # Sensitive operation limits (SECURITY: protect credential reveal, exports)
     sensitive_reveal_rpm: int = 10  # 10 credential reveals per minute
     sensitive_export_rpm: int = 5  # 5 exports per minute
@@ -46,7 +34,7 @@ class RateLimitConfig:
     # Trusted proxy networks (for X-Forwarded-For validation)
     trusted_proxy_networks: tuple = (
         "10.",      # Private network
-        "169.254.", # Cloud Run internal load balancer
+        "169.254.", # Link-local network
         "172.16.",  # Private network
         "172.17.",  # Docker default
         "172.18.",
@@ -77,7 +65,7 @@ class RateLimitResult:
 
 
 class RateLimiterBackend(Protocol):
-    """Protocol for rate limiter backends (in-memory or Redis)"""
+    """Protocol for the local rate limiter backend."""
 
     async def consume(
         self, key: str, limit: int, window_seconds: int
@@ -205,81 +193,8 @@ class InMemoryBackend:
 RateLimiterStore = InMemoryBackend
 
 
-# ---------------------------------------------------------------------------
-# Redis backend (sliding window counter, distributed)
-# ---------------------------------------------------------------------------
-
-class RedisBackend:
-    """
-    Redis-backed rate limiter using sliding window counter.
-
-    Each request does:  INCR key  +  EXPIRE key window_seconds (if new).
-    The counter resets automatically when the key expires.
-    """
-
-    def __init__(self, redis_url: str):
-        self._redis_url = redis_url
-        self._redis = None
-
-    async def _get_redis(self):
-        if self._redis is None:
-            import redis.asyncio as aioredis
-            self._redis = aioredis.from_url(
-                self._redis_url,
-                encoding="utf-8",
-                decode_responses=True,
-            )
-            logger.info("Rate limiter connected to Redis")
-        return self._redis
-
-    async def consume(
-        self, key: str, limit: int, window_seconds: int
-    ) -> RateLimitResult:
-        """
-        Sliding window counter: INCR + EXPIRE.
-        Atomic via pipeline to avoid race conditions.
-        """
-        redis_key = f"ratelimit:{key}"
-        try:
-            r = await self._get_redis()
-            pipe = r.pipeline(transaction=True)
-            pipe.incr(redis_key)
-            pipe.ttl(redis_key)
-            count, ttl = await pipe.execute()
-
-            # First request in window — set expiry
-            if ttl == -1:
-                await r.expire(redis_key, window_seconds)
-                ttl = window_seconds
-
-            burst_limit = int(limit * 1.5)  # burst multiplier
-            allowed = count <= burst_limit
-            remaining = max(0, burst_limit - count)
-            reset_seconds = max(ttl, 1)
-
-            return RateLimitResult(
-                allowed=allowed,
-                remaining=remaining,
-                reset_seconds=reset_seconds,
-            )
-        except Exception:
-            # Redis unavailable — fail open (allow request) rather than
-            # blocking all traffic when Redis is down
-            logger.warning("Redis rate limiter unavailable, allowing request", exc_info=True)
-            return RateLimitResult(allowed=True, remaining=limit, reset_seconds=0)
-
-
-# ---------------------------------------------------------------------------
-# Backend factory
-# ---------------------------------------------------------------------------
-
 def _create_backend() -> RateLimiterBackend:
-    """Create the appropriate rate limiter backend based on environment."""
-    redis_url = os.getenv("REDIS_URL")
-    if redis_url:
-        logger.info("Using Redis-backed distributed rate limiter")
-        return RedisBackend(redis_url)
-    logger.info("Using in-memory rate limiter (single instance only)")
+    """Create CE's process-local rate limiter."""
     return InMemoryBackend()
 
 
@@ -304,23 +219,12 @@ def is_trusted_proxy(ip: str, config: RateLimitConfig) -> bool:
 def get_client_identifier(request: Request, config: RateLimitConfig = None) -> str:
     """
     Get a unique identifier for the client.
-    Prefers user ID from auth, falls back to IP.
+    Uses only the direct or trusted-proxy client address.
 
     SECURITY: Only trusts X-Forwarded-For from known proxy networks.
     """
     if config is None:
         config = RateLimitConfig()
-
-    # Check for authenticated user
-    if hasattr(request.state, 'user') and request.state.user:
-        user_id = getattr(request.state.user, 'id', None) or request.state.user.get('uid')
-        if user_id:
-            return f"user:{user_id}"
-
-    # Check for API key
-    api_key = request.headers.get('x-api-key')
-    if api_key:
-        return f"apikey:{api_key[:16]}"
 
     # Get direct client IP
     direct_ip = request.client.host if request.client else 'unknown'
@@ -339,18 +243,6 @@ def get_client_identifier(request: Request, config: RateLimitConfig = None) -> s
 
 def get_rate_limit_for_path(path: str, config: RateLimitConfig) -> int:
     """Determine rate limit based on request path"""
-    # Webhooks get higher limits
-    if '/webhook' in path:
-        return config.webhook_rpm
-
-    # SECURITY: Auth endpoints get stricter limits to prevent brute force
-    if '/auth/login' in path:
-        return config.auth_login_rpm
-    if '/auth/register' in path:
-        return config.auth_register_rpm
-    if any(p in path for p in ['/auth/reset-password', '/auth/forgot-password', '/auth/change-password']):
-        return config.auth_password_reset_rpm
-
     # SECURITY: Sensitive operations (credential reveal, exports) get strict limits
     if '/reveal' in path or '/credentials/' in path and path.endswith('/reveal'):
         return config.sensitive_reveal_rpm
@@ -361,8 +253,7 @@ def get_rate_limit_for_path(path: str, config: RateLimitConfig) -> int:
     if '/health' in path:
         return config.default_rpm
 
-    # Authenticated endpoints get higher limits by default
-    return config.auth_rpm
+    return config.local_rpm
 
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
@@ -398,7 +289,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         path_group = path.split('/')[2] if len(path.split('/')) > 2 else 'default'
         bucket_key = f"{client_id}:{path_group}"
 
-        # Check rate limit via backend (in-memory or Redis)
+        # Check the process-local token bucket.
         result = await self.backend.consume(
             bucket_key, limit, self.config.window_seconds
         )
@@ -455,15 +346,15 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
 
 def create_rate_limiter(
     default_rpm: int = 60,
-    auth_rpm: int = 120,
+    local_rpm: int = 120,
     enabled: bool = True
 ) -> RateLimiterMiddleware:
     """
     Factory function to create rate limiter middleware.
 
     Args:
-        default_rpm: Default requests per minute for unauthenticated users
-        auth_rpm: Requests per minute for authenticated users
+        default_rpm: Default requests per minute
+        local_rpm: Requests per minute for local workspace API routes
         enabled: Whether rate limiting is enabled
 
     Returns:
@@ -471,7 +362,7 @@ def create_rate_limiter(
     """
     config = RateLimitConfig(
         default_rpm=default_rpm,
-        auth_rpm=auth_rpm,
+        local_rpm=local_rpm,
         enabled=enabled
     )
     return lambda app: RateLimiterMiddleware(app, config)

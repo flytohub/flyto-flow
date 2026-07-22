@@ -29,7 +29,7 @@ from services.runtime.execution.error_handler import trigger_error_workflow, ERR
 logger = logging.getLogger(__name__)
 
 # Maximum time (seconds) for a single workflow execution.
-# Default 540s (9 min) — must be less than Cloud Run timeout (600s) to allow cleanup.
+# Default 540s (9 min) leaves time for orderly local cleanup.
 import os
 MAX_EXECUTION_TIMEOUT = int(os.environ.get('FLYTO_MAX_EXECUTION_TIMEOUT', '540'))
 
@@ -94,8 +94,8 @@ async def run_workflow(
         # Post-process: inject download URLs for file outputs
         try:
             from services.runtime.execution.file_output import process_execution_outputs
-            user_id = info.metadata.get("user_id") or info.user_id
-            await process_execution_outputs(result, info.node_outputs, user_id=user_id)
+            workspace_id = info.metadata.get("workspace_id") or info.workspace_id
+            await process_execution_outputs(result, info.node_outputs, workspace_id=workspace_id)
         except Exception as e:
             logger.debug(f"File output processing skipped: {e}")
 
@@ -145,27 +145,6 @@ async def run_workflow(
 
         # Auto blueprint feedback: report outcome OR learn new blueprint
         await _auto_blueprint_feedback(info, workflow_data)
-
-        # Send in-app notification for failed executions
-        if info.status == ExecutionStatus.FAILED and not info.metadata.get(ERROR_WORKFLOW_MARKER):
-            try:
-                from gateway.providers.hub import get_data_provider
-                from gateway.providers.data.models.notification import NotificationCreateDTO, NotificationType
-                provider = get_data_provider()
-                user_id = info.metadata.get("user_id") or info.user_id
-                if user_id and hasattr(provider, 'notifications'):
-                    workflow_name = info.workflow_name or info.metadata.get("workflow_name", "Unknown")
-                    error_msg = (info.error or "Unknown error")[:200]
-                    await provider.notifications.create_notification(NotificationCreateDTO(
-                        user_id=user_id,
-                        notification_type=NotificationType.EXECUTION_FAILED,
-                        title=f"Execution failed: {workflow_name}",
-                        message=error_msg,
-                        reference_id=info.execution_id,
-                        reference_type="execution",
-                    ))
-            except Exception as notif_err:
-                logger.warning(f"Failed to send execution failure notification: {notif_err}")
 
         # Push WebSocket notification
         try:
@@ -343,7 +322,7 @@ async def create_workflow_engine(
     from services.runtime.execution.template_loader import TemplateDependencyError
     try:
         template_definitions = await load_template_definitions(
-            steps, info.user_id, embedded_templates=embedded_templates,
+            steps, info.workspace_id, embedded_templates=embedded_templates,
         )
     except TemplateDependencyError as e:
         logger.error(f"Template dependency error: {e}")
@@ -499,9 +478,7 @@ async def _cleanup_execution(info: ExecutionInfo) -> None:
     # Release concurrency slot
     try:
         from services.concurrency_manager import release_execution_slot
-        user_id = info.user_id or "anonymous"
-        org_id = info.user_id or "default"  # Same as acquire: org_id = user_id or "default"
-        await release_execution_slot(info.execution_id, user_id, org_id)
+        await release_execution_slot(info.execution_id)
     except Exception as e:
         logger.warning(f"Failed to release concurrency slot: {e}")
 

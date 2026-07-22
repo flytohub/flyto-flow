@@ -1,22 +1,18 @@
-# Versioning And Compatibility
+# Versioning and Compatibility
 
-Flyto2 Cloud CE uses semantic versioning for published releases. The
-`flyto.editions.v1` contract is the stable boundary shared by the backend,
-frontend, MCP tools, and signed Warroom bundle imports.
+Flyto2 Flow uses semantic versioning for published releases.
 
-## Compatibility Policy
-
-- Patch releases preserve API behavior and stored-data compatibility.
-- Minor releases may add routes, fields, capabilities, and optional migrations.
+- Patch releases preserve API and stored-data behavior.
+- Minor releases may add local routes, workflow fields, atoms, and restart-safe
+  migrations.
 - Major releases may remove deprecated behavior or require a documented data
   migration.
-- Additive response fields are not breaking changes. Clients must ignore fields
-  they do not recognize.
-- SQLite schema migrations must be forward-only, restart-safe, and covered by a
-  test from the previous supported schema.
-- Signed bundle verification may become stricter in any release when required
-  to address a security issue.
+- API clients must ignore unknown additive response fields.
+- SQLite migrations are forward-only, idempotent, and tested from the previous
+  supported schema.
+- A release that requires operator action documents backup, migration,
+  validation, and rollback before publication.
 
-Breaking changes and operator actions are recorded in release notes. A release
-that requires manual migration must include exact backup, migration, validation,
-and rollback commands before it can be published.
+`flyto-cloud` pins a compatible Flow release or commit. Downstream code must
+consume the documented edition seams and may not require Flow to contain
+hosted-only compatibility branches.

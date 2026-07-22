@@ -32,7 +32,6 @@ def extract_action_from_module_id(module_id: str) -> str:
     Examples:
         "string.uppercase" -> "uppercase"
         "template.invoke:abc123" -> "invoke"
-        "huggingface.text-gen:gpt2" -> "text-gen"
 
     Args:
         module_id: The module identifier

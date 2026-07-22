@@ -13,7 +13,9 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from api.auth import get_current_user
+from gateway.local_context import get_local_actor
+
+get_workspace_context = get_local_actor
 from capabilities import Feature, require_any_feature
 from gateway.storage.trace_repo import TraceRepository, TraceQuery, TraceSummary
 from api.responses import to_camel_case
@@ -36,7 +38,6 @@ router = APIRouter(
     tags=["traces"],
     dependencies=[Depends(require_any_feature(
         Feature.LOCAL_TRACING,
-        Feature.HOSTED_OBSERVABILITY,
     ))],
 )
 
@@ -248,7 +249,7 @@ async def list_traces(
     max_duration_ms: Optional[int] = Query(None, ge=0, description="Maximum duration"),
     has_error: Optional[bool] = Query(None, description="Filter by error status"),
     limit: int = Query(100, ge=1, le=1000, description="Maximum traces to return"),
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """
     List traces with optional filtering.
@@ -263,7 +264,7 @@ async def list_traces(
         min_duration_ms=min_duration_ms,
         max_duration_ms=max_duration_ms,
         has_error=has_error,
-        user_id=current_user["id"],
+        workspace_id=workspace_context["id"],
         limit=limit,
     )
 
@@ -273,13 +274,13 @@ async def list_traces(
 
 
 @router.get("/{trace_id}", response_model=TraceDetailResponse)
-async def get_trace(trace_id: str, current_user: dict = Depends(get_current_user)):
+async def get_trace(trace_id: str, workspace_context: dict = Depends(get_workspace_context)):
     """
     Get a trace by ID.
 
     Returns the trace with all its spans.
     """
-    spans = TraceRepository.get_trace(trace_id, user_id=current_user["id"])
+    spans = TraceRepository.get_trace(trace_id, workspace_id=workspace_context["id"])
 
     if not spans:
         raise HTTPException(status_code=404, detail="Trace not found")
@@ -296,7 +297,7 @@ async def get_trace(trace_id: str, current_user: dict = Depends(get_current_user
 
 
 @router.get("/{trace_id}/spans")
-async def get_trace_spans(trace_id: str, current_user: dict = Depends(get_current_user)):
+async def get_trace_spans(trace_id: str, workspace_context: dict = Depends(get_workspace_context)):
     """
     Get all spans for a trace with computed tree and timeline data.
 
@@ -305,7 +306,7 @@ async def get_trace_spans(trace_id: str, current_user: dict = Depends(get_curren
         - span_tree: Hierarchical tree structure for waterfall view
         - timeline_data: Pre-computed relative positions for visualization
     """
-    spans = TraceRepository.get_trace(trace_id, user_id=current_user["id"])
+    spans = TraceRepository.get_trace(trace_id, workspace_id=workspace_context["id"])
 
     if not spans:
         raise HTTPException(status_code=404, detail="Trace not found")
@@ -328,7 +329,7 @@ async def get_trace_spans(trace_id: str, current_user: dict = Depends(get_curren
 
 
 @router.get("/spans/{span_id}", response_model=SpanResponse)
-async def get_span(span_id: str, current_user: dict = Depends(get_current_user)):
+async def get_span(span_id: str, workspace_context: dict = Depends(get_workspace_context)):
     """Get a specific span by ID."""
     span = TraceRepository.get_span(span_id)
 
@@ -349,7 +350,7 @@ async def search_traces(
     max_duration_ms: Optional[int] = Query(None, ge=0, description="Maximum duration"),
     has_error: Optional[bool] = Query(None, description="Filter by error status"),
     limit: int = Query(100, ge=1, le=1000, description="Maximum traces"),
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """
     Search traces with flexible query options.
@@ -367,7 +368,7 @@ async def search_traces(
         min_duration_ms=min_duration_ms,
         max_duration_ms=max_duration_ms,
         has_error=has_error,
-        user_id=current_user["id"],
+        workspace_id=workspace_context["id"],
         limit=limit,
     )
 
@@ -384,7 +385,7 @@ async def search_traces(
 async def search_operations(
     prefix: str = Query(..., min_length=1, description="Operation name prefix"),
     limit: int = Query(20, ge=1, le=100, description="Maximum results"),
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """
     Search for operation names.
@@ -394,7 +395,7 @@ async def search_operations(
     # Query traces with operation name filter
     query = TraceQuery(
         operation_name=prefix,
-        user_id=current_user["id"],
+        workspace_id=workspace_context["id"],
         limit=limit,
     )
 
@@ -412,7 +413,7 @@ async def search_operations(
 @router.delete("/cleanup")
 async def cleanup_old_traces(
     before: str = Query(..., description="Delete traces before this timestamp (ISO)"),
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """
     Delete traces older than specified timestamp.

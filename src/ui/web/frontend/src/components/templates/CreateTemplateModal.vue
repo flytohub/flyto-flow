@@ -9,58 +9,36 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
         @keydown.esc="close"
       >
-        <!-- Backdrop -->
-        <div
-          class="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          @click="close"
-        />
-
-        <!-- Modal -->
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="close" />
         <div ref="modalRef" tabindex="-1" class="create-modal animate-scale-in">
-          <!-- Header -->
           <div class="create-modal-header">
             <div>
               <h2 id="create-template-title" class="text-lg font-bold text-white">{{ $t('createModal.title') }}</h2>
-              <p class="text-xs text-gray-400 mt-0.5">{{ $t('myTemplates.subtitle', 'Build your automation workflow') }}</p>
+              <p class="text-xs text-gray-400 mt-0.5">{{ $t('myTemplates.subtitle') }}</p>
             </div>
-            <button
-              @click="close"
-              :aria-label="$t('createModal.closeDialog')"
-              class="create-modal-close"
-            >
+            <button class="create-modal-close" :aria-label="$t('createModal.closeDialog')" @click="close">
               <X :size="18" aria-hidden="true" />
             </button>
           </div>
 
-          <!-- Body -->
-          <form @submit.prevent="submit" class="create-modal-body">
-            <!-- Icon Upload (compact horizontal layout) -->
+          <form class="create-modal-body" @submit.prevent="submit">
             <div class="create-icon-section">
               <div class="relative group">
-                <div
-                  v-if="isUploadingIcon"
-                  class="create-icon-preview"
-                >
-                  <Loader2 :size="22" class="animate-spin text-purple-300" />
-                </div>
                 <TemplateIcon
-                  v-else-if="form.iconUrl"
+                  v-if="form.iconUrl"
                   :icon-url="form.iconUrl"
                   size="lg"
                   class="create-icon-preview"
                 />
-                <div
-                  v-else
-                  class="create-icon-empty"
-                >
+                <div v-else class="create-icon-empty">
                   <Image :size="22" class="text-gray-500" aria-hidden="true" />
                 </div>
                 <button
-                  v-if="form.iconUrl && !isUploadingIcon"
+                  v-if="form.iconUrl"
                   type="button"
-                  @click="removeIcon"
-                  :aria-label="$t('createModal.icon.remove')"
                   class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 hover:bg-red-400 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md"
+                  :aria-label="$t('createModal.icon.remove')"
+                  @click="form.iconUrl = ''"
                 >
                   <X :size="10" aria-hidden="true" />
                 </button>
@@ -71,19 +49,12 @@
                   <span class="text-[13px] text-gray-300">
                     {{ form.iconUrl ? $t('createModal.icon.change') : $t('createModal.icon.upload') }}
                   </span>
-                  <input
-                    ref="fileInputRef"
-                    type="file"
-                    accept="image/*"
-                    class="hidden"
-                    @change="handleFileSelect"
-                  />
+                  <input ref="fileInputRef" type="file" accept="image/*" class="hidden" @change="handleFileSelect" />
                 </label>
                 <p class="text-[11px] text-gray-500 mt-1.5">{{ $t('createModal.icon.hint') }}</p>
               </div>
             </div>
 
-            <!-- Name -->
             <div class="create-field">
               <label for="template-name" class="create-label">
                 {{ $t('createModal.name.label') }} <span class="text-red-400">*</span>
@@ -99,38 +70,13 @@
               />
             </div>
 
-            <!-- Two columns: Category + Folder -->
-            <div class="grid grid-cols-2 gap-3">
-              <!-- Category -->
-              <div class="create-field">
-                <label class="create-label">
-                  {{ $t('createModal.category.label') }}
-                </label>
-                <AppSelect
-                  v-model="form.categoryId"
-                  :options="categoryOptions"
-                  :placeholder="$t('createModal.category.placeholder')"
-                />
-              </div>
-
-              <!-- Folder -->
-              <div class="create-field">
-                <label class="create-label">
-                  {{ $t('createModal.folder.label', 'Folder') }}
-                </label>
-                <AppSelect
-                  v-model="form.folderId"
-                  :options="folderOptions"
-                  :placeholder="$t('templateFolders.defaultFolder')"
-                />
-              </div>
+            <div class="create-field">
+              <label class="create-label">{{ $t('createModal.category.label') }}</label>
+              <AppSelect v-model="form.category" :options="categoryOptions" />
             </div>
 
-            <!-- Description -->
             <div class="create-field">
-              <label for="template-description" class="create-label">
-                {{ $t('createModal.description.label') }}
-              </label>
+              <label for="template-description" class="create-label">{{ $t('createModal.description.label') }}</label>
               <textarea
                 id="template-description"
                 v-model="form.description"
@@ -140,29 +86,11 @@
               />
             </div>
 
-            <!-- Error -->
-            <div
-              v-if="errorMessage"
-              role="alert"
-              class="create-error"
-            >
-              {{ errorMessage }}
-            </div>
+            <div v-if="errorMessage" role="alert" class="create-error">{{ errorMessage }}</div>
 
-            <!-- Actions -->
             <div class="flex items-center justify-end gap-3 pt-1">
-              <button
-                type="button"
-                @click="close"
-                class="create-btn-ghost"
-              >
-                {{ $t('common.cancel') }}
-              </button>
-              <button
-                type="submit"
-                :disabled="!form.name.trim() || isSubmitting || isUploadingIcon"
-                class="create-btn-primary"
-              >
+              <button type="button" class="create-btn-ghost" @click="close">{{ $t('common.cancel') }}</button>
+              <button type="submit" :disabled="!form.name.trim() || isSubmitting" class="create-btn-primary">
                 <Loader2 v-if="isSubmitting" :size="16" class="animate-spin" aria-hidden="true" />
                 <Plus v-else :size="16" aria-hidden="true" />
                 <span>{{ isSubmitting ? $t('createModal.creating') : $t('createModal.create') }}</span>
@@ -173,7 +101,6 @@
       </div>
     </Transition>
 
-    <!-- Image Cropper Modal -->
     <ImageCropperModal
       v-model="showCropper"
       :image-src="cropperImageSrc"
@@ -185,176 +112,79 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, nextTick, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { X, Loader2, Upload, Image, Plus } from 'lucide-vue-next'
+import { nextTick, reactive, ref, watch } from 'vue'
+import { Image, Loader2, Plus, Upload, X } from 'lucide-vue-next'
 import { templatesAPI } from '@/api/templates'
-import { storageAPI } from '@/api/storage'
-import { DEFAULTS } from '@/config/defaults'
+import AppSelect from '@/components/common/AppSelect.vue'
 import ImageCropperModal from '@/components/common/ImageCropperModal.vue'
 import TemplateIcon from '@/components/common/TemplateIcon.vue'
-import AppSelect from '@/components/common/AppSelect.vue'
 
-const { t } = useI18n()
-
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false
-  },
-  folders: {
-    type: Array,
-    default: () => []
-  }
-})
-
+const props = defineProps({ modelValue: { type: Boolean, default: false } })
 const emit = defineEmits(['update:modelValue', 'created'])
-
-const form = reactive({
-  name: '',
-  categoryId: '',
-  folderId: '',
-  description: '',
-  iconUrl: ''
-})
-
+const form = reactive({ name: '', category: 'general', description: '', iconUrl: '' })
 const isSubmitting = ref(false)
-const categories = ref([])
 const errorMessage = ref('')
 const fileInputRef = ref(null)
 const modalRef = ref(null)
-
 const showCropper = ref(false)
 const cropperImageSrc = ref('')
+const categoryOptions = [
+  { value: 'general', label: 'General' },
+  { value: 'automation', label: 'Automation' },
+  { value: 'browser', label: 'Browser' },
+  { value: 'data', label: 'Data' },
+  { value: 'http', label: 'HTTP / API' },
+]
 
-const categoryOptions = computed(() => [
-  { value: '', label: t('createModal.category.placeholder') },
-  ...categories.value.map(cat => ({ value: cat.id, label: cat.name }))
-])
-
-const folderOptions = computed(() => [
-  { value: '', label: t('templateFolders.defaultFolder') },
-  ...props.folders.map(f => ({ value: f.id, label: f.name }))
-])
-
-watch(() => props.modelValue, async (newVal) => {
-  if (newVal) {
-    resetForm()
-    await nextTick()
-    const nameInput = document.getElementById('template-name')
-    nameInput?.focus()
-  }
-})
-
-onMounted(async () => {
-  try {
-    const res = await templatesAPI.getCategories()
-    categories.value = res.categories || []
-  } catch {
-    // Categories are optional
-  }
-})
-
-function close() {
-  emit('update:modelValue', false)
-}
-
-function resetForm() {
-  form.name = ''
-  form.categoryId = ''
-  form.folderId = ''
-  form.description = ''
-  form.iconUrl = ''
+watch(() => props.modelValue, async shown => {
+  if (!shown) return
+  Object.assign(form, { name: '', category: 'general', description: '', iconUrl: '' })
   errorMessage.value = ''
-}
+  await nextTick()
+  document.getElementById('template-name')?.focus()
+})
+
+function close() { emit('update:modelValue', false) }
 
 function handleFileSelect(event) {
   const file = event.target.files?.[0]
   if (!file) return
-
   if (!file.type.startsWith('image/')) {
-    errorMessage.value = t('createModal.errors.invalidFileType')
+    errorMessage.value = 'Please select an image file.'
     return
   }
-
-  if (file.size > DEFAULTS.LIMITS.MAX_IMAGE_SIZE) {
-    errorMessage.value = t('createModal.errors.fileTooLarge')
-    return
-  }
-
-  errorMessage.value = ''
-
   const reader = new FileReader()
-  reader.onload = (e) => {
-    cropperImageSrc.value = e.target.result
+  reader.onload = loadEvent => {
+    cropperImageSrc.value = loadEvent.target.result
     showCropper.value = true
   }
   reader.readAsDataURL(file)
-
-  if (fileInputRef.value) {
-    fileInputRef.value.value = ''
-  }
+  event.target.value = ''
 }
 
-const isUploadingIcon = ref(false)
-
-async function handleCropped(dataUrl) {
-  isUploadingIcon.value = true
-  errorMessage.value = ''
-
-  try {
-    const result = await storageAPI.uploadImageFromDataUrl(dataUrl, 'template-icon.png', 'template_icon')
-    form.iconUrl = result.url
-  } catch (err) {
-    const detail = err.response?.data?.detail || err.response?.data?.error || err.userMessage || err.message
-    errorMessage.value = detail || t('templateForm.iconUploadError', 'Failed to upload icon. Please try again.')
-  } finally {
-    isUploadingIcon.value = false
-  }
-}
-
-function removeIcon() {
-  form.iconUrl = ''
+function handleCropped(dataUrl) {
+  form.iconUrl = dataUrl
+  showCropper.value = false
 }
 
 async function submit() {
   if (!form.name.trim() || isSubmitting.value) return
-
   isSubmitting.value = true
   errorMessage.value = ''
-
-  try {
-    const payload = {
-      name: form.name.trim(),
-      templateName: form.name.trim(),
-      description: form.description.trim() || undefined,
-      templateDescription: form.description.trim() || undefined,
-      categoryId: form.categoryId || undefined,
-      status: 'draft',
-      templateStatus: 'draft',
-      visibility: 'private',
-      steps: [],
-      ui: { sections: [] },
-      iconUrl: form.iconUrl || undefined,
-      folder_id: form.folderId || undefined
-    }
-
-    const result = await templatesAPI.createTemplate(payload)
-
-    if (!result.ok) {
-      throw new Error(result.error || 'Failed to create template')
-    }
-
-    const newTemplateId = result.template?.id
-
-    resetForm()
-    close()
-    emit('created', newTemplateId)
-  } catch (err) {
-    errorMessage.value = err.message || t('createModal.errors.createFailed')
-  } finally {
-    isSubmitting.value = false
+  const result = await templatesAPI.createTemplate({
+    name: form.name.trim(),
+    description: form.description.trim(),
+    category: form.category,
+    steps: [],
+    ui: { sections: [], templateIcon: form.iconUrl || undefined },
+  })
+  isSubmitting.value = false
+  if (!result.ok) {
+    errorMessage.value = result.error || 'Unable to create workflow'
+    return
   }
+  emit('created', result.template)
+  close()
 }
 </script>
 

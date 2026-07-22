@@ -6,7 +6,9 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from api.auth import get_current_user
+from gateway.local_context import get_local_actor
+
+get_workspace_context = get_local_actor
 from gateway.providers.vector import (
     VectorStoreConflictError,
     VectorStoreError,
@@ -17,11 +19,11 @@ from gateway.providers.vector import (
 
 logger = logging.getLogger(__name__)
 
-# Deprecated and not used by the frontend, but retained as an authenticated API.
+# Deprecated local vector API retained for workflow compatibility.
 router = APIRouter(
     prefix="/vector",
     tags=["Vector Store"],
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(get_workspace_context)],
 )
 
 

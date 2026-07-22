@@ -17,7 +17,6 @@ import { useBuilderMetadataStore } from './builder/metadataStore'
 import { useBuilderUIStore } from './builder/uiStateStore'
 import { useBuilderWorkflowStore } from './builder/workflowStore'
 import { useBuilderExecutionStore } from './builder/executionStore'
-import { telemetry } from '@/services/telemetry'
 
 export const useBuilderStore = defineStore('builder', () => {
   // Get individual stores
@@ -50,11 +49,6 @@ export const useBuilderStore = defineStore('builder', () => {
     templateDescription,
     templateId,
     existingTemplateId,
-    templateCreatorId,
-    templateMutability,
-    templateVisibility,
-    templateListed,
-    isWorkflowVisible,
     sections,
     hasUnsavedChanges,
     isSaving,
@@ -158,13 +152,6 @@ export const useBuilderStore = defineStore('builder', () => {
     workflowStore.addNode(node)
     metadataStore.hasUnsavedChanges = true
 
-    // Track node addition
-    telemetry.track('builder.node_add', {
-      template_id: metadataStore.templateId,
-      node_id: node.id,
-      node_type: node.type,
-      module_id: node.data?.moduleId
-    })
   }
 
   function updateNode(nodeId, data) {
@@ -173,48 +160,19 @@ export const useBuilderStore = defineStore('builder', () => {
   }
 
   function deleteNode(nodeId) {
-    // Get node info before deleting for tracking
-    const node = workflowStore.nodes.find(n => n.id === nodeId)
-
     workflowStore.deleteNode(nodeId)
     metadataStore.hasUnsavedChanges = true
-
-    // Track node deletion
-    telemetry.track('builder.node_delete', {
-      template_id: metadataStore.templateId,
-      node_id: nodeId,
-      node_type: node?.type,
-      module_id: node?.data?.moduleId
-    })
   }
 
   function addEdge(edge) {
     workflowStore.addEdge(edge)
     metadataStore.hasUnsavedChanges = true
 
-    // Track node connection
-    telemetry.track('builder.node_connect', {
-      template_id: metadataStore.templateId,
-      edge_id: edge.id,
-      source_node: edge.source,
-      target_node: edge.target
-    })
   }
 
   function deleteEdge(edgeId) {
-    // Get edge info before deleting for tracking
-    const edge = workflowStore.edges.find(e => e.id === edgeId)
-
     workflowStore.deleteEdge(edgeId)
     metadataStore.hasUnsavedChanges = true
-
-    // Track node disconnection
-    telemetry.track('builder.node_disconnect', {
-      template_id: metadataStore.templateId,
-      edge_id: edgeId,
-      source_node: edge?.source,
-      target_node: edge?.target
-    })
   }
 
   function toggleCheckpoint(nodeId) {
@@ -245,11 +203,6 @@ export const useBuilderStore = defineStore('builder', () => {
     templateId,
     templateDescription,
     existingTemplateId,
-    templateCreatorId,
-    templateMutability,
-    templateVisibility,
-    templateListed,
-    isWorkflowVisible,
 
     // Template Data (extracted ref)
     sections,
@@ -260,9 +213,6 @@ export const useBuilderStore = defineStore('builder', () => {
     isLoading,
     loadError,
     autoSaveEnabled,
-
-    // Metadata Getters (computed - not refs)
-    isReadOnly: metadataStore.isReadOnly,
 
     // Template Actions
     setTemplateName: metadataStore.setTemplateName,

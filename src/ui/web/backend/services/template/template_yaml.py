@@ -65,22 +65,8 @@ def _roundtrip_str_representer(dumper, data):
 
 _SafeRoundtripDumper.add_representer(str, _roundtrip_str_representer)
 
-# Business/platform keys that should never appear in exported YAML
-_EXCLUDED_TOP_LEVEL_KEYS = {
-    "pricing", "price", "call_price", "creator_id", "creator_email",
-    "author_id", "author_name", "author_avatar",
-    "marketplace_snapshot", "search_tokens", "downloads", "rating",
-    "rating_count", "review_count", "revenue", "purchase_count",
-    "is_published", "listed", "visibility", "visibility_regions",
-    "blocked_regions",
-    "fork_count", "open_pr_count", "open_issue_count",
-    "contributor_count", "contributors", "revision",
-    "created_at", "updated_at", "enabled", "status",
-    "has_access", "is_installed", "capabilities",
-    "latest_version_id", "version_number",
-    "mutability", "merge_settings",
-    "icon_url", "color",
-}
+# Local database timestamps are not part of the portable workflow definition.
+_EXCLUDED_TOP_LEVEL_KEYS = {"created_at", "updated_at"}
 
 
 _PARAMS_REF_RE = re.compile(r'\$\{params\.(\w+)\}')
@@ -116,7 +102,7 @@ def _build_yaml_document(
     """Build the YAML document dict from template data and processed steps."""
     doc: Dict[str, Any] = {}
 
-    # --- Execution layer (shared by flyto-core and flyto-cloud) ---
+    # --- Portable execution layer shared with flyto-core ---
     doc["name"] = template.get("name", "Untitled")
     if template.get("description"):
         doc["description"] = template["description"]
@@ -214,7 +200,7 @@ def _build_yaml_document(
     if template.get("checkpoints"):
         doc["checkpoints"] = template["checkpoints"]
 
-    # --- UI layer (flyto-cloud only, flyto-core ignores) ---
+    # --- Flyto2 Flow UI layer; flyto-core ignores this metadata ---
     if include_ui:
         _ui: Dict[str, Any] = {}
         if positions:

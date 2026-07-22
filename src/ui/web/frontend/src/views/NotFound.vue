@@ -96,25 +96,15 @@
         </div>
       </div>
 
-      <!-- Footer -->
-      <p class="text-center text-gray-600 text-sm mt-6">
-        {{ $t('notFound.helpText') }}
-        <a :href="supportEmailHref" class="text-purple-400 hover:text-purple-300 transition-colors">
-          {{ $t('notFound.contactSupport') }}
-        </a>
-      </p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { FileQuestion, Home, ArrowRight, ArrowLeft, FolderOpen } from 'lucide-vue-next'
-import { DEFAULTS } from '@/config/defaults'
 
 const router = useRouter()
-const supportEmailHref = computed(() => `mailto:${DEFAULTS.APP.SUPPORT_EMAIL}`)
 
 function goBack() {
   if (window.history.length > 1) {

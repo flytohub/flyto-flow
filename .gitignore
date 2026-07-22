@@ -3,10 +3,12 @@
 !.env.example
 !install/.env.ce.example
 .pytest_cache/
+.pytest-tmp-*/
 __pycache__/
 coverage/
 dist/
 htmlcov/
 node_modules/
+out/
 sbom.cdx.json
 THIRD_PARTY_DEPENDENCIES.md

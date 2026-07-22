@@ -4,24 +4,20 @@
  * Handles zoom, fit view, auto layout, and viewport persistence.
  */
 import { useVueFlow } from '@vue-flow/core'
-import { trackBuilder } from '@/utils/telemetry/builderTracker'
 
 export function useCanvasViewport({ nodes }) {
   const { zoomIn, zoomOut, fitView, setCenter, getViewport, setViewport } = useVueFlow()
 
   function handleZoomIn() {
     zoomIn()
-    trackBuilder.zoom(null, 'zoom_in')
   }
 
   function handleZoomOut() {
     zoomOut()
-    trackBuilder.zoom(null, 'zoom_out')
   }
 
   function handleFitView() {
     fitView({ padding: 0.2 })
-    trackBuilder.fitView(nodes.value.length)
   }
 
   function restoreViewport(savedViewport) {

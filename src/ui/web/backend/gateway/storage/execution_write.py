@@ -27,7 +27,7 @@ class ExecutionWriteMixin:
         workflow_id: str,
         workflow_name: str = "",
         workflow_version: str = "1.0.0",
-        user_id: str = None,
+        workspace_id: str = None,
         input_params: Dict[str, Any] = None,
         workflow_snapshot: Dict[str, Any] = None,
         modules_snapshot: List[Dict[str, Any]] = None,
@@ -40,7 +40,7 @@ class ExecutionWriteMixin:
             workflow_id: Workflow identifier
             workflow_name: Display name
             workflow_version: Workflow version
-            user_id: User identifier
+            workspace_id: Workspace identifier
             input_params: Runtime parameters
             workflow_snapshot: Full workflow definition snapshot
             modules_snapshot: Module versions snapshot
@@ -57,7 +57,7 @@ class ExecutionWriteMixin:
                 """
                 INSERT INTO executions (
                     id, workflow_id, workflow_name, workflow_version,
-                    user_id, status, started_at, input_params,
+                    workspace_id, status, started_at, input_params,
                     workflow_snapshot, modules_snapshot, env_snapshot
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
@@ -66,7 +66,7 @@ class ExecutionWriteMixin:
                     workflow_id,
                     workflow_name,
                     workflow_version,
-                    user_id,
+                    workspace_id,
                     "pending",
                     now,
                     json.dumps(input_params or {}),
@@ -83,7 +83,7 @@ class ExecutionWriteMixin:
             workflow_id=workflow_id,
             workflow_name=workflow_name,
             workflow_version=workflow_version,
-            user_id=user_id,
+            workspace_id=workspace_id,
             status="pending",
             started_at=now,
             input_params=input_params or {},

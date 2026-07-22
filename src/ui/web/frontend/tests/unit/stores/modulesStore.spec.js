@@ -5,10 +5,6 @@ vi.mock('@/api/modules', () => ({
   getTieredCatalog: vi.fn()
 }))
 
-vi.mock('@/services/telemetry', () => ({
-  telemetry: { track: vi.fn() }
-}))
-
 import { useModulesStore } from '@/stores/modulesStore'
 import { getTieredCatalog } from '@/api/modules'
 

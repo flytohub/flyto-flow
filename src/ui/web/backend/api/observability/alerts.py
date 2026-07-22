@@ -15,7 +15,9 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
 
-from api.auth import get_current_user
+from gateway.local_context import get_local_actor
+
+get_workspace_context = get_local_actor
 from capabilities import Feature, require_feature
 
 
@@ -122,9 +124,9 @@ class AlertResponse(BaseModel):
 # Endpoints
 
 @router.get("/")
-async def get_active_alerts(current_user: dict = Depends(get_current_user)):
+async def get_active_alerts(workspace_context: dict = Depends(get_workspace_context)):
     """Get all active alerts with S-Grade pre-computed counts."""
-    alerts = AlertRepository.get_active(user_id=current_user["id"])
+    alerts = AlertRepository.get_active(workspace_id=workspace_context["id"])
 
     # S-Grade: Pre-compute counts on backend
     alert_list = []
@@ -165,14 +167,14 @@ async def get_active_alerts(current_user: dict = Depends(get_current_user)):
 async def get_alert_history(
     rule_id: Optional[str] = Query(None, description="Filter by rule ID"),
     limit: int = Query(100, ge=1, le=1000, description="Maximum alerts to return"),
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """Get alert history."""
-    user_id = current_user["id"]
+    workspace_id = workspace_context["id"]
     if rule_id:
-        alerts = AlertRepository.get_by_rule(rule_id, limit, user_id=user_id)
+        alerts = AlertRepository.get_by_rule(rule_id, limit, workspace_id=workspace_id)
     else:
-        alerts = AlertRepository.get_active(user_id=user_id)
+        alerts = AlertRepository.get_active(workspace_id=workspace_id)
 
     alert_list = [
         AlertResponse(
@@ -194,7 +196,7 @@ async def get_alert_history(
 
 
 @router.get("/{alert_id}")
-async def get_alert(alert_id: str, current_user: dict = Depends(get_current_user)):
+async def get_alert(alert_id: str, workspace_context: dict = Depends(get_workspace_context)):
     """Get an alert by ID."""
     alert = AlertRepository.get(alert_id)
     if not alert:
@@ -217,7 +219,7 @@ async def get_alert(alert_id: str, current_user: dict = Depends(get_current_user
 
 
 @router.post("/{alert_id}/silence")
-async def silence_alert(alert_id: str, request: AlertSilence, current_user: dict = Depends(get_current_user)):
+async def silence_alert(alert_id: str, request: AlertSilence, workspace_context: dict = Depends(get_workspace_context)):
     """Silence an alert until specified time."""
     alert = AlertRepository.get(alert_id)
     if not alert:
@@ -231,7 +233,7 @@ async def silence_alert(alert_id: str, request: AlertSilence, current_user: dict
 
 
 @router.post("/{alert_id}/acknowledge")
-async def acknowledge_alert(alert_id: str, current_user: dict = Depends(get_current_user)):
+async def acknowledge_alert(alert_id: str, workspace_context: dict = Depends(get_workspace_context)):
     """Acknowledge an alert."""
     alert = AlertRepository.get(alert_id)
     if not alert:
@@ -248,7 +250,7 @@ async def acknowledge_alert(alert_id: str, current_user: dict = Depends(get_curr
 
 
 @router.post("/{alert_id}/mute")
-async def mute_alert(alert_id: str, request: AlertSilence, current_user: dict = Depends(get_current_user)):
+async def mute_alert(alert_id: str, request: AlertSilence, workspace_context: dict = Depends(get_workspace_context)):
     """Mute an alert (alias for silence)."""
     alert = AlertRepository.get(alert_id)
     if not alert:
@@ -266,12 +268,12 @@ async def mute_alert(alert_id: str, request: AlertSilence, current_user: dict = 
 @router.get("/rules")
 async def list_alert_rules(
     enabled_only: bool = Query(False, description="Only return enabled rules"),
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """List all alert rules with S-Grade pre-computed counts."""
-    user_id = current_user["id"]
+    workspace_id = workspace_context["id"]
     # Always fetch all rules to compute counts
-    all_rules = AlertRuleRepository.list_all(enabled_only=False, user_id=user_id)
+    all_rules = AlertRuleRepository.list_all(enabled_only=False, workspace_id=workspace_id)
 
     # S-Grade: Pre-compute counts on backend
     enabled_count = sum(1 for r in all_rules if r.enabled)
@@ -308,9 +310,9 @@ async def list_alert_rules(
 
 
 @router.get("/rules/{rule_id}")
-async def get_alert_rule(rule_id: str, current_user: dict = Depends(get_current_user)):
+async def get_alert_rule(rule_id: str, workspace_context: dict = Depends(get_workspace_context)):
     """Get an alert rule by ID."""
-    rule = AlertRuleRepository.get(rule_id, user_id=current_user["id"])
+    rule = AlertRuleRepository.get(rule_id, workspace_id=workspace_context["id"])
     if not rule:
         raise HTTPException(status_code=404, detail="Alert rule not found")
 
@@ -330,7 +332,7 @@ async def get_alert_rule(rule_id: str, current_user: dict = Depends(get_current_
 
 
 @router.post("/rules")
-async def create_alert_rule(request: AlertRuleCreate, current_user: dict = Depends(get_current_user)):
+async def create_alert_rule(request: AlertRuleCreate, workspace_context: dict = Depends(get_workspace_context)):
     """Create a new alert rule."""
     rule_id = str(uuid4())
 
@@ -353,7 +355,7 @@ async def create_alert_rule(request: AlertRuleCreate, current_user: dict = Depen
         enabled=request.enabled,
     )
 
-    AlertRuleRepository.create(rule, user_id=current_user["id"])
+    AlertRuleRepository.create(rule, workspace_id=workspace_context["id"])
 
     response = AlertRuleResponse(
         id=rule.id,
@@ -371,9 +373,9 @@ async def create_alert_rule(request: AlertRuleCreate, current_user: dict = Depen
 
 
 @router.put("/rules/{rule_id}")
-async def update_alert_rule(rule_id: str, request: AlertRuleUpdate, current_user: dict = Depends(get_current_user)):
+async def update_alert_rule(rule_id: str, request: AlertRuleUpdate, workspace_context: dict = Depends(get_workspace_context)):
     """Update an alert rule."""
-    rule = AlertRuleRepository.get(rule_id, user_id=current_user["id"])
+    rule = AlertRuleRepository.get(rule_id, workspace_id=workspace_context["id"])
     if not rule:
         raise HTTPException(status_code=404, detail="Alert rule not found")
 
@@ -403,7 +405,7 @@ async def update_alert_rule(rule_id: str, request: AlertRuleUpdate, current_user
         AlertRuleRepository.update(rule_id, **updates)
 
     # Return updated rule
-    rule = AlertRuleRepository.get(rule_id, user_id=current_user["id"])
+    rule = AlertRuleRepository.get(rule_id, workspace_id=workspace_context["id"])
 
     response = AlertRuleResponse(
         id=rule.id,
@@ -421,13 +423,13 @@ async def update_alert_rule(rule_id: str, request: AlertRuleUpdate, current_user
 
 
 @router.delete("/rules/{rule_id}")
-async def delete_alert_rule(rule_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_alert_rule(rule_id: str, workspace_context: dict = Depends(get_workspace_context)):
     """Delete an alert rule."""
-    user_id = current_user["id"]
-    rule = AlertRuleRepository.get(rule_id, user_id=user_id)
+    workspace_id = workspace_context["id"]
+    rule = AlertRuleRepository.get(rule_id, workspace_id=workspace_id)
     if not rule:
         raise HTTPException(status_code=404, detail="Alert rule not found")
 
-    AlertRuleRepository.delete(rule_id, user_id=user_id)
+    AlertRuleRepository.delete(rule_id, workspace_id=workspace_id)
 
     return {"ok": True, "message": "Alert rule deleted"}

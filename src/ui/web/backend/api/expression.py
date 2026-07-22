@@ -14,7 +14,9 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
-from api.auth import get_current_user
+from gateway.local_context import get_local_actor
+
+get_workspace_context = get_local_actor
 from api.responses import success_response, error_response
 from services.template.expression.evaluator import SecureExpressionEvaluator
 from services.template.expression.models import ExpressionError, SecurityViolation
@@ -45,7 +47,7 @@ class ExpressionBatchRequest(BaseModel):
 @router.post("/evaluate")
 async def evaluate_expression(
     request: ExpressionEvaluateRequest,
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """
     Evaluate an expression with the given context.
@@ -111,7 +113,7 @@ async def evaluate_expression(
 @router.post("/validate")
 async def validate_expression(
     request: ExpressionValidateRequest,
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """
     Validate expression syntax without evaluating.
@@ -198,7 +200,7 @@ async def validate_expression(
 @router.post("/batch")
 async def evaluate_batch(
     request: ExpressionBatchRequest,
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """
     Evaluate multiple expressions with a shared context.
@@ -228,7 +230,7 @@ async def evaluate_batch(
 
 @router.get("/functions")
 async def list_allowed_functions(
-    _: dict = Depends(get_current_user),
+    _: dict = Depends(get_workspace_context),
 ):
     """
     List allowed functions in expressions.

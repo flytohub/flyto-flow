@@ -1,9 +1,9 @@
 """
-Offline Runner Entry Point
+Flyto2 Flow Entry Point
 
 Fully self-contained FastAPI server for offline operation.
 - No cloud dependency — all data and execution handled locally
-- Local JWT auth with first-run owner setup
+- One fixed local workspace with no identity service
 - Uses SQLite for workflows, templates, and execution history
 - Does NOT proxy to any external service
 
@@ -56,24 +56,11 @@ if not getattr(sys, "frozen", False):
     if str(_project_root) not in sys.path:
         sys.path.insert(0, str(_project_root))
 
-# === Hot-updated packages bootstrap (packaged mode only) ===
-if getattr(sys, "frozen", False):
-    _pip_packages = Path.home() / ".flyto" / "pip_packages"
-    if _pip_packages.exists() and str(_pip_packages) not in sys.path:
-        sys.path.insert(0, str(_pip_packages))
+# A flyto-core wheel explicitly imported by the local administrator overrides
+# the image baseline. This reads local files only and never checks a registry.
+from local.core_wheel import activate_installed_core
 
-    _core_current = Path.home() / ".flyto" / "core" / "current"
-    if _core_current.exists():
-        _resolved = _core_current.resolve()
-        if str(_resolved) not in sys.path:
-            sys.path.insert(0, str(_resolved))
-    else:
-        _pointer = Path.home() / ".flyto" / "core" / "current.txt"
-        if _pointer.exists():
-            _version = _pointer.read_text(encoding="utf-8").strip()
-            _version_dir = Path.home() / ".flyto" / "core" / _version
-            if _version_dir.exists() and str(_version_dir) not in sys.path:
-                sys.path.insert(0, str(_version_dir))
+activate_installed_core()
 
 import asyncio
 import logging
@@ -86,11 +73,6 @@ from config.constants import APP_NAME, APP_VERSION
 from api import create_offline_router
 from middleware.common import setup_cors, setup_common_middleware
 
-from local.browser_bootstrap import (
-    configure_playwright_browsers_path,
-    ensure_node_binary,
-    ensure_playwright_chromium,
-)
 from local.websocket_routes import register_websocket_routes
 from local.static_files import mount_static_files
 from local.lifespan_local import (
@@ -98,6 +80,7 @@ from local.lifespan_local import (
     init_breakpoint_manager,
     cleanup_stale_browser_locks,
 )
+from local.runtime_dependencies import verify_bundled_runtime
 
 logger = logging.getLogger(__name__)
 
@@ -126,17 +109,6 @@ def _scan_modules() -> None:
         logger.warning(f"Module scan failed: {result['message']}")
 
 
-async def _bootstrap_browser() -> None:
-    try:
-        await asyncio.gather(
-            ensure_node_binary(),
-            ensure_playwright_chromium(),
-            return_exceptions=True,
-        )
-    except Exception as exc:
-        logger.warning(f"Background browser setup skipped: {exc}")
-
-
 async def _start_alerts() -> None:
     try:
         from services.observability.alerts.scheduler import start_alert_scheduler
@@ -157,31 +129,27 @@ def _init_tracing() -> None:
 
 async def _run_deferred() -> None:
     _scan_modules()
-    await _bootstrap_browser()
     await _start_alerts()
     _init_tracing()
     logger.info("=" * 60)
-    logger.info("Offline Runner fully initialized")
+    logger.info("Flyto2 Flow fully initialized")
     logger.info("=" * 60)
 
 
 async def _startup() -> asyncio.Task:
-    configure_playwright_browsers_path()
+    verify_bundled_runtime()
     from services.observability.log_manager import get_log_manager
 
     get_log_manager().install_handler()
     await init_capabilities()
     logger.info("=" * 60)
-    logger.info(f"Flyto2 Offline Runner v{APP_VERSION}")
-    logger.info("Mode: offline (no cloud dependency)")
+    logger.info(f"Flyto2 Flow v{APP_VERSION}")
+    logger.info("Mode: local offline")
     logger.info("=" * 60)
 
     from gateway.storage.offline_db import init_offline_db
 
     init_offline_db()
-    from gateway.providers.auth.offline import validate_offline_auth_configuration
-
-    validate_offline_auth_configuration()
     logger.info("Offline database initialized")
     cleanup_stale_browser_locks()
     from api.health import mark_startup_complete
@@ -217,34 +185,30 @@ async def _shutdown() -> None:
         close_db()
     except Exception:
         pass
-    logger.info("Offline Runner shut down")
+    logger.info("Flyto2 Flow shut down")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup and shutdown for Offline Runner."""
+    """Start and stop the local Flyto2 Flow runtime."""
     await _startup()
     yield
     await _shutdown()
 
 
 app = FastAPI(
-    title=f"{APP_NAME} Offline Runner",
+    title="Flyto2 Flow",
     version=APP_VERSION,
-    description="Fully offline runner with local JWT auth, SQLite data, and execution engine",
+    description="Local visual workflow builder, MCP server, and execution engine",
     redirect_slashes=True,
     lifespan=lifespan,
 )
 
 # --- Middleware ---
 
-HEADER_SIDECAR_AUTH = "X-Flyto2-" + "Secret"
-LEGACY_HEADER_SIDECAR_AUTH = "X-" + "Flyto-" + "Secret"
-
 setup_cors(
     app,
     origins=settings.cors_origins,
-    extra_headers=[HEADER_SIDECAR_AUTH, LEGACY_HEADER_SIDECAR_AUTH],
 )
 
 # Production security hardening
@@ -272,7 +236,7 @@ async def health_check():
     }
 
 
-# --- Mount Offline Routes (local execution + auth + CRUD) ---
+# --- Mount local CE routes ---
 
 offline_router = create_offline_router()
 app.include_router(offline_router)
@@ -280,7 +244,7 @@ app.include_router(offline_router)
 
 # --- WebSocket endpoints ---
 
-register_websocket_routes(app, sidecar_secret="")
+register_websocket_routes(app)
 
 
 # --- Catch-all: No proxy — return 404 for unmatched /api/* routes ---
@@ -310,7 +274,7 @@ if __name__ == "__main__":
     import argparse
     import uvicorn
 
-    parser = argparse.ArgumentParser(description="Flyto2 Offline Runner")
+    parser = argparse.ArgumentParser(description="Flyto2 Flow")
     parser.add_argument("--port", type=int, default=None, help="Override server port")
     parser.add_argument("--host", type=str, default=None, help="Override server host")
     parser.add_argument("--no-reload", action="store_true", help="Disable auto-reload in dev mode")

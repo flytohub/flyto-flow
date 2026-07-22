@@ -1,10 +1,10 @@
 .PHONY: audit backend-smoke frontend-verify licenses sbom verify
 
 audit:
-	python scripts/audit-cloud-ce-boundary.py . --release-tree
+	python scripts/check-ce-purity.py .
 
 backend-smoke:
-	DEPLOYMENT_MODE=offline FLYTO_EDITION_PROFILE=cloud_ce python -m pytest -q tests/ce
+	DEPLOYMENT_MODE=offline python -m pytest -q tests/ce
 
 frontend-verify:
 	npm --prefix src/ui/web/frontend ci

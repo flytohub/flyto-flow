@@ -15,18 +15,12 @@ ENV_REGISTRY = {
     "API_PORT": {"default": "9000", "required": False},
     "CORS_ORIGINS": {"default": "", "required": False},
     "FLYTO_OFFLINE_DB_PATH": {"default": "", "required": False},
-    "FLYTO_OFFLINE_LOGIN_MODE": {"default": "jwt", "required": False},
-    "FLYTO_OFFLINE_AUTH_SECRET": {"default": "", "required": False},
-    "FLYTO_OFFLINE_ALLOW_REGISTRATION": {"default": "false", "required": False},
-    "FLYTO_CONTEXT_SECRET": {"default": "", "required": False},
-    "FLYTO_WARROOM_IMPORT_DIR": {"default": "", "required": False},
-    "FLYTO_WARROOM_BUNDLE_HMAC_SECRET": {"default": "", "required": False},
     "FLYTO_BACKEND_URL": {"default": "http://127.0.0.1:9000", "required": False},
+    "FLYTO_FLOW_MCP_TOKEN": {"default": "", "required": False},
     "FLYTO_MCP_CACHE_TTL": {"default": "30", "required": False},
     "FLYTO_MCP_MAX_WAIT": {"default": "300", "required": False},
     "PLAYWRIGHT_BROWSERS_PATH": {"default": "", "required": False},
     "QUEUE_BACKEND": {"default": "sqlite", "required": False},
-    "REDIS_URL": {"default": "redis://localhost:6379", "required": False},
 }
 
 
@@ -58,8 +52,6 @@ class Settings:
         self.deployment_mode = "offline"
         self.api_host = os.getenv("API_HOST", "localhost")
         self.api_port = int(os.getenv("API_PORT", "9000"))
-        self.cloud_functions_url = ""
-        self.cloud_api_url = ""
         self.cors_origins = self._parse_cors_origins(os.getenv("CORS_ORIGINS", ""), self.debug)
 
     @staticmethod
@@ -84,11 +76,6 @@ class Settings:
     @property
     def is_selfhosted(self) -> bool:
         return True
-
-    @property
-    def is_saas(self) -> bool:
-        return False
-
 
 _settings: Optional[Settings] = None
 

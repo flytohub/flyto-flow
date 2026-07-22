@@ -1,11 +1,9 @@
 [run]
 source =
-    api/agent
     api/engine
     api/browser
     api/breakpoint
     api/core
-    api/telemetry
     api/workflows
     api/executions
     api/triggers

@@ -7,7 +7,6 @@ Each adapter converts a specific source type to CanonicalModule format.
 from .atomic import normalize_atomic
 from .composite import normalize_composite
 from .template import normalize_template
-from .huggingface import normalize_huggingface
 from .base import (
     normalize_icon,
     normalize_params_schema,
@@ -24,7 +23,6 @@ __all__ = [
     "normalize_atomic",
     "normalize_composite",
     "normalize_template",
-    "normalize_huggingface",
     "normalize_icon",
     "normalize_params_schema",
     "compute_default_params",

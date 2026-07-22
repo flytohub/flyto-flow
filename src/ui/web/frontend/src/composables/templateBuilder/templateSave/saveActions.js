@@ -26,8 +26,6 @@ export function createSaveActions(options) {
     templateData,
     templateName,
     existingTemplateId,
-    templateVisibility,
-    templateListed,
     viewport,
     errorHandling,
     checkpoints,
@@ -49,7 +47,7 @@ export function createSaveActions(options) {
     isSaving.value = true
 
     try {
-      const saveData = await prepareSaveData({ elements, sections, templateData, templateVisibility, templateListed, viewport, errorHandling, checkpoints })
+      const saveData = await prepareSaveData({ elements, sections, templateData, viewport, errorHandling, checkpoints })
 
       if (existingTemplateId.value) {
         const result = await templatesAPI.updateTemplate(existingTemplateId.value, saveData)
@@ -106,7 +104,7 @@ export function createSaveActions(options) {
     isSaving.value = true
 
     try {
-      const saveData = await prepareSaveData({ elements, sections, templateData, templateVisibility, templateListed, viewport, errorHandling, checkpoints })
+      const saveData = await prepareSaveData({ elements, sections, templateData, viewport, errorHandling, checkpoints })
 
       const result = await templatesAPI.updateTemplate(existingTemplateId.value, saveData)
       if (!result.ok) {
@@ -127,7 +125,7 @@ export function createSaveActions(options) {
   }
 
   /**
-   * Save as new template (fork from existing)
+   * Save a local copy as a new workflow.
    * @returns {Promise<{ok: boolean, error?: string}>}
    */
   async function saveAsNewTemplate() {
@@ -138,7 +136,7 @@ export function createSaveActions(options) {
     isSaving.value = true
 
     try {
-      const saveData = await prepareSaveData({ elements, sections, templateData, templateVisibility, templateListed, viewport, errorHandling, checkpoints })
+      const saveData = await prepareSaveData({ elements, sections, templateData, viewport, errorHandling, checkpoints })
       saveData.name = `${saveData.name} (Copy)`
 
       const result = await templatesAPI.createTemplate(saveData)

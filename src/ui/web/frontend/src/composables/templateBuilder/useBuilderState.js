@@ -35,11 +35,6 @@ export function useBuilderState() {
   const templateId = storeComputed(builderStore, 'templateId')
   const templateDescription = storeComputed(builderStore, 'templateDescription')
   const existingTemplateId = storeComputed(builderStore, 'existingTemplateId')
-  const templateCreatorId = storeComputed(builderStore, 'templateCreatorId')
-  const templateMutability = storeComputed(builderStore, 'templateMutability')
-  const templateVisibility = storeComputed(builderStore, 'templateVisibility')
-  const templateListed = storeComputed(builderStore, 'templateListed')
-  const isWorkflowVisible = storeComputed(builderStore, 'isWorkflowVisible')
 
   // Editing state
   const hasUnsavedChanges = storeComputed(builderStore, 'hasUnsavedChanges')
@@ -133,14 +128,6 @@ export function useBuilderState() {
     return column.components[componentIndex] || null
   })
 
-  // Read-only check
-  const isReadOnly = computed(() => {
-    // Template is read-only if user is not the creator
-    // and template mutability is 'immutable'
-    return templateMutability.value === 'immutable' &&
-           templateCreatorId.value !== builderStore.currentUserId
-  })
-
   return {
     // Store reference
     builderStore,
@@ -154,11 +141,6 @@ export function useBuilderState() {
     templateId,
     templateDescription,
     existingTemplateId,
-    templateCreatorId,
-    templateMutability,
-    templateVisibility,
-    templateListed,
-    isWorkflowVisible,
 
     // Editing state
     hasUnsavedChanges,
@@ -189,7 +171,6 @@ export function useBuilderState() {
     // Computed
     templateData,
     selectedComponentObj,
-    isReadOnly,
   }
 }
 

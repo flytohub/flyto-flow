@@ -1,6 +1,6 @@
 <template>
   <div class="node-icon-wrapper" :class="{ 'node-icon-wrapper--compact': compact }" :style="{ background: gradient }">
-    <!-- Custom URL icon -->
+    <!-- Embedded image icon -->
     <img
       v-if="isUrlIcon"
       :src="icon.value || icon.url"
@@ -25,7 +25,8 @@ const props = defineProps({
 })
 
 const isUrlIcon = computed(() => {
-  return props.icon && typeof props.icon === 'object' && props.icon.type === 'url'
+  const value = props.icon?.value || props.icon?.url || ''
+  return props.icon && typeof props.icon === 'object' && props.icon.type === 'url' && value.startsWith('data:image/')
 })
 
 const iconError = ref(false)

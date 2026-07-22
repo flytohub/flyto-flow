@@ -17,7 +17,7 @@ class ExecutionInfo:
     Execution state container.
 
     Holds all information about a workflow execution including:
-    - Identifiers (execution_id, workflow_id, user_id)
+    - Identifiers (execution_id, workflow_id, workspace_id)
     - Status and timing (status, start_time, end_time)
     - Progress (current_step, total_steps)
     - Results (result, error, error_step_id)
@@ -29,7 +29,7 @@ class ExecutionInfo:
             execution_id="abc-123",
             workflow_id="workflow-456",
             workflow_name="My Workflow",
-            user_id="user-789",
+            workspace_id="user-789",
         )
         info.status = ExecutionStatus.RUNNING
         info.start_time = datetime.now(timezone.utc)
@@ -40,7 +40,7 @@ class ExecutionInfo:
         execution_id: str,
         workflow_id: str,
         workflow_name: str = "",
-        user_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         provider_execution_id: Optional[str] = None,
         input_params: Optional[Dict[str, Any]] = None,
     ):
@@ -49,8 +49,8 @@ class ExecutionInfo:
         self.execution_id = execution_id
         self.workflow_id = workflow_id
         self.workflow_name = workflow_name
-        self.user_id = user_id
-        self.provider_execution_id = provider_execution_id  # ID in data provider (Firebase)
+        self.workspace_id = workspace_id
+        self.provider_execution_id = provider_execution_id  # Local persistence record ID
         self.sqlite_execution_id = execution_id  # Same as execution_id for SQLite
         self.input_params = input_params or {}
 
@@ -115,7 +115,7 @@ class ExecutionInfo:
             "execution_id": self.execution_id,
             "workflow_id": self.workflow_id,
             "workflow_name": self.workflow_name,
-            "user_id": self.user_id,
+            "workspace_id": self.workspace_id,
             "status": self.status.value,
             "start_time": self.start_time.isoformat() if self.start_time else None,
             "end_time": self.end_time.isoformat() if self.end_time else None,

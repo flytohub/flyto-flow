@@ -1,4 +1,4 @@
-name: CE Verify
+name: Flyto2 Flow Verify
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install packaging
-      - run: python scripts/audit-cloud-ce-boundary.py . --release-tree
+      - run: python scripts/check-ce-purity.py .
       - run: python scripts/audit_ce_dependencies.py .
 
   backend:
@@ -57,7 +57,6 @@ jobs:
       - run: python -m pytest -q tests/ce
         env:
           DEPLOYMENT_MODE: offline
-          FLYTO_EDITION_PROFILE: cloud_ce
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ce-compliance
@@ -78,6 +77,7 @@ jobs:
           cache-dependency-path: src/ui/web/frontend/package-lock.json
       - run: npm --prefix src/ui/web/frontend ci
       - run: npm --prefix src/ui/web/frontend audit --audit-level=high
+      - run: npm --prefix src/ui/web/frontend run check:i18n-static
       - run: npm --prefix src/ui/web/frontend run test:run
       - run: npm --prefix src/ui/web/frontend run build
 
@@ -92,4 +92,4 @@ jobs:
           context: .
           file: install/Dockerfile.ce
           push: false
-          tags: flyto-cloud-ce:test
+          tags: flyto2-flow:test

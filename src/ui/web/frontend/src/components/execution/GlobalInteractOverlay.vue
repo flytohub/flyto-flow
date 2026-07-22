@@ -8,7 +8,6 @@
     v-if="showDialog"
     :is-open="showDialog"
     :breakpoint="currentBreakpoint"
-    :user-id="userId"
     @close="handleClose"
     @approve="handleApprove"
     @reject="handleReject"
@@ -20,11 +19,9 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { post } from '@/api/client'
 import BrowserInteractDialog from './BrowserInteractDialog.vue'
 import { useGlobalInteract } from '../../composables/useBreakpointWS'
-import { useUserStore } from '../../stores/userStore'
 
 const { pendingInteract, clearInteract } = useGlobalInteract()
 
-const userId = ref('current_user')
 const dismissed = ref(false)
 
 // Also listen for the custom event (fallback for non-WS mode)
@@ -38,15 +35,6 @@ function onInteractEvent(e) {
 onMounted(() => {
   window.addEventListener('flyto-interact-breakpoint', onInteractEvent)
 
-  // Try to get userId from userStore
-  try {
-    const userStore = useUserStore()
-    if (userStore.user?.uid) {
-      userId.value = userStore.user.uid
-    }
-  } catch (e) {
-    // userStore not available
-  }
 })
 
 onUnmounted(() => {
@@ -95,7 +83,7 @@ async function handleReject(data) {
   try {
     const result = await post(`/breakpoints/${bpId}/respond`, {
       approved: false,
-      comment: data.comment || 'Skipped by user',
+      comment: data.comment || 'Skipped locally',
     })
 
     if (result && !result.error) {

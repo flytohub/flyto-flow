@@ -32,7 +32,6 @@ from services.template.schemas.canonical_module import CanonicalModule, SourceTy
 from services.normalizers.atomic import normalize_atomic
 from services.normalizers.composite import normalize_composite
 from services.normalizers.template import normalize_template
-from services.normalizers.huggingface import normalize_huggingface
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +64,7 @@ class ModuleNormalizerService:
 
         Args:
             raw: Raw module data from source
-            source: Source type (atomic, composite, plugin, template, huggingface)
+            source: Source type (atomic, composite, plugin, template)
             source_id: Optional source identifier (e.g., template_id, plugin_id)
             lang: Language code for i18n (default "en")
             level: Module level for atomic modules (default "atomic")
@@ -96,10 +95,7 @@ class ModuleNormalizerService:
             if not template_id:
                 raise ValueError("Template source requires source_id or 'id' in raw data")
             return normalize_template(raw, template_id, library_id=library_id)
-        elif source == "huggingface":
-            return normalize_huggingface(raw)
-        else:
-            raise ValueError(f"Unknown source type: {source}")
+        raise ValueError(f"Unknown source type: {source}")
 
     @staticmethod
     def normalize_batch(
@@ -175,7 +171,7 @@ class ModuleNormalizerService:
         for item in items:
             try:
                 source = item.get('source', 'atomic')
-                if source not in ('atomic', 'composite', 'plugin', 'template', 'huggingface'):
+                if source not in ('atomic', 'composite', 'plugin', 'template'):
                     logger.warning(f"Unknown source type '{source}', defaulting to atomic")
                     source = 'atomic'
 

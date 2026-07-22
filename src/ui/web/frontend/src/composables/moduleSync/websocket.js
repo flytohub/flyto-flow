@@ -83,7 +83,7 @@ export function createWebSocketManager(options) {
       return
     }
 
-    // Resolve at connect time so the desktop sidecar's dynamic port is picked up.
+    // Resolve at connect time so the current local origin is used.
     const wsUrl = `${getWsUrl()}/ws/modules`
 
     try {

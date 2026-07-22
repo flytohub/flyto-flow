@@ -34,15 +34,14 @@ export function createExecutionControls(deps) {
    * Run the workflow
    */
   async function runWorkflow(options) {
-    const { elements, templateId, templateName, uiInputValues, checkpoints, isWorkflowLocked } = options
+    const { elements, templateId, templateName, uiInputValues, checkpoints } = options
 
     const result = await executeWorkflow({
       elements: elements.value,
       templateId: templateId.value,
       templateName: templateName.value,
       uiInputValues,
-      checkpoints,
-      isWorkflowLocked
+      checkpoints
     })
 
     if (!result.ok) {

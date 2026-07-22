@@ -95,9 +95,9 @@ const statusConfigs = computed(() => ({
     loading: { classes: 'bg-purple-500/20 text-purple-400 border border-purple-500/30', icon: Loader2 }
   },
   admin: {
-    active: { classes: 'bg-green-500 text-white', label: t('admin.templates.status.active', 'Active') },
-    hidden: { classes: 'bg-yellow-500 text-white', label: t('admin.templates.status.hidden', 'Hidden') },
-    banned: { classes: 'bg-red-500 text-white', label: t('admin.templates.status.banned', 'Banned') }
+    active: { classes: 'bg-green-500 text-white', label: t('status.active', 'Active') },
+    hidden: { classes: 'bg-yellow-500 text-white', label: t('status.hidden', 'Hidden') },
+    banned: { classes: 'bg-red-500 text-white', label: t('status.blocked', 'Blocked') }
   },
   trace: {
     completed: { classes: 'bg-green-900/30 text-green-400 border border-green-900/50', icon: CheckCircle, label: t('status.completed', 'Completed') },

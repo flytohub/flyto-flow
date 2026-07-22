@@ -1,12 +1,4 @@
-/**
- * Local translation overrides
- *
- * These are merged with CDN translations.
- * Use ONLY for temporary overrides before CDN is updated.
- *
- * All translations should live in flyto-i18n repo.
- * After CDN is updated, remove entries from here.
- */
+/** Optional overrides layered onto the translation files bundled in this build. */
 
 export const localOverrides = {
   en: {},

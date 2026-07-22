@@ -1,74 +1,28 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@/api/client', () => ({
-  get: vi.fn(),
-  post: vi.fn()
-}))
+vi.mock('@/api/client', () => ({ get: vi.fn() }))
 
-import { get, post } from '@/api/client'
-import { getCapabilities, reloadCapabilities } from '@/api/capabilities'
+import { get } from '@/api/client'
+import { getCapabilities } from '@/api/capabilities'
 
-describe('Capabilities API', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
+describe('local capabilities API', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('loads execution capabilities without an identity handshake', async () => {
+    get.mockResolvedValue({ ok: true, capabilities: ['execution.evidence'] })
+    const result = await getCapabilities()
+    expect(get).toHaveBeenCalledWith('/capabilities')
+    expect(result.capabilities).toEqual(['execution.evidence'])
   })
 
-  describe('getCapabilities()', () => {
-    it('calls GET /capabilities', async () => {
-      get.mockResolvedValue({
-        deploymentMode: 'cloud',
-        licenseType: 'subscription',
-        isLicensed: true,
-        capabilities: ['auth.firebase', 'marketplace'],
-        features: { marketplace: true, billing: true }
-      })
-
-      const result = await getCapabilities()
-
-      expect(get).toHaveBeenCalledWith('/capabilities')
-      expect(result.deploymentMode).toBe('cloud')
-      expect(result.capabilities).toContain('marketplace')
-    })
-
-    it('returns error object on failure', async () => {
-      const error = new Error('Server down')
-      error.userMessage = 'Service unavailable'
-      get.mockRejectedValue(error)
-
-      const result = await getCapabilities()
-
-      expect(result.ok).toBe(false)
-      expect(result.error).toBe('Service unavailable')
-    })
-
-    it('falls back to error.message if no userMessage', async () => {
-      get.mockRejectedValue(new Error('Network Error'))
-
-      const result = await getCapabilities()
-
-      expect(result.error).toBe('Network Error')
-    })
-  })
-
-  describe('reloadCapabilities()', () => {
-    it('calls POST /capabilities/reload', async () => {
-      post.mockResolvedValue({
-        deploymentMode: 'enterprise',
-        isLicensed: true
-      })
-
-      const result = await reloadCapabilities()
-
-      expect(post).toHaveBeenCalledWith('/capabilities/reload')
-      expect(result.isLicensed).toBe(true)
-    })
-
-    it('returns error object on failure', async () => {
-      post.mockRejectedValue(new Error('Forbidden'))
-
-      const result = await reloadCapabilities()
-
-      expect(result.ok).toBe(false)
+  it('returns a stable local error envelope', async () => {
+    const error = new Error('Backend unavailable')
+    error.userMessage = 'Start Flyto2 Flow'
+    get.mockRejectedValue(error)
+    await expect(getCapabilities()).resolves.toEqual({
+      ok: false,
+      capabilities: [],
+      error: 'Start Flyto2 Flow'
     })
   })
 })

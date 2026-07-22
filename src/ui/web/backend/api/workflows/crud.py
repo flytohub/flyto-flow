@@ -8,7 +8,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from gateway.auth import get_current_active_user
+from gateway.local_context import get_local_principal
 from gateway.providers.hub import get_data_provider
 from gateway.providers.data import (
     WorkflowCreateDTO,
@@ -24,8 +24,6 @@ from api.workflows.models import (
     WorkflowCreate,
     WorkflowUpdate,
 )
-from services.audit.crud_logger import log_crud
-
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -66,48 +64,8 @@ def _validate_workflow_graph_shape(nodes, edges) -> None:
         )
 
 
-async def _enforce_max_workflows(current_user, provider) -> None:
-    """Check if user has reached their plan's max workflow limit.
-
-    Raises HTTPException 403 if the limit is reached.
-    Does nothing if the plan has no workflow limit (None = unlimited).
-    """
-    try:
-        from services.plan_config import get_max_workflows
-
-        plan = (getattr(current_user, "subscription_plan", None) or "free").lower()
-        max_workflows = await get_max_workflows(plan)
-
-        # None means unlimited
-        if max_workflows is None:
-            return
-
-        # Count user's existing workflows (first page with total count)
-        result = await provider.workflows.list_user_workflows(
-            user_id=current_user.id,
-            page=1,
-            page_size=1,  # We only need the total count
-        )
-
-        if result.total >= max_workflows:
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "error": "max_workflows_reached",
-                    "current": result.total,
-                    "limit": max_workflows,
-                    "plan": plan,
-                    "message": (
-                        f"Workflow limit reached ({result.total}/{max_workflows}). "
-                        f"Upgrade your plan to create more workflows."
-                    ),
-                },
-            )
-    except HTTPException:
-        raise
-    except Exception as e:
-        # Don't block workflow creation if the check fails
-        _logger.warning(f"Max workflows check failed (allowing creation): {e}")
+async def _enforce_max_workflows(workspace_context, provider) -> None:
+    del workspace_context, provider
 
 
 def _build_workflow_dict(
@@ -154,7 +112,7 @@ def _build_workflow_dict(
     return result
 
 
-# Combined router (for cloud + dev mode)
+# Combined local workflow router.
 # Import conversion_router from its dedicated module
 from api.workflows.conversion_routes import conversion_router  # noqa: E402
 
@@ -169,16 +127,16 @@ async def list_workflows(
     page_size: int = Query(20, ge=1, le=100, description="Items per page (max 100)"),
     enabled: Optional[bool] = Query(None, description="Filter by enabled status"),
     tags: Optional[str] = Query(None, description="Comma-separated tags to filter by"),
-    current_user=Depends(get_current_active_user)
+    workspace_context=Depends(get_local_principal)
 ):
     """
-    List all workflows for the current user.
+    List all workflows for the local workspace.
 
     S-Grade: Supports server-side enabled/tag filtering via query params.
     """
     provider = get_data_provider()
-    result = await provider.workflows.list_user_workflows(
-        user_id=current_user.id,
+    result = await provider.workflows.list_workspace_workflows(
+        workspace_id=workspace_context.id,
         page=page,
         page_size=page_size,
         enabled=enabled,
@@ -217,13 +175,13 @@ async def list_workflows(
 @crud_router.post("/")
 async def create_workflow(
     workflow_data: WorkflowCreate,
-    current_user=Depends(get_current_active_user)
+    workspace_context=Depends(get_local_principal)
 ):
     """Create a new workflow"""
     provider = get_data_provider()
 
-    # Enforce max workflows limit based on user's plan
-    await _enforce_max_workflows(current_user, provider)
+    # Enforce max workflows limit based on local workspace limits
+    await _enforce_max_workflows(workspace_context, provider)
 
     _validate_workflow_graph_shape(workflow_data.nodes, workflow_data.edges)
 
@@ -291,11 +249,9 @@ async def create_workflow(
     )
 
     workflow = await provider.workflows.create_workflow(
-        user_id=current_user.id,
+        workspace_id=workspace_context.id,
         data=create_dto,
     )
-
-    log_crud("create", "workflow", workflow.id, {"id": current_user.id})
 
     return {"ok": True, "workflow": workflow.dict()}
 
@@ -303,13 +259,13 @@ async def create_workflow(
 @crud_router.get("/{workflow_id}")
 async def get_workflow(
     workflow_id: str,
-    current_user=Depends(get_current_active_user)
+    workspace_context=Depends(get_local_principal)
 ):
     """Get workflow details"""
     provider = get_data_provider()
 
     workflow = await provider.workflows.get_workflow(
-        user_id=current_user.id,
+        workspace_id=workspace_context.id,
         workflow_id=workflow_id,
     )
 
@@ -323,7 +279,7 @@ async def get_workflow(
 async def update_workflow(
     workflow_id: str,
     workflow_data: WorkflowUpdate,
-    current_user=Depends(get_current_active_user)
+    workspace_context=Depends(get_local_principal)
 ):
     """Update workflow"""
     provider = get_data_provider()
@@ -391,7 +347,7 @@ async def update_workflow(
     )
 
     result = await provider.workflows.update_workflow(
-        user_id=current_user.id,
+        workspace_id=workspace_context.id,
         workflow_id=workflow_id,
         data=update_dto,
     )
@@ -399,28 +355,24 @@ async def update_workflow(
     if not result:
         raise HTTPException(status_code=404, detail=ErrorMessages.WORKFLOW_NOT_FOUND)
 
-    log_crud("update", "workflow", workflow_id, {"id": current_user.id})
-
     return {"ok": True, "message": "Update successful"}
 
 
 @crud_router.delete("/{workflow_id}")
 async def delete_workflow(
     workflow_id: str,
-    current_user=Depends(get_current_active_user)
+    workspace_context=Depends(get_local_principal)
 ):
     """Delete workflow"""
     provider = get_data_provider()
 
     deleted = await provider.workflows.delete_workflow(
-        user_id=current_user.id,
+        workspace_id=workspace_context.id,
         workflow_id=workflow_id,
     )
 
     if not deleted:
         raise HTTPException(status_code=404, detail=ErrorMessages.WORKFLOW_NOT_FOUND)
-
-    log_crud("delete", "workflow", workflow_id, {"id": current_user.id})
 
     return {"ok": True, "message": "Delete successful"}
 
@@ -430,7 +382,7 @@ async def get_workflow_history(
     workflow_id: str,
     page: int = Query(1, ge=1, le=1000),
     page_size: int = Query(20, ge=1, le=100),
-    current_user=Depends(get_current_active_user)
+    workspace_context=Depends(get_local_principal)
 ):
     """
     Get execution history for a workflow.
@@ -439,9 +391,9 @@ async def get_workflow_history(
     """
     provider = get_data_provider()
 
-    # Verify workflow exists and belongs to user
+    # Verify workflow exists and belongs to the local workspace
     workflow = await provider.workflows.get_workflow(
-        user_id=current_user.id,
+        workspace_id=workspace_context.id,
         workflow_id=workflow_id,
     )
 
@@ -452,7 +404,7 @@ async def get_workflow_history(
     try:
         history = await provider.executions.list_executions(
             workflow_id=workflow_id,
-            user_id=current_user.id,
+            workspace_id=workspace_context.id,
             page=page,
             page_size=page_size,
         )

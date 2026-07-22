@@ -38,43 +38,19 @@
       <Plus :size="16" />
     </button>
 
-    <!-- Test Trigger button (webhook only) -->
-    <button
-      v-if="isWebhook && selected"
-      @click.stop="showTestPanel = true"
-      class="test-trigger-btn"
-      :title="$t('triggers.webhookTest', 'Test Webhook')"
-    >
-      <Play :size="12" />
-    </button>
-
     <!-- Category badge -->
     <div class="category-badge">
       {{ $t('node.trigger.badge', 'TRIGGER') }}
     </div>
 
-    <!-- Webhook Test Panel (floating) -->
-    <Teleport to="body">
-      <div
-        v-if="showTestPanel && data?.linkedWebhookId"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
-        @click.self="showTestPanel = false"
-      >
-        <WebhookTestPanel
-          :webhook-id="data.linkedWebhookId"
-          @close="showTestPanel = false"
-        />
-      </div>
-    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
-import { Plus, X, Zap, Clock, Webhook, Hand, Radio, Play } from 'lucide-vue-next'
+import { Plus, X, Zap, Clock, Hand, Radio } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
-import WebhookTestPanel from '@/components/triggers/WebhookTestPanel.vue'
 
 const { t } = useI18n()
 
@@ -94,19 +70,11 @@ const props = defineProps({
 
 defineEmits(['add-node', 'delete-node'])
 
-const showTestPanel = ref(false)
-
-const isWebhook = computed(() => {
-  const type = props.data?.params?.trigger_type || props.triggerType
-  return type === 'webhook'
-})
-
 // Trigger type to icon mapping
 const triggerIcon = computed(() => {
   const type = props.data?.params?.trigger_type || props.triggerType
   const icons = {
     manual: Hand,
-    webhook: Webhook,
     schedule: Clock,
     event: Radio
   }

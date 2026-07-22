@@ -10,16 +10,12 @@ describe('builder metadata data boundary', () => {
     actions.loadTemplate({
       id: 'tpl-1',
       name: 'Imported',
-      ui: { sections: 'bad' },
-      listed: false,
-      is_workflow_visible: false
+      ui: { sections: 'bad' }
     })
 
     expect(state.existingTemplateId.value).toBe('tpl-1')
     expect(state.templateName.value).toBe('Imported')
     expect(state.sections.value).toEqual([])
-    expect(state.templateListed.value).toBe(false)
-    expect(state.isWorkflowVisible.value).toBe(false)
     expect(state.loadError.value).toBeNull()
   })
 

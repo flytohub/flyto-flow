@@ -139,41 +139,6 @@ def extract_permissions_from_steps(steps: List[Dict[str, Any]]) -> Dict[str, Set
     }
 
 
-def calculate_cost(steps: List[Dict[str, Any]], permissions: Set[str]) -> Dict[str, Any]:
-    """
-    Calculate execution cost based on steps and permissions.
-
-    Args:
-        steps: List of template steps
-        permissions: Set of required permissions
-
-    Returns:
-        Cost info dict with points and costClass
-    """
-    base_cost = len(steps)  # 1 point per step
-
-    # Add extra cost for expensive operations
-    if "browser" in permissions:
-        base_cost += 5
-    if "ai" in permissions:
-        base_cost += 10
-    if "messaging" in permissions:
-        base_cost += 2
-
-    # Determine cost class
-    if base_cost <= 5:
-        cost_class = "free"
-    elif base_cost <= 20:
-        cost_class = "standard"
-    else:
-        cost_class = "premium"
-
-    return {
-        "points": base_cost,
-        "costClass": cost_class,
-    }
-
-
 def _convert_input_port(p: dict, template_id: str) -> dict:
     """Convert a core input port dict to camelCase frontend format."""
     port = {
@@ -273,13 +238,12 @@ def normalize_template(raw: Dict[str, Any], template_id: str, library_id: str = 
     """
     Convert user template data to CanonicalModule format.
 
-    Input comes from: catalog.py -> get_user_templates_as_modules()
+    Input comes from: catalog.py -> get_workspace_templates_as_modules()
 
     Args:
-        raw: Raw template data from Firestore
+        raw: Workflow definition from the local CE workspace
         template_id: Template ID (always the actual template ID)
-        library_id: Library entry ID (purchase_id/fork_id/template_id).
-                    Used for sourceData.libraryId. Defaults to template_id.
+        library_id: Local workflow ID. Defaults to template_id.
 
     Returns:
         CanonicalModule with all fields populated
@@ -364,9 +328,6 @@ def normalize_template(raw: Dict[str, Any], template_id: str, library_id: str = 
     provides = extracted['provides']
     consumes = extracted['consumes']
 
-    # Calculate cost
-    cost = calculate_cost(steps, permissions)
-
     # Source data for template
     source_data = {
         "templateId": template_id,
@@ -374,7 +335,6 @@ def normalize_template(raw: Dict[str, Any], template_id: str, library_id: str = 
         "steps": steps,
         "stepsCount": len(steps),
         "canStartWorkflow": True,
-        "cost": cost,
         "sideEffects": list(side_effects),
         "provides": list(provides),
         "consumes": list(consumes),
@@ -448,10 +408,7 @@ def normalize_template(raw: Dict[str, Any], template_id: str, library_id: str = 
         # Metadata
         version=raw.get("version", "1.0.0"),
         stability="stable",
-        author=get_value_with_aliases(raw, 'author_name', 'creator_name'),
         deprecated=False,
-        isVerified=raw.get("is_verified", False),
-        isFeatured=raw.get("is_featured", False),
 
         # Source data
         sourceData=source_data,

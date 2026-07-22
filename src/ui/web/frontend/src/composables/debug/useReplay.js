@@ -6,7 +6,6 @@
 import { ref, computed, onUnmounted } from 'vue'
 import { replayAPI } from '@/api/replay'
 import i18n from '@/i18n'
-import { telemetry } from '@/services/telemetry'
 
 export function useReplay(options = {}) {
   const { onError, onSuccess, pollInterval = 1000 } = options
@@ -49,12 +48,6 @@ export function useReplay(options = {}) {
     error.value = null
     replayStatus.value = 'running'
 
-    // Track replay start
-    telemetry.track('replay.start', {
-      execution_id: executionId,
-      from_step: config.from_step_id
-    })
-
     try {
       const data = await replayAPI.startReplay(executionId, config)
       if (data.ok || data.replayId) {
@@ -68,12 +61,6 @@ export function useReplay(options = {}) {
       error.value = err.message || err.userMessage || 'Replay failed'
       replayStatus.value = 'failed'
 
-      // Track replay error
-      telemetry.track('replay.error', {
-        execution_id: executionId,
-        error: error.value
-      })
-
       onError?.(err)
       return { ok: false, error: error.value }
     } finally {
@@ -84,13 +71,6 @@ export function useReplay(options = {}) {
   async function replayStep(executionId, stepId, contextOverrides = {}) {
     isLoading.value = true
     error.value = null
-
-    // Track step replay
-    telemetry.track('replay.step', {
-      execution_id: executionId,
-      step_id: stepId,
-      has_overrides: Object.keys(contextOverrides).length > 0
-    })
 
     try {
       const data = await replayAPI.replayStep(executionId, stepId, contextOverrides)

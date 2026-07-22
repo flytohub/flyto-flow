@@ -5,51 +5,24 @@ Evidence-based replay manager and helper functions.
 """
 import json
 import logging
-import os
 import yaml
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from local.storage_paths import evidence_path, runs_path
+
 logger = logging.getLogger(__name__)
 
 
 def get_evidence_path() -> Path:
-    """Get evidence base path"""
-    custom_path = os.getenv("FLYTO_EVIDENCE_PATH")
-    if custom_path:
-        return Path(custom_path)
-
-    # Find project root by looking for flyto-cloud directory name
-    current = Path(__file__).resolve()
-    for _ in range(10):
-        current = current.parent
-        if current.name == "flyto-cloud":
-            evidence_dir = current / "evidence"
-            if evidence_dir.exists():
-                return evidence_dir
-            break
-
-    return Path("./evidence")
+    """Get the local evidence directory."""
+    return evidence_path()
 
 
 def get_runs_path() -> Path:
-    """Get runs directory base path"""
-    custom_path = os.getenv("FLYTO_RUNS_PATH")
-    if custom_path:
-        return Path(custom_path)
-
-    # Find project root by looking for flyto-cloud directory name
-    current = Path(__file__).resolve()
-    for _ in range(10):
-        current = current.parent
-        if current.name == "flyto-cloud":
-            runs_dir = current / "runs"
-            if runs_dir.exists():
-                return runs_dir
-            break
-
-    return Path("./runs")
+    """Get the local run-artifact directory."""
+    return runs_path()
 
 
 class EvidenceReplayManager:

@@ -35,9 +35,6 @@
   <BrowserPanel
     :is-open="showBrowserPanel"
     :execution-id="executionId"
-    :user-id="userId"
-    :user-name="userName"
-    :cloud-mode="cloudMode"
     @close="$emit('update:showBrowserPanel', false)"
     @browser-closed="$emit('browser-closed')"
   />
@@ -94,33 +91,6 @@
     @stop-execution="$emit('stop-execution', $event)"
   />
 
-  <!-- Collaboration Panel (real-time multi-user editing) -->
-  <CollaborationPanel
-    :is-open="showCollaborationPanel"
-    :session-id="collaborationSessionId"
-    :participants="collaborationParticipants"
-    :current-user-id="currentUserId"
-    :is-live="collaborationIsConnected"
-    :is-connecting="collaborationIsConnecting"
-    :connection-error="collaborationError"
-    :is-owner="collaborationIsOwner"
-    :quota-info="collaborationQuotaInfo"
-    :chat-messages="collaborationChatMessages"
-    @close="$emit('update:showCollaborationPanel', false)"
-    @invite="$emit('show-invite-modal')"
-    @send-chat="$emit('send-chat', $event)"
-    @terminate="$emit('terminate-collaboration')"
-  />
-
-  <!-- Invite Collaborator Modal -->
-  <InviteCollaboratorModal
-    :show="showInviteModal"
-    :workflow-id="existingTemplateId"
-    :participants="collaborationParticipants"
-    :is-pro="isPro"
-    @close="$emit('update:showInviteModal', false)"
-    @upgrade="$emit('show-upgrade-from-invite')"
-  />
 </template>
 
 <script setup>
@@ -134,8 +104,6 @@ const BrowserPanel = defineAsyncComponent(() => import('../execution/BrowserPane
 const ExecutionTimeline = defineAsyncComponent(() => import('../execution/ExecutionTimeline.vue'))
 const SettingsPanel = defineAsyncComponent(() => import('../templateBuilder/SettingsPanel.vue'))
 const DebugPanelSection = defineAsyncComponent(() => import('../templateBuilder/DebugPanelSection.vue'))
-const CollaborationPanel = defineAsyncComponent(() => import('../collaboration/CollaborationPanel.vue'))
-const InviteCollaboratorModal = defineAsyncComponent(() => import('../collaboration/InviteCollaboratorModal.vue'))
 
 const props = defineProps({
   // Resume panel
@@ -150,9 +118,6 @@ const props = defineProps({
   // Browser panel
   showBrowserPanel: { type: Boolean, default: false },
   executionId: { type: String, default: '' },
-  userId: { type: String, default: '' },
-  userName: { type: String, default: 'Anonymous' },
-  cloudMode: { type: Boolean, default: false },
   // Timeline
   activeDebugPanel: { type: String, default: null },
   timelineNodes: { type: Array, default: () => [] },
@@ -173,19 +138,6 @@ const props = defineProps({
   usedModules: { type: Array, default: () => [] },
   executionHistory: { type: Array, default: () => [] },
   isLoadingHistory: { type: Boolean, default: false },
-  // Collaboration
-  showCollaborationPanel: { type: Boolean, default: false },
-  showInviteModal: { type: Boolean, default: false },
-  collaborationSessionId: { type: String, default: '' },
-  collaborationParticipants: { type: Array, default: () => [] },
-  currentUserId: { type: String, default: null },
-  collaborationIsConnected: { type: Boolean, default: false },
-  collaborationIsConnecting: { type: Boolean, default: false },
-  collaborationError: { type: String, default: null },
-  collaborationIsOwner: { type: Boolean, default: false },
-  collaborationQuotaInfo: { type: Object, default: null },
-  collaborationChatMessages: { type: Array, default: () => [] },
-  isPro: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -198,8 +150,6 @@ const emit = defineEmits([
   'update:errorHandling', 'update:screenshotMode',
   'lineage-node-select', 'replay-started', 'tests-completed',
   'version-lock-changed', 'select-execution', 'replay-execution', 'stop-execution',
-  'update:showCollaborationPanel', 'show-invite-modal', 'send-chat', 'terminate-collaboration',
-  'update:showInviteModal', 'show-upgrade-from-invite',
 ])
 
 // v-model proxies for SettingsPanel

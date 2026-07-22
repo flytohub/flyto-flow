@@ -39,18 +39,14 @@ async def get_module_version() -> Dict[str, Any]:
 @router.post("/reload")
 async def reload_modules(
     force: bool = Query(default=False, description="Force reload even within rate limit"),
-    upgrade: bool = Query(default=False, description="Also upgrade via pip from PyPI")
 ) -> Dict[str, Any]:
     """
-    Hot reload modules from pip-installed flyto-core.
+    Refresh modules from the flyto-core version already installed locally.
 
-    Use this after:
-    - /api/core/update (pip upgrade from PyPI)
-    - /api/core/upload (.whl upload)
+    Use this after importing a wheel through ``/api/core/upload``.
 
     Query params:
     - force: Skip rate limiting
-    - upgrade: Also run pip upgrade before reload
     """
     try:
         from services.infra.module_reloader import get_module_reloader
@@ -64,10 +60,7 @@ async def reload_modules(
 
         reloader.add_listener(on_reload_complete)
 
-        if upgrade:
-            result = await reloader.upgrade_and_reload()
-        else:
-            result = await reloader.reload(force=force)
+        result = await reloader.reload(force=force)
 
         reloader.remove_listener(on_reload_complete)
 
@@ -77,7 +70,6 @@ async def reload_modules(
                 "version": result.get("version"),
                 "modules": result.get("modules"),
                 "timestamp": result.get("timestamp"),
-                "pip": result.get("pip")
             }
         else:
             raise HTTPException(status_code=500, detail=result.get("error", "Reload failed"))

@@ -175,48 +175,6 @@ export function normalizeWorkflowPayload(workflow) {
   return Object.keys(raw).length > 0 ? raw : null
 }
 
-export function normalizeMyTemplatesResponse(result, options = {}) {
-  const normalized = normalizeListEnvelope(result, ['templates', 'items'], options)
-  const raw = asObject(result)
-  return {
-    ...normalized,
-    templates: normalized.items,
-    draftCount: asNonNegativeInteger(raw.draftCount ?? raw.draft_count, 0),
-    publishedCount: asNonNegativeInteger(raw.publishedCount ?? raw.published_count, 0)
-  }
-}
-
-export function normalizeFoldersResponse(result) {
-  const raw = asObject(result)
-  const folders = asRecordArray(raw.folders).map(folder => {
-    const parentId = folder.parentId ?? folder.parent_id ?? null
-    const path = asArray(folder.path).filter(item => typeof item === 'string' && item.length > 0)
-    return {
-      ...folder,
-      id: asString(folder.id, ''),
-      name: asString(folder.name, ''),
-      parentId,
-      parent_id: parentId,
-      order: asInteger(folder.order, 0),
-      count: asNonNegativeInteger(folder.count, 0),
-      directCount: asNonNegativeInteger(folder.directCount ?? folder.direct_count, 0),
-      direct_count: asNonNegativeInteger(folder.direct_count ?? folder.directCount, 0),
-      hasChildren: asBoolean(folder.hasChildren ?? folder.has_children, false),
-      has_children: asBoolean(folder.has_children ?? folder.hasChildren, false),
-      path
-    }
-  }).filter(folder => folder.id)
-  return {
-    ok: raw.ok !== false,
-    folders,
-    defaultPosition: asNonNegativeInteger(raw.defaultPosition ?? raw.default_position, 0),
-    defaultCount: asNonNegativeInteger(raw.defaultCount ?? raw.default_count, 0),
-    totalCount: asNonNegativeInteger(raw.totalCount ?? raw.total_count, folders.length),
-    error: asString(raw.error || raw.message, ''),
-    raw
-  }
-}
-
 export function normalizeTemplatePayload(template) {
   const raw = asObject(template)
   return {
@@ -224,11 +182,6 @@ export function normalizeTemplatePayload(template) {
     templateName: asString(raw.templateName || raw.template_name || raw.name, ''),
     templateId: asString(raw.templateId || raw.template_id || raw.id, 'new_template'),
     templateDescription: asString(raw.templateDescription || raw.template_description || raw.description, ''),
-    creatorId: raw.creatorId || raw.creator_id || null,
-    mutability: asString(raw.mutability, 'fork_on_use'),
-    visibility: asString(raw.visibility, 'private'),
-    listed: raw.listed !== false,
-    isWorkflowVisible: raw.isWorkflowVisible !== false && raw.is_workflow_visible !== false,
     sections: asArray(raw.ui?.sections)
   }
 }
@@ -253,48 +206,6 @@ export function normalizeRecordingStopResponse(result) {
   }
 }
 
-export function normalizeCreatorProfile(profile) {
-  const raw = asObject(profile)
-  return Object.keys(raw).length > 0 ? {
-    ...raw,
-    id: asString(raw.id || raw.uid, ''),
-    uid: asString(raw.uid || raw.id, ''),
-    displayName: asString(raw.displayName || raw.display_name || raw.name, ''),
-    email: raw.email || null,
-    avatarUrl: raw.avatarUrl || raw.avatar_url || null,
-    followersCount: asNonNegativeInteger(raw.followersCount ?? raw.followers_count, 0),
-    followingCount: asNonNegativeInteger(raw.followingCount ?? raw.following_count, 0),
-    isFollowing: asBoolean(raw.isFollowing ?? raw.is_following, false),
-    isCreator: asBoolean(raw.isCreator ?? raw.is_creator, false)
-  } : {}
-}
-
-export function normalizeCreatorTemplatesResponse(result, options = {}) {
-  const normalized = normalizeListEnvelope(result, ['templates', 'items'], options)
-  return {
-    ...normalized,
-    templates: normalized.items
-  }
-}
-
-export function normalizePeopleListResponse(result, key, options = {}) {
-  const normalized = normalizeListEnvelope(result, [key, 'items'], options)
-  return {
-    ...normalized,
-    [key]: normalized.items.map(normalizeCreatorProfile)
-  }
-}
-
-export function normalizeRecipeBundlesResponse(result) {
-  const raw = asObject(result)
-  const bundles = asRecordArray(raw.bundles)
-  return {
-    ok: raw.ok !== false,
-    bundles,
-    error: asString(raw.error || raw.message, ''),
-    raw
-  }
-}
 
 export function normalizeWorkflowElements(elements) {
   return asRecordArray(elements).reduce((acc, element) => {

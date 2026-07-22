@@ -17,7 +17,7 @@ def create_step_tracking_hooks(
     execution_id: str,
     runs_directory: Optional[Any],
     execution_info: Optional["ExecutionInfo"] = None,
-    user_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
 ) -> Optional[Any]:
     """
     Create step tracking hooks for execution.
@@ -26,7 +26,7 @@ def create_step_tracking_hooks(
         execution_id: Execution identifier
         runs_directory: Directory for storing run artifacts
         execution_info: ExecutionInfo instance for node state tracking
-        user_id: User ID for points deduction (None = skip deduction)
+        workspace_id: Fixed local workspace identifier for persisted step records
 
     Returns:
         StepTrackingHooks instance or None if creation fails
@@ -40,7 +40,7 @@ def create_step_tracking_hooks(
             runs_directory=runs_directory,
             execution_repo=ExecutionRepository,
             execution_info=execution_info,
-            user_id=user_id,
+            workspace_id=workspace_id,
         )
         logger.debug(f"Created step tracking hooks for {execution_id}")
         return hooks
@@ -347,7 +347,7 @@ def setup_execution_hooks(info: "ExecutionInfo") -> Optional[Any]:
         execution_id=info.execution_id,
         runs_directory=info.runs_directory,
         execution_info=info,
-        user_id=getattr(info, "user_id", None) or info.metadata.get("user_id"),
+        workspace_id=getattr(info, "workspace_id", None) or info.metadata.get("workspace_id"),
     )
     info.step_hooks = step_hooks
 

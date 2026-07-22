@@ -184,7 +184,7 @@ def _process_ui_component(comp: dict) -> tuple:
 def build_params_schema_from_ui(ui: dict) -> dict:
     """
     Build paramsSchema from Template UI sections.
-    Called at save time (create/update) - stored in Firestore.
+    Called at save time and stored in the local CE database.
 
     This is the single source of truth for computing params_schema.
     Handles both snake_case and camelCase field names.
@@ -203,7 +203,7 @@ def build_params_schema_from_ui(ui: dict) -> dict:
     sections = ui.get("sections", []) if ui else []
 
     for section in sections:
-        # Handle both snake_case and camelCase (Firestore uses snake_case)
+        # Handle both snake_case and camelCase workflow formats.
         columns = section.get("columnsData") or section.get("columns_data") or []
 
         for column in columns:
@@ -248,7 +248,7 @@ def build_params_schema_for_template(template: dict) -> dict:
     This replaces the deprecated compute_params_schema_for_template().
 
     Args:
-        template: Template dict from Firestore
+        template: Local workflow-template dictionary
 
     Returns:
         JSON Schema format paramsSchema
@@ -322,7 +322,7 @@ def build_output_schema_from_steps(steps: list) -> dict:
             meta = all_metadata.get(module_id, {})
             output_schema = meta.get("output_schema") or meta.get("outputSchema")
             if output_schema and isinstance(output_schema, dict):
-                # Strip Firestore-reserved keys (__ prefix)
+                # Strip internal keys (__ prefix)
                 return {k: v for k, v in output_schema.items() if not k.startswith("__")}
 
             # Found a real step but no schema — return generic

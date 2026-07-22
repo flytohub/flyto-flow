@@ -23,13 +23,7 @@ const MAX_RECONNECT_DELAY = 30000
 function getWsUrl() {
   const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
   const host = window.location.host
-  // Append sidecar secret if available
-  const secret = document.cookie
-    .split('; ')
-    .find(c => c.startsWith('_flyto_secret='))
-    ?.split('=')[1]
-  const params = secret ? `?_secret=${secret}` : ''
-  return `${proto}//${host}/ws/breakpoints${params}`
+  return `${proto}//${host}/ws/breakpoints`
 }
 
 function connect() {

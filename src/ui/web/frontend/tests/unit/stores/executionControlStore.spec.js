@@ -10,10 +10,6 @@ vi.mock('@/api/executions', () => ({
   resumeFromCheckpoint: vi.fn(),
 }))
 
-vi.mock('@/services/telemetry', () => ({
-  telemetry: { track: vi.fn() }
-}))
-
 import { useExecutionControlStore } from '@/stores/execution/executionControlStoreCore'
 import * as executionAPI from '@/api/executions'
 

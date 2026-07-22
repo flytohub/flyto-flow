@@ -62,7 +62,7 @@ if (publicSourceMapRefs.length > 0) {
 }
 
 const report = {
-  project: 'flyto-cloud',
+  project: 'flyto2-flow',
   surface: 'web-frontend',
   generatedAt: new Date().toISOString(),
   html: path.relative(root, htmlPath),

@@ -7,10 +7,9 @@ REST endpoints for managing workflow variables and credentials.
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from api.auth import get_current_user
 from gateway.storage.variable_repo import (
     Variable,
     VariableRepository,
@@ -28,6 +27,7 @@ from services.credentials import (
 )
 
 logger = logging.getLogger(__name__)
+LOCAL_ACTOR_ID = "local-workspace"
 
 router = APIRouter(prefix="/variables", tags=["variables"])
 
@@ -117,12 +117,11 @@ class CredentialResponse(BaseModel):
 @router.post("/", response_model=VariableResponse)
 async def create_variable(
     request: CreateVariableRequest,
-    current_user: dict = Depends(get_current_user),
 ) -> Dict[str, Any]:
     """
     Create a new variable.
 
-    Variables can be scoped to organization, project, or workflow.
+    Variables can be scoped to this workspace, a project, or a workflow.
     Secrets are stored encrypted.
     """
     try:
@@ -159,7 +158,7 @@ async def create_variable(
         environment=environment,
         is_secret=request.is_secret,
         description=request.description,
-        created_by=current_user["id"],
+        created_by=LOCAL_ACTOR_ID,
     )
 
     try:
@@ -186,7 +185,7 @@ async def list_variables(
     S-Grade: Returns pre-grouped data when group_by is specified.
 
     Args:
-        scope: Filter by scope (organization, project, workflow)
+        scope: Filter by scope (workspace, project, workflow)
         scope_id: Filter by scope ID
         environment: Filter by environment
         group_by: Group results by 'scope' or 'environment'
@@ -232,7 +231,7 @@ async def list_variables(
 def _group_variables_by_scope(variables: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
     """Group variables by scope (backend computation)."""
     grouped = {
-        "organization": [],
+        "workspace": [],
         "project": [],
         "workflow": []
     }
@@ -302,13 +301,13 @@ async def delete_variable(variable_id: str) -> Dict[str, Any]:
 async def resolve_variables(
     workflow_id: str,
     project_id: Optional[str] = None,
-    organization_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
     environment: str = "development",
 ) -> Dict[str, Any]:
     """
     Resolve all variables for a workflow execution.
 
-    Applies inheritance: organization -> project -> workflow.
+    Applies inheritance: workspace -> project -> workflow.
     """
     try:
         env = Environment(environment)
@@ -321,7 +320,7 @@ async def resolve_variables(
     resolved = VariableRepository.resolve_variables(
         workflow_id=workflow_id,
         project_id=project_id,
-        organization_id=organization_id,
+        workspace_id=workspace_id,
         environment=env,
     )
 
@@ -336,7 +335,6 @@ async def resolve_variables(
 @router.post("/credentials", response_model=CredentialResponse)
 async def create_credential(
     request: CreateCredentialRequest,
-    current_user: dict = Depends(get_current_user),
 ) -> Dict[str, Any]:
     """
     Create a new credential (secret).
@@ -374,7 +372,7 @@ async def create_credential(
             scope=scope,
             scope_id=request.scope_id,
             description=request.description,
-            user_id=current_user["id"],
+            workspace_id=LOCAL_ACTOR_ID,
             credential_type=cred_type,
         )
         return credential.to_dict()
@@ -439,7 +437,7 @@ def _group_credentials_by_type(credentials: List[Dict[str, Any]]) -> Dict[str, L
 def _group_credentials_by_scope(credentials: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
     """Group credentials by scope (backend computation)."""
     grouped = {
-        "organization": [],
+        "workspace": [],
         "project": [],
         "workflow": []
     }
@@ -456,7 +454,6 @@ async def reveal_credential(
     request: RevealCredentialRequest,
     scope: str = Query(...),
     scope_id: str = Query(...),
-    current_user: dict = Depends(get_current_user),
 ) -> Dict[str, Any]:
     """
     Reveal a credential value (requires reason for audit).
@@ -475,7 +472,7 @@ async def reveal_credential(
         name=name,
         scope=cred_scope,
         scope_id=scope_id,
-        user_id=current_user["id"],
+        workspace_id=LOCAL_ACTOR_ID,
         reason=request.reason,
     )
 
@@ -493,7 +490,6 @@ async def delete_credential(
     name: str,
     scope: str = Query(...),
     scope_id: str = Query(...),
-    current_user: dict = Depends(get_current_user),
 ) -> Dict[str, Any]:
     """Delete a credential."""
     try:
@@ -508,7 +504,7 @@ async def delete_credential(
         name=name,
         scope=cred_scope,
         scope_id=scope_id,
-        user_id=current_user["id"],
+        workspace_id=LOCAL_ACTOR_ID,
     )
 
     if not success:
@@ -523,7 +519,7 @@ async def delete_credential(
 @router.get("/credentials/audit")
 async def get_credential_audit_log(
     credential_name: Optional[str] = None,
-    user_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
     limit: int = Query(default=100, le=1000),
 ) -> Dict[str, Any]:
     """
@@ -533,7 +529,7 @@ async def get_credential_audit_log(
     """
     records = CredentialService.get_access_log(
         credential_name=credential_name,
-        user_id=user_id,
+        workspace_id=workspace_id,
         limit=limit,
     )
 

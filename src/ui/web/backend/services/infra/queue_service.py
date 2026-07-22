@@ -26,7 +26,7 @@ class QueueService:
         job = await QueueService.enqueue_execution(
             execution_id="exec-123",
             workflow_id="wf-456",
-            user_id="user-789",
+            workspace_id="user-789",
         )
 
         # Cancel an execution
@@ -40,7 +40,7 @@ class QueueService:
     async def enqueue_execution(
         execution_id: str,
         workflow_id: str,
-        user_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         priority: int = 0,
         max_attempts: int = 3,
         timeout_ms: int = 0,
@@ -54,7 +54,7 @@ class QueueService:
         Args:
             execution_id: ID of the execution record
             workflow_id: ID of the workflow being executed
-            user_id: Optional user who triggered the execution
+            workspace_id: Optional workspace who triggered the execution
             priority: Job priority (higher = more urgent)
             max_attempts: Maximum retry attempts on failure
             timeout_ms: Execution timeout (0 = no limit)
@@ -69,7 +69,7 @@ class QueueService:
         job = JobQueueRepository.enqueue(
             execution_id=execution_id,
             workflow_id=workflow_id,
-            user_id=user_id,
+            workspace_id=workspace_id,
             priority=priority,
             max_attempts=max_attempts,
             timeout_ms=timeout_ms,
@@ -199,7 +199,7 @@ class QueueService:
         job = JobQueueRepository.enqueue(
             execution_id=execution_id,
             workflow_id=existing_job.workflow_id,
-            user_id=existing_job.user_id,
+            workspace_id=existing_job.workspace_id,
             priority=existing_job.priority,
             max_attempts=existing_job.max_attempts,
             timeout_ms=existing_job.timeout_ms,

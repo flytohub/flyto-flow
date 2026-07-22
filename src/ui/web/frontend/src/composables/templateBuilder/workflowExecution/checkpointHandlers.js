@@ -5,9 +5,6 @@
  * Single responsibility: Handle checkpoint resume, retry, dismiss.
  */
 
-import { trackSession } from '@/utils/telemetryTracker'
-import { moatTelemetry } from '@/services/moatTelemetry'
-
 /**
  * Create checkpoint handler functions
  * @param {Object} deps - Dependencies
@@ -33,25 +30,10 @@ export function createCheckpointHandlers(deps) {
    * Resume from checkpoint after failure
    */
   async function handleResumeFromCheckpoint(checkpointId) {
-    const failureInfo = controlStore.failureInfo
     const result = await resumeFromCheckpoint(checkpointId)
     if (result.ok) {
-      // Track successful error recovery
-      trackSession.errorRecovery(
-        failureInfo?.message || 'execution_failure',
-        'resume_from_checkpoint',
-        true,
-        1
-      )
       showToast(t('templateBuilder.messages.executionResumed', 'Execution resumed from checkpoint'), 'info')
     } else {
-      // Track failed recovery attempt
-      trackSession.errorRecovery(
-        failureInfo?.message || 'execution_failure',
-        'resume_from_checkpoint',
-        false,
-        1
-      )
       showToast(result.error || t('templateBuilder.messages.resumeFailed', 'Failed to resume'), 'error')
     }
     return result
@@ -61,16 +43,6 @@ export function createCheckpointHandlers(deps) {
    * Retry execution from the beginning
    */
   async function handleRetryExecution() {
-    const failureInfo = controlStore.failureInfo
-
-    // Track retry attempt
-    trackSession.errorRecovery(
-      failureInfo?.message || 'execution_failure',
-      'retry_from_start',
-      true,  // We consider starting a retry as "success" for the recovery action
-      1
-    )
-
     // Reset the control store and run the workflow again
     controlStore.reset()
     await runWorkflow()
@@ -80,20 +52,6 @@ export function createCheckpointHandlers(deps) {
    * Dismiss the resume panel (user abandons recovery)
    */
   function dismissResumePanel() {
-    const failureInfo = controlStore.failureInfo
-
-    // Track error abandon
-    if (failureInfo) {
-      trackSession.errorAbandon(
-        failureInfo.message || 'execution_failure',
-        'dismiss_resume_panel',
-        0  // We don't have session duration here
-      )
-
-      // Track checkpoint abandon with moat telemetry
-      moatTelemetry.trackCheckpointAbandon(null, 'panel_dismissed')
-    }
-
     // Reset the control store to dismiss the panel
     controlStore.reset()
   }

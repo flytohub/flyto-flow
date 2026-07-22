@@ -77,11 +77,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { AlertCircle, RotateCcw, RefreshCw, Zap, Clock, Play, Sparkles } from 'lucide-vue-next'
 import CheckpointList from './CheckpointList.vue'
-import { moatTelemetry } from '@/services/moatTelemetry'
 
 const { t } = useI18n()
 
@@ -124,8 +123,6 @@ const props = defineProps({
 const emit = defineEmits(['resume', 'retry'])
 
 function handleRetryFromStart() {
-  // Track user choosing to retry from start despite checkpoints
-  moatTelemetry.trackRetryFromStart(null, props.checkpoints.length)
   emit('retry')
 }
 
@@ -154,50 +151,14 @@ const resumeOptionsLabel = computed(() => t('execution.resume.options', 'Resume 
 const resumeFromCheckpointLabel = computed(() => t('execution.resume.fromCheckpoint', 'Resume from Checkpoint'))
 const retryFromStartLabel = computed(() => t('execution.resume.retryFromStart', 'Retry from Start'))
 
-// Track when panel is shown
-onMounted(() => {
-  moatTelemetry.trackFailureShow(
-    null, // workflow_id would come from parent
-    props.failureNode,
-    props.checkpoints.length,
-    !!props.recommended
-  )
-})
-
 function handleResume() {
   if (selectedCheckpoint.value) {
-    const checkpoint = props.checkpoints.find(cp => cp.id === selectedCheckpoint.value)
-
-    // Track manual checkpoint selection
-    moatTelemetry.trackManualCheckpointSelect(
-      null, // workflow_id
-      selectedCheckpoint.value,
-      selectedCheckpoint.value === props.recommended
-    )
-
-    // Track time saved if available
-    if (timeSaved.value) {
-      moatTelemetry.trackTimeSaved(null, timeSaved.value, completedStepsCount.value)
-    }
-
     emit('resume', selectedCheckpoint.value)
   }
 }
 
 function handleQuickResume() {
   if (props.recommended) {
-    // Track quick resume
-    moatTelemetry.trackQuickResume(
-      null, // workflow_id
-      props.recommended,
-      completedStepsCount.value
-    )
-
-    // Track time saved
-    if (timeSaved.value) {
-      moatTelemetry.trackTimeSaved(null, timeSaved.value, completedStepsCount.value)
-    }
-
     emit('resume', props.recommended)
   }
 }

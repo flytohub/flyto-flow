@@ -89,7 +89,6 @@ import { useI18n } from 'vue-i18n'
 import { useVariableStore } from '@/stores/variableStore'
 import { useCredentialStore } from '@/stores/credentialStore'
 import { VariableList, VariableEditor, CredentialManager } from '@/components/variables'
-import { telemetry } from '@/services/telemetry'
 
 const { t } = useI18n()
 const variableStore = useVariableStore()
@@ -117,13 +116,7 @@ const filteredVariables = computed(() => {
 // Switch environment with tracking
 function switchEnvironment(env) {
   if (env === currentEnvironment.value) return
-  const oldEnv = currentEnvironment.value
   currentEnvironment.value = env
-  telemetry.track('variable.environment_switch', {
-    old_environment: oldEnv,
-    new_environment: env,
-    variable_count: filteredVariables.value.length,
-  })
 }
 
 // Fetch data on mount

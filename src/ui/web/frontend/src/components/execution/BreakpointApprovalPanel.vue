@@ -191,10 +191,6 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
-  },
-  userId: {
-    type: String,
-    default: 'current_user'
   }
 })
 
@@ -276,7 +272,6 @@ async function handleApprove() {
   try {
     await emit('approve', {
       breakpointId: props.breakpoint.breakpointId,
-      userId: props.userId,
       comment: comment.value,
       customInputs: customInputs.value
     })
@@ -290,7 +285,6 @@ async function handleReject() {
   try {
     await emit('reject', {
       breakpointId: props.breakpoint.breakpointId,
-      userId: props.userId,
       comment: comment.value
     })
   } finally {

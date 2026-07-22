@@ -78,52 +78,6 @@
             />
           </div>
 
-          <!-- Category -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {{ $t('createModal.category.label', 'Category') }}
-            </label>
-            <AppSelect
-              v-model="form.category"
-              :options="categoryOptions"
-            />
-          </div>
-
-          <!-- Visibility -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {{ $t('templateForm.visibility', 'Visibility') }}
-            </label>
-            <div class="flex gap-3">
-              <button
-                type="button"
-                @click="form.visibility = 'private'"
-                :class="[
-                  'flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border transition-all',
-                  form.visibility === 'private'
-                    ? 'border-purple-500 bg-purple-500/10 text-purple-400'
-                    : 'border-gray-600 text-gray-400 hover:border-gray-500'
-                ]"
-              >
-                <Lock :size="14" class="inline mr-1.5" />
-                {{ $t('templateForm.private', 'Private') }}
-              </button>
-              <button
-                type="button"
-                @click="form.visibility = 'public'"
-                :class="[
-                  'flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border transition-all',
-                  form.visibility === 'public'
-                    ? 'border-green-500 bg-green-500/10 text-green-400'
-                    : 'border-gray-600 text-gray-400 hover:border-gray-500'
-                ]"
-              >
-                <Globe :size="14" class="inline mr-1.5" />
-                {{ $t('templateForm.public', 'Public') }}
-              </button>
-            </div>
-          </div>
-
           <!-- Error Message -->
           <div
             v-if="errorMessage"
@@ -159,20 +113,17 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { X, Loader2, BookTemplate, Lock, Globe } from 'lucide-vue-next'
+import { X, Loader2, BookTemplate } from 'lucide-vue-next'
 import AppInput from '@/components/common/AppInput.vue'
-import AppSelect from '@/components/common/AppSelect.vue'
 import AppTextarea from '@/components/common/AppTextarea.vue'
 import { templatesAPI } from '@/api/templates'
 import { useNodeStyles } from '@/composables/useNodeStyles'
-import { useModulesStore } from '@/stores/modulesStore'
 import { useToast } from '@/composables/useToast'
 
 const { t } = useI18n()
 const toast = useToast()
-const modulesStore = useModulesStore()
 const { getGradient, getNodeIcon, getNodeLabel } = useNodeStyles()
 
 const props = defineProps({
@@ -185,13 +136,11 @@ const emit = defineEmits(['update:modelValue', 'created'])
 const form = reactive({
   name: '',
   description: '',
-  category: 'connector',
-  visibility: 'private'
+  category: 'connector'
 })
 
 const isSubmitting = ref(false)
 const errorMessage = ref('')
-const categories = ref([])
 
 // Derive module info from node
 const moduleId = computed(() => {
@@ -208,11 +157,6 @@ const moduleLabel = computed(() => {
 const moduleGradient = computed(() => getGradient(moduleId.value))
 const moduleIcon = computed(() => getNodeIcon(moduleId.value))
 
-const categoryOptions = computed(() => [
-  { value: '', label: t('createModal.category.placeholder', 'Select a category') },
-  ...categories.value.map(cat => ({ value: cat.slug || cat.id, label: cat.name }))
-])
-
 // Pre-fill form when node changes
 watch(() => props.node, (node) => {
   if (!node) return
@@ -225,16 +169,6 @@ watch(() => props.node, (node) => {
     form.category = 'connector'
   } else {
     form.category = ''
-  }
-})
-
-// Load categories
-onMounted(async () => {
-  try {
-    const res = await templatesAPI.getCategories()
-    categories.value = res.categories || []
-  } catch (err) {
-    console.warn('[SaveAsTemplate] failed to load categories:', err)
   }
 })
 
@@ -333,7 +267,6 @@ async function submit() {
       description: form.description.trim() || undefined,
       templateDescription: form.description.trim() || undefined,
       category: form.category || 'connector',
-      visibility: form.visibility,
       steps: [step],
       ui
     }
@@ -344,7 +277,7 @@ async function submit() {
       throw new Error(result.error || t('createModal.errors.createFailed', 'Failed to create template'))
     }
 
-    toast.success(t('cloud.template.createSuccess', 'Template created successfully'))
+    toast.success(t('workflow.templateCreated', 'Template created successfully'))
     close()
     emit('created', result.template?.id)
   } catch (err) {

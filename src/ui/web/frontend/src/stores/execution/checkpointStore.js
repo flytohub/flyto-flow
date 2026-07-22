@@ -7,7 +7,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import * as executionAPI from '@/api/executions'
-import { telemetry } from '@/services/telemetry'
 
 export const useCheckpointStore = defineStore('checkpoint', () => {
   // ========== State ==========
@@ -54,10 +53,6 @@ export const useCheckpointStore = defineStore('checkpoint', () => {
     try {
       const result = await executionAPI.continueFromCheckpoint(executionId)
       if (result.ok) {
-        telemetry.track('execution.checkpoint_continue', {
-          execution_id: executionId,
-          checkpointId: humanCheckpoint.value?.checkpointId
-        })
         humanCheckpoint.value = null
       }
       return result.ok
@@ -84,11 +79,6 @@ export const useCheckpointStore = defineStore('checkpoint', () => {
       const checkpointId = humanCheckpoint.value?.checkpointId
       const result = await executionAPI.bypassCheckpoint(executionId, checkpointId, scope)
       if (result.ok) {
-        telemetry.track('execution.checkpoint_bypass', {
-          execution_id: executionId,
-          checkpointId: checkpointId,
-          scope
-        })
         if (checkpointId) {
           bypassedCheckpoints.value.push(checkpointId)
         }

@@ -18,11 +18,6 @@ export function createTemplateActions(state) {
     templateId,
     templateDescription,
     existingTemplateId,
-    templateCreatorId,
-    templateMutability,
-    templateVisibility,
-    templateListed,
-    isWorkflowVisible,
     sections,
     hasUnsavedChanges,
     isLoading,
@@ -50,11 +45,6 @@ export function createTemplateActions(state) {
       templateName.value = normalized.templateName
       templateId.value = normalized.templateId
       templateDescription.value = normalized.templateDescription
-      templateCreatorId.value = normalized.creatorId
-      templateMutability.value = normalized.mutability
-      templateVisibility.value = normalized.visibility
-      templateListed.value = normalized.listed
-      isWorkflowVisible.value = normalized.isWorkflowVisible
       sections.value = normalized.sections
 
       if (!normalized.id) {
@@ -74,11 +64,6 @@ export function createTemplateActions(state) {
     templateId.value = 'new_template'
     templateDescription.value = ''
     existingTemplateId.value = null
-    templateCreatorId.value = null
-    templateMutability.value = 'fork_on_use'
-    templateVisibility.value = 'private'
-    templateListed.value = false
-    isWorkflowVisible.value = true  // New templates always have visible workflow
     sections.value = []
     hasUnsavedChanges.value = false
     loadError.value = null

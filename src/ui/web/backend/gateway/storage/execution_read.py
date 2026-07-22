@@ -56,7 +56,7 @@ class ExecutionReadMixin:
     @staticmethod
     def list_executions(
         workflow_id: Optional[str] = None,
-        user_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         status: Optional[str] = None,
         statuses: Optional[List[str]] = None,
         limit: int = 50,
@@ -67,7 +67,7 @@ class ExecutionReadMixin:
 
         Args:
             workflow_id: Filter by workflow ID
-            user_id: Filter by user ID
+            workspace_id: Filter by workspace ID
             status: Filter by single status
             statuses: Filter by multiple statuses (e.g., ['failed', 'failure'])
             limit: Maximum results
@@ -83,9 +83,9 @@ class ExecutionReadMixin:
             conditions.append("workflow_id = ?")
             params.append(workflow_id)
 
-        if user_id:
-            conditions.append("user_id = ?")
-            params.append(user_id)
+        if workspace_id:
+            conditions.append("workspace_id = ?")
+            params.append(workspace_id)
 
         if statuses:
             placeholders = ",".join("?" * len(statuses))
@@ -116,7 +116,7 @@ class ExecutionReadMixin:
         start_time: datetime,
         end_time: datetime = None,
         workflow_id: str = None,
-        user_id: str = None,
+        workspace_id: str = None,
     ) -> List[Execution]:
         """
         Query executions within a date range using SQL WHERE.
@@ -127,7 +127,7 @@ class ExecutionReadMixin:
             start_time: Start of time range (inclusive)
             end_time: End of time range (exclusive), defaults to now
             workflow_id: Optional workflow filter
-            user_id: Optional user filter
+            workspace_id: Optional workspace filter
 
         Returns:
             List of Execution objects (without steps)
@@ -146,9 +146,9 @@ class ExecutionReadMixin:
             conditions.append("workflow_id = ?")
             params.append(workflow_id)
 
-        if user_id:
-            conditions.append("user_id = ?")
-            params.append(user_id)
+        if workspace_id:
+            conditions.append("workspace_id = ?")
+            params.append(workspace_id)
 
         where_clause = " AND ".join(conditions)
 
@@ -167,7 +167,7 @@ class ExecutionReadMixin:
     def get_execution_stats_by_date_range(
         start_time: datetime,
         end_time: datetime = None,
-        user_id: str = None,
+        workspace_id: str = None,
     ) -> Dict[str, Any]:
         """
         Get aggregated execution statistics for a date range using SQL.
@@ -177,7 +177,7 @@ class ExecutionReadMixin:
         Args:
             start_time: Start of time range
             end_time: End of time range, defaults to now
-            user_id: Filter by user ID
+            workspace_id: Filter by workspace ID
 
         Returns:
             Dictionary with total, successful, failed counts and avg duration
@@ -191,9 +191,9 @@ class ExecutionReadMixin:
         conditions = ["started_at >= ?", "started_at < ?"]
         params = [start_str, end_str]
 
-        if user_id:
-            conditions.append("user_id = ?")
-            params.append(user_id)
+        if workspace_id:
+            conditions.append("workspace_id = ?")
+            params.append(workspace_id)
 
         where_clause = " AND ".join(conditions)
 
@@ -223,7 +223,7 @@ class ExecutionReadMixin:
     def get_daily_stats(
         start_time: datetime,
         end_time: datetime = None,
-        user_id: str = None,
+        workspace_id: str = None,
     ) -> List[Dict[str, Any]]:
         """
         Get daily execution statistics using SQL GROUP BY.
@@ -231,7 +231,7 @@ class ExecutionReadMixin:
         Args:
             start_time: Start of time range
             end_time: End of time range, defaults to now
-            user_id: Filter by user ID
+            workspace_id: Filter by workspace ID
 
         Returns:
             List of daily stats with date, successful, failed counts
@@ -245,9 +245,9 @@ class ExecutionReadMixin:
         conditions = ["started_at >= ?", "started_at < ?"]
         params = [start_str, end_str]
 
-        if user_id:
-            conditions.append("user_id = ?")
-            params.append(user_id)
+        if workspace_id:
+            conditions.append("workspace_id = ?")
+            params.append(workspace_id)
 
         where_clause = " AND ".join(conditions)
 
@@ -279,7 +279,7 @@ class ExecutionReadMixin:
         start_time: datetime,
         end_time: datetime = None,
         limit: int = 5,
-        user_id: str = None,
+        workspace_id: str = None,
     ) -> List[Dict[str, Any]]:
         """
         Get top workflows by execution count using SQL GROUP BY.
@@ -288,7 +288,7 @@ class ExecutionReadMixin:
             start_time: Start of time range
             end_time: End of time range, defaults to now
             limit: Number of top workflows to return
-            user_id: Filter by user ID
+            workspace_id: Filter by workspace ID
 
         Returns:
             List of workflow stats with id, name, counts, and avg duration
@@ -302,9 +302,9 @@ class ExecutionReadMixin:
         conditions = ["started_at >= ?", "started_at < ?"]
         params = [start_str, end_str]
 
-        if user_id:
-            conditions.append("user_id = ?")
-            params.append(user_id)
+        if workspace_id:
+            conditions.append("workspace_id = ?")
+            params.append(workspace_id)
 
         where_clause = " AND ".join(conditions)
 
@@ -368,7 +368,7 @@ class ExecutionReadMixin:
             }
 
     @staticmethod
-    def get_user_stats(user_id: str) -> Dict[str, Any]:
+    def get_workspace_stats(workspace_id: str) -> Dict[str, Any]:
         """Get execution statistics for a user."""
         with get_cursor() as cursor:
             cursor.execute(
@@ -379,9 +379,9 @@ class ExecutionReadMixin:
                     SUM(CASE WHEN status IN ('failed', 'failure') THEN 1 ELSE 0 END) as failure,
                     COUNT(DISTINCT workflow_id) as workflow_count
                 FROM executions
-                WHERE user_id = ?
+                WHERE workspace_id = ?
                 """,
-                (user_id,),
+                (workspace_id,),
             )
             row = cursor.fetchone()
 

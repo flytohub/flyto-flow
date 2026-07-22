@@ -2,13 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   asArray,
   asObject,
-  normalizeCreatorProfile,
-  normalizeCreatorTemplatesResponse,
-  normalizeFoldersResponse,
   normalizeListEnvelope,
-  normalizeMyTemplatesResponse,
-  normalizePeopleListResponse,
-  normalizeRecipeBundlesResponse,
   normalizeRecordingStopResponse,
   normalizeTemplateListResponse,
   normalizeTieredCatalogResponse,
@@ -68,35 +62,18 @@ describe('dataBoundary helpers', () => {
     expect(normalized.hasNext).toBe(true)
   })
 
-  it('normalizes workflow and my-template list boundaries', () => {
+  it('normalizes workflow list boundaries', () => {
     const workflows = normalizeWorkflowListResponse({
       workflows: [{ id: 'wf-1' }, null],
       enabled_count: 'bad',
       total_count: 5
     })
-    const templates = normalizeMyTemplatesResponse({
-      ok: false,
-      error: 'nope',
-      templates: 'bad',
-      draft_count: 'bad',
-      published_count: 2
-    })
-
     expect(workflows.workflows).toEqual([{ id: 'wf-1' }])
     expect(workflows.enabledCount).toBe(1)
     expect(workflows.totalCount).toBe(5)
-    expect(templates.ok).toBe(false)
-    expect(templates.templates).toEqual([])
-    expect(templates.error).toBe('nope')
-    expect(templates.publishedCount).toBe(2)
   })
 
-  it('normalizes folders and recording compile responses', () => {
-    const folders = normalizeFoldersResponse({
-      folders: [{ id: 'folder-1', parent_id: 'root', direct_count: 'bad', path: 'bad' }, null],
-      default_position: 'bad',
-      total_count: 4
-    })
+  it('normalizes recording compile responses', () => {
     const recording = normalizeRecordingStopResponse({
       ok: true,
       steps: [{ id: 'step-1' }, 'bad'],
@@ -104,40 +81,9 @@ describe('dataBoundary helpers', () => {
       recording_summary: { skipped_action_count: 1 }
     })
 
-    expect(folders.folders).toEqual([expect.objectContaining({
-      id: 'folder-1',
-      parentId: 'root',
-      directCount: 0,
-      path: []
-    })])
-    expect(folders.totalCount).toBe(4)
     expect(recording.compiledSteps).toEqual([{ id: 'step-1' }])
     expect(recording.warnings).toEqual([expect.objectContaining({ message: 'skipped', action_index: 1 })])
     expect(recording.recordingSummary).toEqual({ skipped_action_count: 1 })
-  })
-
-  it('normalizes creator and bundle response boundaries', () => {
-    expect(normalizeCreatorProfile({
-      id: 123,
-      display_name: 'Ada',
-      followers_count: 'bad',
-      is_creator: true
-    })).toEqual(expect.objectContaining({
-      id: '',
-      displayName: 'Ada',
-      followersCount: 0,
-      isCreator: true
-    }))
-
-    expect(normalizeCreatorTemplatesResponse({ items: [{ id: 'tpl' }, null] }).templates).toEqual([{ id: 'tpl' }])
-    expect(normalizePeopleListResponse({ followers: [{ id: 'u1' }, 'bad'] }, 'followers').followers).toEqual([
-      expect.objectContaining({ id: 'u1' })
-    ])
-    expect(normalizeRecipeBundlesResponse({ ok: false, bundles: 'bad', error: 'offline' })).toEqual(expect.objectContaining({
-      ok: false,
-      bundles: [],
-      error: 'offline'
-    }))
   })
 
   it('separates workflow nodes and edges from mixed payloads', () => {

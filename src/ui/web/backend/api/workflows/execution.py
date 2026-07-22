@@ -7,23 +7,17 @@ Execute workflows and manage execution history.
 import logging
 from typing import Dict, Any, Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from common.error_messages import ErrorMessages
 from api.workflows.models import WorkflowRunRequest
-from gateway.auth import get_current_active_user
+from gateway.local_context import get_local_actor, get_local_principal
 from gateway.providers.hub import get_data_provider
-from services.quota_enforcement import require_execution_quota
 
 logger = logging.getLogger(__name__)
 
-cloud_router = APIRouter()
 run_router = APIRouter()
-
-# Combined router (for cloud + dev mode)
-router = APIRouter()
-router.include_router(run_router)
-router.include_router(cloud_router)
+router = run_router
 
 
 
@@ -129,53 +123,18 @@ def _validate_run_preflight(request: WorkflowRunRequest, workflow: Dict[str, Any
             )
 
 
-async def _check_points_quota(user_id: str, plan_name: str):
-    """Check monthly points quota and fail closed when usage cannot be verified."""
-    try:
-        plan = (plan_name or "free").lower()
-        points_limit = await _resolve_monthly_points_limit(plan)
-        if points_limit is not None:
-            usage = await _resolve_current_points_usage(user_id)
-            if usage.get("total_points", 0) >= points_limit:
-                raise HTTPException(
-                    status_code=402,
-                    detail="Monthly points quota exceeded. Upgrade your plan for more points.",
-                )
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.exception("Points quota verification failed")
-        raise HTTPException(
-            status_code=503,
-            detail="Unable to verify monthly points quota",
-        ) from exc
-
-
-async def _resolve_monthly_points_limit(plan: str):
-    from services.plan_config import get_monthly_points_limit
-
-    return await get_monthly_points_limit(plan)
-
-
-async def _resolve_current_points_usage(user_id: str) -> dict:
-    from services.cloud.metering_service import get_metering_service
-
-    return await get_metering_service().get_current_usage(user_id)
-
-
 @run_router.post("/{workflow_id}/execute")
 async def execute_workflow(
     workflow_id: str,
     execution_params: Optional[Dict[str, Any]] = None,
-    current_user=Depends(require_execution_quota)
+    workspace_context=Depends(get_local_principal),
 ):
     """
     Execute workflow by ID.
     Returns execution_id for tracking and cancellation.
 
     This is a LOCAL endpoint (run_router) because it requires flyto-core ExecutionManager.
-    Workflow data is fetched from Firestore via data_provider (dev/cloud mode)
-    or via cloud proxy HTTP (local/desktop mode).
+    Workflow data is fetched from the local CE data provider.
     """
     import yaml
     from services.runtime.execution_manager import get_execution_manager
@@ -183,7 +142,7 @@ async def execute_workflow(
     provider = get_data_provider()
 
     workflow = await _fetch_workflow(
-        provider=provider, user_id=current_user.id, workflow_id=workflow_id,
+        provider=provider, workspace_id=workspace_context.id, workflow_id=workflow_id,
     )
     if not workflow:
         raise HTTPException(status_code=404, detail=ErrorMessages.WORKFLOW_NOT_FOUND)
@@ -212,18 +171,13 @@ async def execute_workflow(
         allow_unicode=True,
     )
 
-    await _check_points_quota(
-        current_user.id,
-        getattr(current_user, "subscription_plan", None),
-    )
-
     try:
         exec_manager = get_execution_manager()
         execution_id = await exec_manager.start(
             workflow_yaml=workflow_yaml,
             variables=execution_params or {},
             workflow_id=workflow_id,
-            user_id=current_user.id,
+            workspace_id=workspace_context.id,
         )
         return {
             "ok": True,
@@ -235,82 +189,32 @@ async def execute_workflow(
         raise HTTPException(status_code=500, detail=f"Failed to start execution: {e}")
 
 
-async def _fetch_workflow(provider, user_id: str, workflow_id: str):
-    """
-    Fetch workflow data from Firestore (dev/cloud) or cloud proxy (local/desktop).
-
-    Returns workflow model or dict, or None if not found.
-    """
-    if provider is not None and hasattr(provider, 'workflows') and provider.workflows is not None:
-        return await provider.workflows.get_workflow(
-            user_id=user_id,
-            workflow_id=workflow_id,
-            include_graph=True,
-        )
-
-    # Local mode: data_provider is None, fetch via cloud proxy HTTP
-    try:
-        from config.settings import get_settings
-        from local.cloud_proxy import get_proxy_client
-
-        settings = get_settings()
-        client = await get_proxy_client(settings.cloud_api_url)
-        resp = await client.get(
-            f"/api/workflows/{workflow_id}",
-            params={"include_graph": "true"},
-        )
-        if resp.status_code == 404:
-            return None
-        resp.raise_for_status()
-        data = resp.json()
-        return data.get("workflow") or data
-    except Exception as exc:
-        logger.exception("Failed to fetch workflow through cloud proxy")
-        raise HTTPException(
-            status_code=502,
-            detail="Cannot fetch workflow data from cloud",
-        ) from exc
-
-
-async def get_optional_user_from_token(authorization: Optional[str] = Header(None)) -> Optional[dict]:
-    """Get user from token if provided, otherwise return None."""
-    logger.debug("Optional authorization present=%s", bool(authorization))
-    if not authorization or not authorization.startswith("Bearer "):
-        logger.debug("No authorization header or not Bearer token")
-        return None
-
-    token = authorization.split("Bearer ")[1]
-    try:
-        from gateway.providers.hub import get_auth_provider
-        auth_provider = get_auth_provider()
-        result = await auth_provider.verify_token(token)
-        logger.debug("Optional token verification succeeded=%s", bool(result.ok and result.user))
-        if result.ok and result.user:
-            return result.user.model_dump()
-    except Exception:
-        logger.debug("Optional token verification failed", exc_info=True)
-    return None
+async def _fetch_workflow(provider, workspace_id: str, workflow_id: str):
+    """Fetch workflow data only from CE's local provider."""
+    return await provider.workflows.get_workflow(
+        workspace_id=workspace_id,
+        workflow_id=workflow_id,
+        include_graph=True,
+    )
 
 
 @run_router.post("/run")
 async def run_workflow_direct(
     request: WorkflowRunRequest,
-    current_user: Optional[dict] = Depends(get_optional_user_from_token)
+    workspace_context: dict = Depends(get_local_actor),
 ):
     """
     Run workflow directly using Core engine.
     Accepts workflow as YAML string and executes immediately.
     Returns execution_id for tracking.
 
-    Note: Auth is optional - local execution works without login.
-    If authenticated, execution is associated with user for status tracking.
+    CE always associates execution state with its fixed local workspace actor.
     """
     import yaml
     from services.runtime.execution_manager import get_execution_manager
 
-    # Get user_id from token if authenticated
-    user_id = current_user.get("id") if current_user else None
-    logger.debug("Direct workflow request authenticated=%s", bool(user_id))
+    workspace_id = workspace_context["id"]
+    logger.debug("Direct local workflow request workspace=%s", workspace_id)
 
     try:
         workflow = yaml.safe_load(request.workflow_yaml)
@@ -328,10 +232,6 @@ async def run_workflow_direct(
     # Pre-validation produces false positives for loop workflows
     # (INVALID_START_NODE, PORT_NOT_FOUND, MODULE_NOT_FOUND for type-based nodes).
 
-    # Quota check: monthly points (only for authenticated users)
-    if current_user:
-        await _check_points_quota(user_id, current_user.get("subscription_plan"))
-
     try:
         exec_manager = get_execution_manager()
         execution_id = await exec_manager.start(
@@ -342,7 +242,7 @@ async def run_workflow_direct(
             end_step=request.end_step,
             breakpoints=request.breakpoints,
             screenshot_mode=request.screenshot_mode,
-            user_id=user_id,
+            workspace_id=workspace_id,
         )
 
         return {
@@ -355,73 +255,3 @@ async def run_workflow_direct(
     except Exception as exc:
         logger.exception("Direct workflow execution failed")
         raise HTTPException(status_code=500, detail="Workflow execution failed") from exc
-
-
-@cloud_router.post("/{workflow_id}/execute")
-async def execute_cloud_workflow(
-    workflow_id: str,
-    execution_params: Optional[Dict[str, Any]] = None,
-    current_user=Depends(require_execution_quota),
-):
-    """Dispatch a persisted cloud or enterprise workflow through its provider."""
-    provider = get_data_provider()
-
-    try:
-        execution = await provider.workflows.execute_workflow(
-            user_id=current_user.id,
-            workflow_id=workflow_id,
-            params=execution_params or {},
-        )
-    except Exception:
-        logger.exception("Provider workflow execution failed")
-        raise HTTPException(
-            status_code=502,
-            detail="Workflow execution service unavailable",
-        )
-
-    return {
-        "ok": True,
-        "execution_id": execution.id,
-        "status": execution.status,
-        "started_at": execution.started_at.isoformat(),
-        "message": "Workflow execution started",
-    }
-
-
-@cloud_router.get("/{workflow_id}/executions")
-async def list_executions(
-    workflow_id: str,
-    limit: int = 20,
-    current_user=Depends(get_current_active_user)
-):
-    """List workflow execution history"""
-    provider = get_data_provider()
-
-    executions = await provider.workflows.list_executions(
-        user_id=current_user.id,
-        workflow_id=workflow_id,
-        limit=limit,
-    )
-
-    return {"ok": True, "executions": [e.dict() for e in executions]}
-
-
-@cloud_router.get("/executions/{execution_id}")
-async def get_execution(
-    execution_id: str,
-    workflow_id: str,
-    current_user=Depends(get_current_active_user)
-):
-    """Get execution details"""
-    provider = get_data_provider()
-
-    execution = await provider.workflows.get_execution(
-        user_id=current_user.id,
-        workflow_id=workflow_id,
-        execution_id=execution_id,
-    )
-
-    if not execution:
-        raise HTTPException(status_code=404, detail=ErrorMessages.EXECUTION_NOT_FOUND)
-
-    return {"ok": True, "execution": execution.dict()}

@@ -5,7 +5,7 @@
  * Single responsibility: Metadata state management.
  */
 
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
 /**
  * Create metadata store state
@@ -17,11 +17,6 @@ export function createMetadataState() {
   const templateId = ref('new_template')
   const templateDescription = ref('')
   const existingTemplateId = ref(null)
-  const templateCreatorId = ref(null)
-  const templateMutability = ref('fork_on_use')
-  const templateVisibility = ref('private')
-  const templateListed = ref(false)
-  const isWorkflowVisible = ref(true)  // Backend determines if workflow is visible
 
   // Template UI Sections
   const sections = ref([])
@@ -44,11 +39,6 @@ export function createMetadataState() {
     templateId,
     templateDescription,
     existingTemplateId,
-    templateCreatorId,
-    templateMutability,
-    templateVisibility,
-    templateListed,
-    isWorkflowVisible,
     sections,
     hasUnsavedChanges,
     isSaving,
@@ -64,15 +54,3 @@ export function createMetadataState() {
  * @param {Object} state - State refs
  * @returns {Object} Computed getters
  */
-export function createMetadataGetters(state) {
-  const { existingTemplateId, templateMutability } = state
-
-  const isReadOnly = computed(() => {
-    if (!existingTemplateId.value) return false
-    return templateMutability.value === 'locked'
-  })
-
-  return {
-    isReadOnly,
-  }
-}

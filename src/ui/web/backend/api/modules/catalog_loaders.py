@@ -15,7 +15,7 @@ from services.registry_loader import (
 )
 from services.normalizers import normalize_atomic, normalize_composite
 from services.infra.module_access import get_module_access_service
-from gateway.providers.base import UserInfo
+from gateway.providers.base import WorkspaceContext
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ async def _load_composite_modules(
     composite_registry,
     access_service,
     skip_access_control: bool,
-    current_user: Optional[UserInfo],
+    workspace_context: Optional[WorkspaceContext],
     lang: str,
 ) -> tuple:
     """Load composite modules and their group metadata.
@@ -43,7 +43,7 @@ async def _load_composite_modules(
         for module_id, module_class in all_composites.items():
             # Access control: Check if user can access this module (unless skipped)
             if not skip_access_control:
-                has_access = await access_service.check_module_access(current_user, module_id)
+                has_access = await access_service.check_module_access(workspace_context, module_id)
                 if not has_access:
                     continue
 
@@ -73,7 +73,7 @@ async def _load_atomic_modules(
     atomic_registry,
     access_service,
     skip_access_control: bool,
-    current_user: Optional[UserInfo],
+    workspace_context: Optional[WorkspaceContext],
     lang: str,
 ) -> tuple:
     """Load atomic modules split into default and expert tiers.
@@ -96,7 +96,7 @@ async def _load_atomic_modules(
 
             # Access control: Check if user can access this module (unless skipped)
             if not skip_access_control:
-                has_access = await access_service.check_module_access(current_user, module_id)
+                has_access = await access_service.check_module_access(workspace_context, module_id)
                 if not has_access:
                     continue
 
@@ -129,7 +129,7 @@ async def _load_atomic_modules(
 async def _load_plugin_modules(
     access_service,
     skip_access_control: bool,
-    current_user: Optional[UserInfo],
+    workspace_context: Optional[WorkspaceContext],
     *,
     plugin_runtime_available: bool,
     get_plugin_modules_fn,
@@ -185,17 +185,16 @@ async def _load_plugin_modules(
     return default_plugins, expert_plugins, groups_update
 
 
-async def _load_user_template_modules(
-    current_user: Optional[UserInfo],
+async def _load_workspace_template_modules(
+    workspace_context: Optional[WorkspaceContext],
     exclude_template_id: Optional[str],
-    auth_header: Optional[str] = None,
     *,
-    get_user_templates_as_modules_fn,
+    get_workspace_templates_as_modules_fn,
 ) -> tuple:
-    """Load user templates transformed as modules.
+    """Load local workspace templates transformed as modules.
 
     Args:
-        get_user_templates_as_modules_fn: Callable to get user templates as modules.
+        get_workspace_templates_as_modules_fn: Callable to get local templates as modules.
 
     Returns:
         (modules, groups_update)
@@ -204,12 +203,12 @@ async def _load_user_template_modules(
     groups_update = {}
 
     try:
-        user_id = None
-        if current_user:
-            user_id = current_user.id if hasattr(current_user, 'id') else current_user.get('id')
-        user_template_modules = await get_user_templates_as_modules_fn(user_id, auth_header=auth_header)
+        workspace_id = None
+        if workspace_context:
+            workspace_id = workspace_context.id if hasattr(workspace_context, 'id') else workspace_context.get('id')
+        workspace_template_modules = await get_workspace_templates_as_modules_fn(workspace_id)
 
-        for module in user_template_modules:
+        for module in workspace_template_modules:
             # Skip current template to prevent self-reference (infinite loop)
             # templateId and libraryId are nested in sourceData (from normalize_template)
             if exclude_template_id:
@@ -219,7 +218,7 @@ async def _load_user_template_modules(
                 if template_id == exclude_template_id or library_id == exclude_template_id:
                     continue
 
-            # User templates always go to default tier (visible)
+            # Local templates always go to the default tier.
             modules.append(module)
 
             # Track groups for templates
@@ -232,11 +231,11 @@ async def _load_user_template_modules(
                 }
             groups_update[group]['count'] += 1
 
-        excluded = len(user_template_modules) - len(modules)
-        logger.debug(f"Added {len(modules)} user templates to catalog (excluded: {excluded})")
+        excluded = len(workspace_template_modules) - len(modules)
+        logger.debug(f"Added {len(modules)} local templates to catalog (excluded: {excluded})")
 
     except Exception as e:
-        logger.warning(f"Error loading user templates: {e}")
+        logger.warning(f"Error loading local templates: {e}")
 
     return modules, groups_update
 
@@ -248,7 +247,7 @@ async def _build_catalog_response(
     plugin_count: int,
     template_count: int,
     include_templates: bool,
-    current_user: Optional[UserInfo],
+    workspace_context: Optional[WorkspaceContext],
     *,
     plugin_runtime_available: bool = False,
     backend_startup_ts: int = 0,
@@ -351,7 +350,7 @@ async def _noop_plugin():
 
 
 def _restore_from_cache(cached: dict) -> tuple:
-    """Deep-copy cached core catalog so user-specific modules can be appended safely."""
+    """Deep-copy cached core catalog so local modules can be appended safely."""
     return (
         list(cached['default_modules']),
         list(cached['expert_modules']),
@@ -364,7 +363,7 @@ async def _load_core_modules(
     include_expert: bool,
     include_plugins: bool,
     skip_access_control: bool,
-    current_user: Optional[UserInfo],
+    workspace_context: Optional[WorkspaceContext],
     *,
     plugin_runtime_available: bool,
     get_plugin_modules_fn,
@@ -382,13 +381,13 @@ async def _load_core_modules(
 
     access_service = get_module_access_service()
     if not skip_access_control:
-        await access_service.get_accessible_modules(current_user)
+        await access_service.get_accessible_modules(workspace_context)
 
     results = await asyncio.gather(
-        _load_composite_modules(composite_registry, access_service, skip_access_control, current_user, lang),
-        _load_atomic_modules(atomic_registry, access_service, skip_access_control, current_user, lang) if include_expert else _noop_atomic(),
+        _load_composite_modules(composite_registry, access_service, skip_access_control, workspace_context, lang),
+        _load_atomic_modules(atomic_registry, access_service, skip_access_control, workspace_context, lang) if include_expert else _noop_atomic(),
         _load_plugin_modules(
-            access_service, skip_access_control, current_user,
+            access_service, skip_access_control, workspace_context,
             plugin_runtime_available=plugin_runtime_available,
             get_plugin_modules_fn=get_plugin_modules_fn,
         ) if include_plugins else _noop_plugin(),
@@ -431,12 +430,11 @@ async def _get_tiered_catalog_impl(
     include_templates: bool,
     skip_access_control: bool,
     exclude_template_id: Optional[str],
-    current_user: Optional[UserInfo],
-    auth_header: Optional[str] = None,
+    workspace_context: Optional[WorkspaceContext],
     *,
     plugin_runtime_available: bool,
     get_plugin_modules_fn,
-    get_user_templates_as_modules_fn,
+    get_workspace_templates_as_modules_fn,
     core_catalog_cache: Dict[str, Dict[str, Any]],
     backend_startup_ts: int,
 ) -> Dict[str, Any]:
@@ -445,7 +443,7 @@ async def _get_tiered_catalog_impl(
     Args:
         plugin_runtime_available: Whether plugin runtime is available.
         get_plugin_modules_fn: Callable to get plugin modules list.
-        get_user_templates_as_modules_fn: Callable to get user templates as modules.
+        get_workspace_templates_as_modules_fn: Callable to get local templates as modules.
         core_catalog_cache: Mutable cache dict (shared with catalog.py).
         backend_startup_ts: Backend startup timestamp for cache versioning.
     """
@@ -455,18 +453,18 @@ async def _get_tiered_catalog_impl(
         default_modules, expert_modules, groups = _restore_from_cache(core_cached)
     else:
         default_modules, expert_modules, groups = await _load_core_modules(
-            lang, include_expert, include_plugins, skip_access_control, current_user,
+            lang, include_expert, include_plugins, skip_access_control, workspace_context,
             plugin_runtime_available=plugin_runtime_available,
             get_plugin_modules_fn=get_plugin_modules_fn,
             core_catalog_cache=core_catalog_cache,
         )
 
-    # Append user templates (user-specific, uses its own cache)
+    # Append local workflow templates from their own cache.
     template_count = 0
     if include_templates:
-        template_modules, template_groups = await _load_user_template_modules(
-            current_user, exclude_template_id, auth_header=auth_header,
-            get_user_templates_as_modules_fn=get_user_templates_as_modules_fn,
+        template_modules, template_groups = await _load_workspace_template_modules(
+            workspace_context, exclude_template_id,
+            get_workspace_templates_as_modules_fn=get_workspace_templates_as_modules_fn,
         )
         default_modules.extend(template_modules)
         template_count = len(template_modules)
@@ -481,7 +479,7 @@ async def _get_tiered_catalog_impl(
         plugin_count=plugin_count,
         template_count=template_count,
         include_templates=include_templates,
-        current_user=current_user,
+        workspace_context=workspace_context,
         plugin_runtime_available=plugin_runtime_available,
         backend_startup_ts=backend_startup_ts,
     )

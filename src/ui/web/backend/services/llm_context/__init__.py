@@ -24,7 +24,7 @@ Usage:
 
     # Update context files
     updater = get_context_updater()
-    updater.append_event("done", "Fixed the login bug")
+    updater.append_event("done", "Updated the workflow")
     updater.update_status(done_task="T-201")
 """
 

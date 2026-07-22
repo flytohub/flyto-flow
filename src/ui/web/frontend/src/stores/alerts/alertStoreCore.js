@@ -7,7 +7,6 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { telemetry } from '@/services/telemetry'
 import {
   fetchActiveAlertsApi, acknowledgeAlertApi, muteAlertApi,
   fetchRulesApi, createRuleApi, updateRuleApi, deleteRuleApi,
@@ -67,7 +66,6 @@ export const useAlertStore = defineStore('alerts', () => {
     const normalized = asObject(result)
     if (normalized.ok) {
       markAlertAcknowledged(activeAlerts.value, alertId)
-      telemetry.track('alert.acknowledge', { alert_id: alertId })
     } else {
       error.value = normalized.error
     }
@@ -112,10 +110,6 @@ export const useAlertStore = defineStore('alerts', () => {
     const rule = asObject(normalized.rule)
     if (normalized.ok && Object.keys(rule).length > 0) {
       rules.value.push(rule)
-      telemetry.track('alert_rule.create', {
-        metric_type: ruleData.metric_type,
-        severity: ruleData.severity
-      })
     } else {
       error.value = normalized.error
     }
@@ -145,7 +139,6 @@ export const useAlertStore = defineStore('alerts', () => {
     const normalized = asObject(result)
     if (normalized.ok) {
       removeById(rules.value, ruleId)
-      telemetry.track('alert_rule.delete', { rule_id: ruleId })
     } else {
       error.value = normalized.error
     }

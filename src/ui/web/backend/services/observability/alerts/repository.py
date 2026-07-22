@@ -84,31 +84,31 @@ class AlertRuleRepository:
                     labels TEXT,
                     annotations TEXT,
                     enabled INTEGER DEFAULT 1,
-                    user_id TEXT,
+                    workspace_id TEXT,
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                     updated_at TEXT
                 )
             """)
-            # Add user_id column to existing tables
+            # Add workspace_id column to existing tables
             try:
-                cursor.execute(f"ALTER TABLE {cls._TABLE_NAME} ADD COLUMN user_id TEXT")
+                cursor.execute(f"ALTER TABLE {cls._TABLE_NAME} ADD COLUMN workspace_id TEXT")
             except Exception:
                 pass  # Column already exists
             cursor.execute(f"""
-                CREATE INDEX IF NOT EXISTS idx_alert_rules_user_id
-                ON {cls._TABLE_NAME}(user_id)
+                CREATE INDEX IF NOT EXISTS idx_alert_rules_workspace_id
+                ON {cls._TABLE_NAME}(workspace_id)
             """)
 
         cls._initialized = True
 
     @classmethod
-    def create(cls, rule: AlertRule, user_id: str = None) -> str:
+    def create(cls, rule: AlertRule, workspace_id: str = None) -> str:
         """
         Create a new alert rule.
 
         Args:
             rule: Alert rule to create
-            user_id: Owner user ID
+            workspace_id: Owner workspace ID
 
         Returns:
             Rule ID
@@ -120,7 +120,7 @@ class AlertRuleRepository:
                 f"""
                 INSERT INTO {cls._TABLE_NAME}
                 (id, name, condition, severity, duration_seconds, labels,
-                 annotations, enabled, user_id, created_at)
+                 annotations, enabled, workspace_id, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
@@ -132,7 +132,7 @@ class AlertRuleRepository:
                     json.dumps(rule.labels),
                     json.dumps(rule.annotations),
                     1 if rule.enabled else 0,
-                    user_id,
+                    workspace_id,
                     rule.created_at,
                 ),
             )
@@ -140,16 +140,16 @@ class AlertRuleRepository:
         return rule.id
 
     @classmethod
-    def get(cls, rule_id: str, user_id: str = None) -> Optional[AlertRule]:
-        """Get an alert rule by ID, optionally filtered by user."""
+    def get(cls, rule_id: str, workspace_id: str = None) -> Optional[AlertRule]:
+        """Get an alert rule by ID, optionally filtered by workspace."""
         cls._ensure_table()
 
         conditions = ["id = ?"]
         params = [rule_id]
 
-        if user_id:
-            conditions.append("(user_id = ? OR user_id IS NULL)")
-            params.append(user_id)
+        if workspace_id:
+            conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+            params.append(workspace_id)
 
         where_clause = " AND ".join(conditions)
 
@@ -166,13 +166,13 @@ class AlertRuleRepository:
         return cls._row_to_rule(dict(row))
 
     @classmethod
-    def list_all(cls, enabled_only: bool = False, user_id: str = None) -> List[AlertRule]:
+    def list_all(cls, enabled_only: bool = False, workspace_id: str = None) -> List[AlertRule]:
         """
         List all alert rules.
 
         Args:
             enabled_only: Only return enabled rules
-            user_id: Filter by owner user ID
+            workspace_id: Filter by owner workspace ID
 
         Returns:
             List of alert rules
@@ -182,9 +182,9 @@ class AlertRuleRepository:
         conditions = []
         params = []
 
-        if user_id:
-            conditions.append("(user_id = ? OR user_id IS NULL)")
-            params.append(user_id)
+        if workspace_id:
+            conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+            params.append(workspace_id)
 
         if enabled_only:
             conditions.append("enabled = 1")
@@ -255,16 +255,16 @@ class AlertRuleRepository:
             return cursor.rowcount > 0
 
     @classmethod
-    def delete(cls, rule_id: str, user_id: str = None) -> bool:
+    def delete(cls, rule_id: str, workspace_id: str = None) -> bool:
         """Delete an alert rule."""
         cls._ensure_table()
 
         conditions = ["id = ?"]
         params = [rule_id]
 
-        if user_id:
-            conditions.append("(user_id = ? OR user_id IS NULL)")
-            params.append(user_id)
+        if workspace_id:
+            conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+            params.append(workspace_id)
 
         where_clause = " AND ".join(conditions)
 
@@ -337,13 +337,13 @@ class AlertRepository:
                     annotations TEXT,
                     evaluated_value REAL,
                     threshold_value REAL,
-                    user_id TEXT,
+                    workspace_id TEXT,
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            # Add user_id column to existing tables
+            # Add workspace_id column to existing tables
             try:
-                cursor.execute(f"ALTER TABLE {cls._TABLE_NAME} ADD COLUMN user_id TEXT")
+                cursor.execute(f"ALTER TABLE {cls._TABLE_NAME} ADD COLUMN workspace_id TEXT")
             except Exception:
                 pass  # Column already exists
             cursor.execute(f"""
@@ -355,8 +355,8 @@ class AlertRepository:
                 ON {cls._TABLE_NAME}(status)
             """)
             cursor.execute(f"""
-                CREATE INDEX IF NOT EXISTS idx_alerts_user_id
-                ON {cls._TABLE_NAME}(user_id)
+                CREATE INDEX IF NOT EXISTS idx_alerts_workspace_id
+                ON {cls._TABLE_NAME}(workspace_id)
             """)
 
         cls._initialized = True
@@ -414,16 +414,16 @@ class AlertRepository:
         return cls._row_to_alert(dict(row))
 
     @classmethod
-    def get_active(cls, user_id: str = None) -> List[Alert]:
+    def get_active(cls, workspace_id: str = None) -> List[Alert]:
         """Get all active (firing) alerts."""
         cls._ensure_table()
 
         conditions = ["status = 'firing'"]
         params = []
 
-        if user_id:
-            conditions.append("(user_id = ? OR user_id IS NULL)")
-            params.append(user_id)
+        if workspace_id:
+            conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+            params.append(workspace_id)
 
         where_clause = " AND ".join(conditions)
 
@@ -441,16 +441,16 @@ class AlertRepository:
         return [cls._row_to_alert(dict(row)) for row in rows]
 
     @classmethod
-    def get_by_rule(cls, rule_id: str, limit: int = 100, user_id: str = None) -> List[Alert]:
+    def get_by_rule(cls, rule_id: str, limit: int = 100, workspace_id: str = None) -> List[Alert]:
         """Get alerts for a specific rule."""
         cls._ensure_table()
 
         conditions = ["rule_id = ?"]
         params = [rule_id]
 
-        if user_id:
-            conditions.append("(user_id = ? OR user_id IS NULL)")
-            params.append(user_id)
+        if workspace_id:
+            conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+            params.append(workspace_id)
 
         where_clause = " AND ".join(conditions)
 

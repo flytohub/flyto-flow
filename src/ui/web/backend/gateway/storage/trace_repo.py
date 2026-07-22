@@ -55,7 +55,7 @@ class TraceQuery:
     min_duration_ms: Optional[int] = None
     max_duration_ms: Optional[int] = None
     has_error: Optional[bool] = None
-    user_id: Optional[str] = None
+    workspace_id: Optional[str] = None
     limit: int = 100
 
 
@@ -94,13 +94,13 @@ class TraceRepository:
                     status_message TEXT,
                     attributes TEXT,
                     events TEXT,
-                    user_id TEXT,
+                    workspace_id TEXT,
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            # Add user_id column to existing tables
+            # Add workspace_id column to existing tables
             try:
-                cursor.execute(f"ALTER TABLE {cls._TABLE_NAME} ADD COLUMN user_id TEXT")
+                cursor.execute(f"ALTER TABLE {cls._TABLE_NAME} ADD COLUMN workspace_id TEXT")
             except Exception:
                 pass  # Column already exists
             cursor.execute(f"""
@@ -116,8 +116,8 @@ class TraceRepository:
                 ON {cls._TABLE_NAME}(operation_name)
             """)
             cursor.execute(f"""
-                CREATE INDEX IF NOT EXISTS idx_spans_user_id
-                ON {cls._TABLE_NAME}(user_id)
+                CREATE INDEX IF NOT EXISTS idx_spans_workspace_id
+                ON {cls._TABLE_NAME}(workspace_id)
             """)
 
         cls._initialized = True
@@ -128,7 +128,7 @@ class TraceRepository:
         Save a span to database.
 
         Args:
-            span_data: Span data dictionary (may include user_id)
+            span_data: Span data dictionary (may include workspace_id)
 
         Returns:
             Span ID
@@ -143,7 +143,7 @@ class TraceRepository:
                 INSERT OR REPLACE INTO {cls._TABLE_NAME}
                 (id, trace_id, span_id, parent_span_id, operation_name,
                  service_name, start_time, end_time, duration_ms, status,
-                 status_message, attributes, events, user_id)
+                 status_message, attributes, events, workspace_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
@@ -160,7 +160,7 @@ class TraceRepository:
                     span_data.get("status_message"),
                     json.dumps(span_data.get("attributes", {})),
                     json.dumps(span_data.get("events", [])),
-                    span_data.get("user_id"),
+                    span_data.get("workspace_id"),
                 ),
             )
 
@@ -172,7 +172,7 @@ class TraceRepository:
         Save multiple spans.
 
         Args:
-            spans: List of span data dictionaries (may include user_id)
+            spans: List of span data dictionaries (may include workspace_id)
 
         Returns:
             Number of spans saved
@@ -196,7 +196,7 @@ class TraceRepository:
                 span.get("status_message"),
                 json.dumps(span.get("attributes", {})),
                 json.dumps(span.get("events", [])),
-                span.get("user_id"),
+                span.get("workspace_id"),
             ))
 
         with get_cursor() as cursor:
@@ -205,7 +205,7 @@ class TraceRepository:
                 INSERT OR REPLACE INTO {cls._TABLE_NAME}
                 (id, trace_id, span_id, parent_span_id, operation_name,
                  service_name, start_time, end_time, duration_ms, status,
-                 status_message, attributes, events, user_id)
+                 status_message, attributes, events, workspace_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 records,
@@ -239,13 +239,13 @@ class TraceRepository:
         return cls._row_to_span(dict(row))
 
     @classmethod
-    def get_trace(cls, trace_id: str, user_id: str = None) -> List[Dict[str, Any]]:
+    def get_trace(cls, trace_id: str, workspace_id: str = None) -> List[Dict[str, Any]]:
         """
         Get all spans for a trace.
 
         Args:
             trace_id: Trace ID
-            user_id: Filter by user ID (ownership check)
+            workspace_id: Filter by workspace ID (ownership check)
 
         Returns:
             List of span data
@@ -255,9 +255,9 @@ class TraceRepository:
         conditions = ["trace_id = ?"]
         params = [trace_id]
 
-        if user_id:
-            conditions.append("(user_id = ? OR user_id IS NULL)")
-            params.append(user_id)
+        if workspace_id:
+            conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+            params.append(workspace_id)
 
         where_clause = " AND ".join(conditions)
 
@@ -291,9 +291,9 @@ class TraceRepository:
         conditions = ["parent_span_id IS NULL"]
         params: List[Any] = []
 
-        if query.user_id:
-            conditions.append("(user_id = ? OR user_id IS NULL)")
-            params.append(query.user_id)
+        if query.workspace_id:
+            conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+            params.append(query.workspace_id)
 
         if query.service_name:
             conditions.append("service_name = ?")

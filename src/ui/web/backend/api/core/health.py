@@ -1,105 +1,70 @@
-"""
-Core Health & Version Endpoints
+"""Local flyto-core health and version endpoints."""
 
-Handles:
-- Health check
-- Installed version query
-- Core status (installed vs latest)
-"""
-import sys
-import logging
-from typing import Optional
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from importlib.metadata import PackageNotFoundError, version as package_version
 
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from config.settings import get_settings
-from services.infra.updater.constants import utc_now
-from services.infra.updater.version import compare_versions, check_pypi_latest
+from local.core_wheel import read_active_core
 
-logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
-# Re-export for backward compatibility (used by main_local.py, main.py)
-get_pypi_latest_version = check_pypi_latest
-
-
 class CoreStatus(BaseModel):
-    """Core package status"""
     installed: bool
-    installed_version: Optional[str]
-    latest_version: Optional[str]
-    update_available: bool
-    last_check: Optional[str]
+    installed_version: str | None
+    source: str
+    latest_version: None = None
+    update_available: bool = False
+    last_check: str
 
 
-def get_installed_version() -> Optional[str]:
-    """Get installed flyto-core version (hot-updated or pip)."""
-    # Packaged mode: prefer hot-updated version
-    if getattr(sys, 'frozen', False):
-        try:
-            from services.infra.updater import get_core_updater
-            hot_version = get_core_updater().current_version
-            if hot_version:
-                return hot_version
-        except Exception:
-            pass
-
-    # Dev mode / fallback: read from pip-installed package
+def get_installed_version() -> str | None:
+    active = read_active_core()
+    if active:
+        return active.version
     try:
-        from importlib.metadata import version as pkg_version
-        return pkg_version("flyto-core")
-    except Exception:
-        pass
-
-    return None
+        return package_version("flyto-core")
+    except PackageNotFoundError:
+        return None
 
 
 @router.get("/health")
 async def core_health():
-    """Health check endpoint for core service."""
+    installed = get_installed_version()
     return {
-        "ok": True,
-        "status": "healthy",
-        "service": "core",
-        "version": "1.0.0",
+        "ok": installed is not None,
+        "status": "healthy" if installed else "missing",
+        "service": "flyto-core",
+        "version": installed,
     }
 
 
 @router.get("/version")
 async def core_version():
-    """Get core package version information."""
+    active = read_active_core()
     installed = get_installed_version()
     return {
-        "ok": True,
+        "ok": installed is not None,
         "version": installed or "not installed",
         "package": "flyto-core",
+        "source": "offline-wheel" if active else "image",
+        "sha256": active.sha256 if active else None,
     }
 
 
 @router.get("/status", response_model=CoreStatus)
 async def get_core_status():
-    """
-    Get flyto-core package status.
-    Returns installed version and latest PyPI version.
-
-    In offline mode: Only returns installed version, skips PyPI check.
-    """
-    get_settings()
-    installed_version = get_installed_version()
-
-    latest_version = await get_pypi_latest_version()
-
-    update_available = False
-    if installed_version and latest_version:
-        update_available = compare_versions(latest_version, installed_version) > 0
-
+    """Return local state only; CE never checks PyPI for a newer release."""
+    active = read_active_core()
+    installed = get_installed_version()
     return CoreStatus(
-        installed=installed_version is not None,
-        installed_version=installed_version,
-        latest_version=latest_version,
-        update_available=update_available,
-        last_check=utc_now().isoformat()
+        installed=installed is not None,
+        installed_version=installed,
+        source="offline-wheel" if active else "image",
+        last_check=datetime.now(timezone.utc).isoformat(),
     )

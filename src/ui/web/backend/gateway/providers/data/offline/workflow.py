@@ -11,7 +11,6 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional, List
 
-from gateway.providers.data.base import WorkflowProvider
 from gateway.providers.data.models import (
     WorkflowDTO,
     WorkflowCreateDTO,
@@ -21,7 +20,6 @@ from gateway.providers.data.models import (
     ExecutionDTO,
     ExecutionStatus,
     PaginatedResponse,
-    DataSource,
     TriggerType,
 )
 from gateway.storage.offline_db import get_offline_cursor
@@ -50,56 +48,23 @@ def _parse_dt(val: Optional[str]) -> Optional[datetime]:
         return None
 
 
-def _ensure_workflows_table() -> None:
-    """Create workflows table if it does not exist yet."""
-    with get_offline_cursor() as cursor:
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS workflows (
-                id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                name TEXT NOT NULL,
-                description TEXT,
-                is_active INTEGER DEFAULT 1,
-                trigger_type TEXT DEFAULT 'manual',
-                trigger_config TEXT DEFAULT '{}',
-                nodes TEXT DEFAULT '[]',
-                edges TEXT DEFAULT '[]',
-                tags TEXT DEFAULT '[]',
-                total_executions INTEGER DEFAULT 0,
-                success_count INTEGER DEFAULT 0,
-                failed_count INTEGER DEFAULT 0,
-                error_workflow_id TEXT,
-                created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL,
-                last_executed_at TEXT
-            )
-        """)
-        cursor.execute(
-            "CREATE INDEX IF NOT EXISTS idx_workflows_user_id ON workflows(user_id)"
-        )
-
-
-# Ensure table exists on module import
-_ensure_workflows_table()
-
-
-class OfflineWorkflowProvider(WorkflowProvider):
+class OfflineWorkflowProvider:
     """Offline implementation — SQLite-backed workflow provider."""
 
     # ------------------------------------------------------------------
     # Workflow CRUD
     # ------------------------------------------------------------------
 
-    async def list_user_workflows(
+    async def list_workspace_workflows(
         self,
-        user_id: str,
+        workspace_id: str,
         page: int = 1,
         page_size: int = 20,
         enabled: bool = None,
     ) -> PaginatedResponse:
         with get_offline_cursor() as cursor:
-            sql = "SELECT * FROM workflows WHERE user_id = ?"
-            params: list = [user_id]
+            sql = "SELECT * FROM workflows WHERE workspace_id = ?"
+            params: list = [workspace_id]
             if enabled is not None:
                 sql += " AND is_active = ?"
                 params.append(1 if enabled else 0)
@@ -124,14 +89,14 @@ class OfflineWorkflowProvider(WorkflowProvider):
 
     async def get_workflow(
         self,
-        user_id: str,
+        workspace_id: str,
         workflow_id: str,
         include_graph: bool = True,
     ) -> Optional[WorkflowDTO]:
         with get_offline_cursor() as cursor:
             cursor.execute(
-                "SELECT * FROM workflows WHERE id = ? AND user_id = ?",
-                (workflow_id, user_id),
+                "SELECT * FROM workflows WHERE id = ? AND workspace_id = ?",
+                (workflow_id, workspace_id),
             )
             row = cursor.fetchone()
         if not row:
@@ -140,7 +105,7 @@ class OfflineWorkflowProvider(WorkflowProvider):
 
     async def create_workflow(
         self,
-        user_id: str,
+        workspace_id: str,
         data: WorkflowCreateDTO,
     ) -> WorkflowDTO:
         wf_id = str(uuid.uuid4())
@@ -151,7 +116,7 @@ class OfflineWorkflowProvider(WorkflowProvider):
             cursor.execute(
                 """
                 INSERT INTO workflows (
-                    id, user_id, name, description, is_active,
+                    id, workspace_id, name, description, is_active,
                     trigger_type, trigger_config,
                     nodes, edges, tags,
                     created_at, updated_at
@@ -159,7 +124,7 @@ class OfflineWorkflowProvider(WorkflowProvider):
                 """,
                 (
                     wf_id,
-                    user_id,
+                    workspace_id,
                     data.name,
                     data.description,
                     trigger_type,
@@ -172,15 +137,15 @@ class OfflineWorkflowProvider(WorkflowProvider):
                 ),
             )
 
-        return await self.get_workflow(user_id, wf_id)  # type: ignore[return-value]
+        return await self.get_workflow(workspace_id, wf_id)  # type: ignore[return-value]
 
     async def update_workflow(
         self,
-        user_id: str,
+        workspace_id: str,
         workflow_id: str,
         data: WorkflowUpdateDTO,
     ) -> Optional[WorkflowDTO]:
-        existing = await self.get_workflow(user_id, workflow_id)
+        existing = await self.get_workflow(workspace_id, workflow_id)
         if not existing:
             return None
 
@@ -221,25 +186,25 @@ class OfflineWorkflowProvider(WorkflowProvider):
 
         sets.append("updated_at = ?")
         params.append(_utc_iso())
-        params.extend([workflow_id, user_id])
+        params.extend([workflow_id, workspace_id])
 
         with get_offline_cursor() as cursor:
             cursor.execute(
-                f"UPDATE workflows SET {', '.join(sets)} WHERE id = ? AND user_id = ?",
+                f"UPDATE workflows SET {', '.join(sets)} WHERE id = ? AND workspace_id = ?",
                 tuple(params),
             )
 
-        return await self.get_workflow(user_id, workflow_id)
+        return await self.get_workflow(workspace_id, workflow_id)
 
     async def delete_workflow(
         self,
-        user_id: str,
+        workspace_id: str,
         workflow_id: str,
     ) -> bool:
         with get_offline_cursor() as cursor:
             cursor.execute(
-                "DELETE FROM workflows WHERE id = ? AND user_id = ?",
-                (workflow_id, user_id),
+                "DELETE FROM workflows WHERE id = ? AND workspace_id = ?",
+                (workflow_id, workspace_id),
             )
             return cursor.rowcount > 0
 
@@ -249,17 +214,17 @@ class OfflineWorkflowProvider(WorkflowProvider):
 
     async def execute_workflow(
         self,
-        user_id: str,
+        workspace_id: str,
         workflow_id: str,
         params: dict = None,
     ) -> ExecutionDTO:
-        wf = await self.get_workflow(user_id, workflow_id)
+        wf = await self.get_workflow(workspace_id, workflow_id)
         wf_name = wf.name if wf else "Untitled"
 
         execution = ExecutionRepository.create_execution(
             workflow_id=workflow_id,
             workflow_name=wf_name,
-            user_id=user_id,
+            workspace_id=workspace_id,
             input_params=params or {},
         )
 
@@ -273,7 +238,7 @@ class OfflineWorkflowProvider(WorkflowProvider):
         return ExecutionDTO(
             id=execution.id,
             workflow_id=workflow_id,
-            user_id=user_id,
+            workspace_id=workspace_id,
             status=ExecutionStatus.PENDING,
             started_at=_utc_now(),
             input_params=params or {},
@@ -281,20 +246,20 @@ class OfflineWorkflowProvider(WorkflowProvider):
 
     async def list_executions(
         self,
-        user_id: str,
+        workspace_id: str,
         workflow_id: str,
         limit: int = 20,
     ) -> List[ExecutionDTO]:
         executions = ExecutionRepository.list_executions(
             workflow_id=workflow_id,
-            user_id=user_id,
+            workspace_id=workspace_id,
             limit=limit,
         )
         return [
             ExecutionDTO(
                 id=e.id,
                 workflow_id=e.workflow_id,
-                user_id=e.user_id or user_id,
+                workspace_id=e.workspace_id or workspace_id,
                 status=ExecutionStatus(e.status),
                 started_at=_parse_dt(e.started_at) or _utc_now(),
                 finished_at=_parse_dt(e.finished_at),
@@ -308,7 +273,7 @@ class OfflineWorkflowProvider(WorkflowProvider):
 
     async def get_execution(
         self,
-        user_id: str,
+        workspace_id: str,
         workflow_id: str,
         execution_id: str,
     ) -> Optional[ExecutionDTO]:
@@ -318,7 +283,7 @@ class OfflineWorkflowProvider(WorkflowProvider):
         return ExecutionDTO(
             id=e.id,
             workflow_id=e.workflow_id,
-            user_id=e.user_id or user_id,
+            workspace_id=e.workspace_id or workspace_id,
             status=ExecutionStatus(e.status),
             started_at=_parse_dt(e.started_at) or _utc_now(),
             finished_at=_parse_dt(e.finished_at),
@@ -330,7 +295,7 @@ class OfflineWorkflowProvider(WorkflowProvider):
 
     async def update_execution(
         self,
-        user_id: str,
+        workspace_id: str,
         workflow_id: str,
         execution_id: str,
         status: str,
@@ -381,7 +346,7 @@ class OfflineWorkflowProvider(WorkflowProvider):
 
         return WorkflowDTO(
             id=row["id"],
-            user_id=row["user_id"],
+            workspace_id=row["workspace_id"],
             name=row["name"],
             description=row.get("description"),
             is_active=bool(row.get("is_active", 1)),
@@ -395,14 +360,6 @@ class OfflineWorkflowProvider(WorkflowProvider):
             last_executed_at=_parse_dt(row.get("last_executed_at")),
             nodes=nodes,
             edges=edges,
-            source=DataSource.USER,
             tags=json.loads(row.get("tags") or "[]"),
             error_workflow_id=row.get("error_workflow_id"),
-            capabilities={
-                "execute": True,
-                "edit": True,
-                "delete": True,
-                "share": False,
-                "publish": False,
-            },
         )

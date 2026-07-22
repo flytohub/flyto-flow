@@ -26,7 +26,7 @@ except ImportError:
     if not is_debug:
         raise ImportError(
             "CRITICAL: cryptography library is required in production. "
-            "Install with: pip install cryptography>=44.0.1"
+            "The bundled cryptography runtime is unavailable"
         )
     logger.warning("cryptography library not found, using fallback encryption (DEV MODE ONLY)")
 

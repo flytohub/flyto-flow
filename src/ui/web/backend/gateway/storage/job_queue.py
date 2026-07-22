@@ -39,7 +39,7 @@ class Job:
     id: str
     execution_id: str
     workflow_id: str
-    user_id: Optional[str] = None
+    workspace_id: Optional[str] = None
 
     priority: int = 0
     status: str = "pending"
@@ -66,7 +66,7 @@ class Job:
             "id": self.id,
             "execution_id": self.execution_id,
             "workflow_id": self.workflow_id,
-            "user_id": self.user_id,
+            "workspace_id": self.workspace_id,
             "priority": self.priority,
             "status": self.status,
             "attempts": self.attempts,
@@ -89,7 +89,7 @@ class Job:
             id=row["id"],
             execution_id=row["execution_id"],
             workflow_id=row["workflow_id"],
-            user_id=row["user_id"],
+            workspace_id=row["workspace_id"],
             priority=row["priority"] or 0,
             status=row["status"] or "pending",
             attempts=row["attempts"] or 0,
@@ -113,7 +113,7 @@ class JobQueueRepository:
     def enqueue(
         execution_id: str,
         workflow_id: str,
-        user_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         priority: int = 0,
         max_attempts: int = 3,
         timeout_ms: int = 0,
@@ -125,7 +125,7 @@ class JobQueueRepository:
         Args:
             execution_id: Link to execution record
             workflow_id: Workflow being executed
-            user_id: User who triggered execution
+            workspace_id: Workspace that triggered execution
             priority: Job priority (higher = more urgent)
             max_attempts: Maximum retry attempts
             timeout_ms: Execution timeout (0 = no limit)
@@ -141,7 +141,7 @@ class JobQueueRepository:
             cursor.execute(
                 """
                 INSERT INTO jobs (
-                    id, execution_id, workflow_id, user_id,
+                    id, execution_id, workflow_id, workspace_id,
                     priority, status, attempts, max_attempts,
                     timeout_ms, visibility_timeout_ms, created_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -150,7 +150,7 @@ class JobQueueRepository:
                     job_id,
                     execution_id,
                     workflow_id,
-                    user_id,
+                    workspace_id,
                     priority,
                     "pending",
                     0,
@@ -167,7 +167,7 @@ class JobQueueRepository:
             id=job_id,
             execution_id=execution_id,
             workflow_id=workflow_id,
-            user_id=user_id,
+            workspace_id=workspace_id,
             priority=priority,
             status="pending",
             attempts=0,
@@ -515,7 +515,7 @@ class JobQueueRepository:
     @staticmethod
     def list_jobs(
         status: Optional[str] = None,
-        user_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         limit: int = 50,
         offset: int = 0,
     ) -> List[Job]:
@@ -524,7 +524,7 @@ class JobQueueRepository:
 
         Args:
             status: Filter by status
-            user_id: Filter by user
+            workspace_id: Filter by workspace
             limit: Maximum results
             offset: Skip first N results
 
@@ -538,9 +538,9 @@ class JobQueueRepository:
             conditions.append("status = ?")
             params.append(status)
 
-        if user_id:
-            conditions.append("user_id = ?")
-            params.append(user_id)
+        if workspace_id:
+            conditions.append("workspace_id = ?")
+            params.append(workspace_id)
 
         where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
 

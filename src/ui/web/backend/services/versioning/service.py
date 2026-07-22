@@ -27,7 +27,7 @@ class VersioningService:
     def create_version(
         workflow_id: str,
         definition: Dict[str, Any],
-        user_id: str,
+        workspace_id: str,
         change_summary: Optional[str] = None,
         version_tag: Optional[str] = None,
     ) -> WorkflowVersion:
@@ -37,7 +37,7 @@ class VersioningService:
         Args:
             workflow_id: Workflow ID
             definition: Workflow definition
-            user_id: ID of user creating version
+            workspace_id: ID of user creating version
             change_summary: Optional description of changes
             version_tag: Optional version tag
 
@@ -63,7 +63,7 @@ class VersioningService:
             version_number=version_number,
             definition=definition,
             content_hash=content_hash,
-            created_by=user_id,
+            created_by=workspace_id,
             change_summary=change_summary,
             version_tag=version_tag,
         )
@@ -118,7 +118,7 @@ class VersioningService:
     def rollback(
         workflow_id: str,
         version_id: str,
-        user_id: str,
+        workspace_id: str,
     ) -> Optional[WorkflowVersion]:
         """
         Rollback to a previous version.
@@ -128,7 +128,7 @@ class VersioningService:
         Args:
             workflow_id: Workflow ID
             version_id: Target version to rollback to
-            user_id: ID of user performing rollback
+            workspace_id: ID of user performing rollback
 
         Returns:
             New version or None if target not found
@@ -146,7 +146,7 @@ class VersioningService:
         new_version = VersioningService.create_version(
             workflow_id=workflow_id,
             definition=target.definition,
-            user_id=user_id,
+            workspace_id=workspace_id,
             change_summary=f"Rollback to version {target.get_display_version()}",
         )
 

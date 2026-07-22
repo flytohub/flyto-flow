@@ -14,9 +14,7 @@ Standard Response Format:
 """
 
 import logging
-import os
 import re
-from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Dict, List, NoReturn, Optional
 
 from fastapi import HTTPException, Request, status
@@ -59,54 +57,6 @@ def _contains_sensitive_info(detail: str) -> bool:
         if pattern.search(detail):
             return True
     return False
-
-
-# =============================================================================
-# Telemetry Integration
-# =============================================================================
-
-def _track_error_to_telemetry(
-    request: Request,
-    status_code: int,
-    error_message: str,
-    error_type: str = "http_error",
-    error_code: str = None,
-    exc: Exception = None
-):
-    """
-    Track error to telemetry system.
-
-    This is non-blocking - telemetry failures should never affect the response.
-    """
-    try:
-        from services.observability.telemetry_service import get_telemetry_service
-
-        service = get_telemetry_service()
-        service.save_event({
-            "event_type": "backend_error",
-            "event_name": f"http.{status_code}",
-            "trace_id": request.headers.get("x-trace-id"),
-            "session_id": request.headers.get("x-session-id"),
-            "error": {
-                "message": error_message,
-                "type": error_type,
-                "code": error_code or str(status_code),
-                "stack": str(exc) if exc and status_code >= 500 else None
-            },
-            "request": {
-                "method": request.method,
-                "url": str(request.url),
-                "status": status_code,
-                "client_ip": request.client.host if request.client else None,
-                "user_agent": request.headers.get("user-agent")
-            },
-            "timestamp": datetime.now(timezone.utc).isoformat() + "Z",
-            "environment": os.getenv("ENVIRONMENT", "development"),
-            "source": "backend"
-        })
-    except Exception as e:
-        # Telemetry should never fail the request
-        logger.debug(f"Telemetry tracking failed: {e}")
 
 
 class ErrorResponse(BaseModel):
@@ -183,17 +133,6 @@ async def http_exception_handler(
         else:
             error_message = raw_detail or error_code.replace("_", " ").title()
 
-    # Track error to telemetry (4xx and 5xx)
-    if exc.status_code >= 400:
-        _track_error_to_telemetry(
-            request=request,
-            status_code=exc.status_code,
-            error_message=str(exc.detail) if exc.detail else error_message,
-            error_type="HTTPException",
-            error_code=error_code,
-            exc=exc if exc.status_code >= 500 else None
-        )
-
     response_content = {
         "ok": False,
         "error": error_message,
@@ -254,15 +193,6 @@ async def validation_exception_handler(
 
     logger.warning(f"Validation error on {request.url.path}: {formatted_errors}")
 
-    # Track validation error to telemetry
-    _track_error_to_telemetry(
-        request=request,
-        status_code=422,
-        error_message=summary,
-        error_type="ValidationError",
-        error_code="VALIDATION_ERROR"
-    )
-
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
@@ -318,16 +248,6 @@ async def provider_exception_handler(
     if exc.http_status < 500 and exc.details:
         response_content["details"] = exc.details
 
-    # Track provider error to telemetry
-    _track_error_to_telemetry(
-        request=request,
-        status_code=exc.http_status,
-        error_message=exc.message,
-        error_type="ProviderException",
-        error_code=exc.code.value,
-        exc=exc if exc.http_status >= 500 else None
-    )
-
     return JSONResponse(
         status_code=exc.http_status,
         content=response_content,
@@ -347,16 +267,6 @@ async def generic_exception_handler(
     logger.error(
         f"Unhandled exception on {request.method} {request.url.path}: {exc}",
         exc_info=True
-    )
-
-    # Track unhandled exception to telemetry
-    _track_error_to_telemetry(
-        request=request,
-        status_code=500,
-        error_message=str(exc),
-        error_type=type(exc).__name__,
-        error_code="INTERNAL_ERROR",
-        exc=exc
     )
 
     return JSONResponse(

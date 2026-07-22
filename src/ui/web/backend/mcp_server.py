@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Flyto2 Workflow MCP Server
+Flyto2 Flow MCP Server
 
 Exposes workflows with trigger_type='mcp' as MCP tools for AI agents.
-Communicates with the flyto-cloud backend via HTTP API.
+Communicates only with the local Flyto2 Flow backend over loopback HTTP.
 
 Usage:
     python -m mcp_server
@@ -13,7 +13,7 @@ Claude Code config (~/.claude/mcp_servers.json):
     "flyto-workflows": {
         "command": "python",
         "args": ["-m", "mcp_server"],
-        "cwd": "/path/to/flyto-cloud/src/ui/web/backend"
+        "cwd": "/path/to/flyto-flow/src/ui/web/backend"
     }
 }
 """
@@ -22,7 +22,6 @@ import json
 import os
 import sys
 import time as _time
-from hashlib import sha256
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
@@ -30,11 +29,8 @@ from urllib.error import URLError
 
 import yaml
 
-# Backend API base URL (flyto-cloud local runner)
+# Local backend API base URL.
 BACKEND_URL = os.environ.get("FLYTO_BACKEND_URL", "http://127.0.0.1:9000")
-# API key for authentication (optional, for cloud mode)
-API_KEY = os.environ.get("FLYTO_API_KEY", "")
-ALLOW_UNAUTH_LOCAL = os.environ.get("FLYTO_MCP_ALLOW_UNAUTH_LOCAL", "").lower() in ("1", "true", "yes")
 # Poll interval for refreshing workflow list (seconds)
 TOOL_CACHE_TTL = int(os.environ.get("FLYTO_MCP_CACHE_TTL", "30"))
 # Max execution wait time (seconds)
@@ -82,14 +78,11 @@ def _is_loopback_backend_url(url: str) -> bool:
     return hostname in {"localhost", "127.0.0.1", "::1"} or hostname.endswith(".localhost")
 
 
-def _assert_unauth_local_allowed(backend_url: str) -> None:
+def _assert_loopback_backend(backend_url: str) -> None:
+    """Prevent the stdio bridge from becoming a remote product client."""
     if not _is_loopback_backend_url(backend_url):
         raise PermissionError(
-            "FLYTO_MCP_ALLOW_UNAUTH_LOCAL only permits loopback backend URLs"
-        )
-    if not (os.environ.get("FLYTO_SIDECAR_SECRET") or os.environ.get("FLYTO_LOCAL_SECRET")):
-        raise PermissionError(
-            "FLYTO_MCP_ALLOW_UNAUTH_LOCAL requires FLYTO_SIDECAR_SECRET or FLYTO_LOCAL_SECRET"
+            "FLYTO_BACKEND_URL must point to a loopback Flyto2 Flow instance"
         )
 
 
@@ -105,20 +98,12 @@ def _api_request(
     bearer_token: Optional[str] = None,
     backend_url: Optional[str] = None,
 ) -> dict:
-    """Make an HTTP request to the flyto-cloud backend."""
-    auth_token = bearer_token or API_KEY
+    """Make an accountless request to the local Flyto2 Flow backend."""
+    del bearer_token
     base_url = (backend_url or BACKEND_URL).rstrip("/")
-    if not auth_token:
-        if not ALLOW_UNAUTH_LOCAL:
-            raise PermissionError(
-                "FLYTO_API_KEY is required for MCP workflow access "
-                "(set FLYTO_MCP_ALLOW_UNAUTH_LOCAL=1 only for explicit local development)"
-            )
-        _assert_unauth_local_allowed(base_url)
+    _assert_loopback_backend(base_url)
     url = f"{base_url}{path}"
     headers = {"Content-Type": "application/json"}
-    if auth_token:
-        headers["Authorization"] = f"Bearer {auth_token}"
 
     data = json.dumps(body).encode() if body else None
     req = Request(url, data=data, headers=headers, method=method)
@@ -137,14 +122,6 @@ def _api_request(
 _tool_cache: List[dict] = []
 _tool_cache_time: float = 0
 _workflow_map: Dict[str, dict] = {}  # tool_name → workflow info
-_tool_cache_by_auth: Dict[str, dict] = {}
-
-
-def _auth_cache_key(bearer_token: Optional[str], backend_url: Optional[str] = None) -> str:
-    """Return a stable cache key without storing bearer tokens in memory."""
-    if not bearer_token:
-        return "__default__"
-    return sha256(f"{backend_url or BACKEND_URL}|{bearer_token}".encode()).hexdigest()
 
 
 def _refresh_tools(
@@ -155,29 +132,22 @@ def _refresh_tools(
 ) -> List[dict]:
     """Fetch workflows with trigger_type=mcp and convert to MCP tools."""
     global _tool_cache, _tool_cache_time, _workflow_map
+    del bearer_token
 
     now = _time.monotonic()
-    if bearer_token:
-        cache_key = _auth_cache_key(bearer_token, backend_url)
-        cached = _tool_cache_by_auth.get(cache_key)
-        if not force and cached and (now - cached["time"]) < TOOL_CACHE_TTL:
-            return cached["tools"]
-    elif not force and _tool_cache and (now - _tool_cache_time) < TOOL_CACHE_TTL:
+    if not force and _tool_cache and (now - _tool_cache_time) < TOOL_CACHE_TTL:
         return _tool_cache
 
     try:
-        # Get all user templates from the backend
+        # Get every workflow from the fixed local workspace.
         result = _api_request(
             "GET",
             "/api/templates/?page=1&page_size=200",
-            bearer_token=bearer_token,
             backend_url=backend_url,
         )
         templates = result.get("items", result.get("templates", []))
     except Exception as e:
         _log(f"Failed to fetch templates: {e}")
-        if bearer_token:
-            return _tool_cache_by_auth.get(_auth_cache_key(bearer_token, backend_url), {}).get("tools", [])
         return _tool_cache  # Return stale cache on error
 
     tools = []
@@ -215,19 +185,11 @@ def _refresh_tools(
             "workflow_id": tmpl.get("id"),
             "workflow_name": tmpl.get("name"),
             "steps": steps,
-            "user_id": tmpl.get("user_id"),
         }
 
-    if bearer_token:
-        _tool_cache_by_auth[_auth_cache_key(bearer_token, backend_url)] = {
-            "tools": tools,
-            "time": now,
-            "workflow_map": new_map,
-        }
-    else:
-        _tool_cache = tools
-        _tool_cache_time = now
-        _workflow_map = new_map
+    _tool_cache = tools
+    _tool_cache_time = now
+    _workflow_map = new_map
     _log(f"Refreshed tools: {len(tools)} MCP workflows found")
     return tools
 
@@ -277,19 +239,13 @@ def _get_workflow_info(
     bearer_token: Optional[str] = None,
     backend_url: Optional[str] = None,
 ) -> Optional[dict]:
-    """Resolve a tool name to a workflow within the current auth scope."""
-    if bearer_token:
-        cache_key = _auth_cache_key(bearer_token, backend_url)
-        wf_info = _tool_cache_by_auth.get(cache_key, {}).get("workflow_map", {}).get(tool_name)
-        if wf_info:
-            return wf_info
-        _refresh_tools(bearer_token=bearer_token, force=True, backend_url=backend_url)
-        return _tool_cache_by_auth.get(cache_key, {}).get("workflow_map", {}).get(tool_name)
+    """Resolve a tool name in the fixed local workspace."""
+    del bearer_token
 
     wf_info = _workflow_map.get(tool_name)
     if wf_info:
         return wf_info
-    _refresh_tools()
+    _refresh_tools(force=True, backend_url=backend_url)
     return _workflow_map.get(tool_name)
 
 
@@ -504,7 +460,7 @@ def handle_json_rpc_request(
             },
             "serverInfo": {
                 "name": "flyto-workflows",
-                "title": "Flyto2 Workflow Tools",
+                "title": "Flyto2 Flow",
                 "version": "1.0.0",
                 "description": "Execute flyto workflows as MCP tools. Workflows with trigger_type='mcp' are exposed as callable tools.",
             },

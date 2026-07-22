@@ -193,7 +193,6 @@ CUSTOM_UI_MODULE_PATTERNS: Set[str] = {
 
 # Prefix patterns for custom UI detection
 CUSTOM_UI_PREFIXES: Set[str] = {
-    "huggingface.",  # HuggingFace - Model browser
 }
 
 

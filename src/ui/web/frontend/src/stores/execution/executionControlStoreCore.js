@@ -7,7 +7,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import * as executionAPI from '@/api/executions'
-import { telemetry } from '@/services/telemetry'
 import { useCheckpointStore } from './checkpointStore'
 import { useNodeOutputStore } from './nodeOutputStore'
 
@@ -65,10 +64,6 @@ export const useExecutionControlStore = defineStore('executionControl', () => {
       const result = await executionAPI.pauseExecution(executionId.value, reason)
       if (result.ok) {
         status.value = 'paused'
-        telemetry.track('execution.pause', {
-          execution_id: executionId.value,
-          reason
-        })
         await fetchState()
       }
       return result.ok
@@ -90,7 +85,6 @@ export const useExecutionControlStore = defineStore('executionControl', () => {
       const result = await executionAPI.resumeExecution(executionId.value)
       if (result.ok) {
         status.value = 'running'
-        telemetry.track('execution.resume', { execution_id: executionId.value })
       }
       return result.ok
     } catch (err) {
@@ -112,7 +106,6 @@ export const useExecutionControlStore = defineStore('executionControl', () => {
       const result = await executionAPI.stepExecution(executionId.value)
       if (result.ok) {
         status.value = 'paused'
-        telemetry.track('execution.step', { execution_id: executionId.value })
         await fetchState()
       }
       return result.ok
@@ -131,19 +124,7 @@ export const useExecutionControlStore = defineStore('executionControl', () => {
     loading.value = true
 
     try {
-      // Try Worker execution state first (local/direct execution)
-      let result = await executionAPI.getExecutionState(executionId.value)
-
-      // Fallback to cloud job state if Worker returns 404 (cloud job mode:
-      // executionId is actually a jobId, Worker doesn't have it in memory)
-      if (!result?.ok) {
-        try {
-          const { getJobState } = await import('@/api/jobs')
-          result = await getJobState(executionId.value)
-        } catch {
-          // Job API also failed — use whatever we got from first attempt
-        }
-      }
+      const result = await executionAPI.getExecutionState(executionId.value)
 
       if (result?.ok) {
         currentState.value = result
@@ -197,11 +178,6 @@ export const useExecutionControlStore = defineStore('executionControl', () => {
         modifiedVariables
       )
       if (result.ok && result.newExecutionId) {
-        telemetry.track('execution.resume_from_checkpoint', {
-          execution_id: executionId.value,
-          checkpoint_id: checkpointId,
-          new_execution_id: result.newExecutionId
-        })
         executionId.value = result.newExecutionId
         status.value = 'running'
         resumeOptions.value = null

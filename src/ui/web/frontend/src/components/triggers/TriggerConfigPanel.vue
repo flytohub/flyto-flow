@@ -102,75 +102,20 @@
       </div>
     </template>
 
-    <!-- Webhook Config -->
-    <template v-if="currentType === 'webhook'">
-      <!-- Webhook URL -->
-      <div v-if="params.webhook_url">
-        <label class="block text-xs text-gray-500 mb-1">Webhook URL</label>
-        <div class="flex items-center gap-2">
-          <code class="flex-1 text-xs text-green-400 bg-gray-900 px-2 py-1.5 rounded overflow-x-auto">
-            {{ params.webhook_url }}
-          </code>
-          <button @click="copyToClipboard(params.webhook_url)" aria-label="Copy URL" class="p-1.5 text-gray-400 hover:text-white">
-            <Copy :size="14" />
-          </button>
-        </div>
-      </div>
-
-      <!-- Provider -->
-      <div>
-        <label class="block text-xs text-gray-500 mb-1">{{ $t('triggers.provider', 'Provider') }}</label>
-        <div class="flex gap-2">
-          <button
-            v-for="prov in webhookProviders"
-            :key="prov.value"
-            @click="updateParam('webhook_provider', prov.value)"
-            class="px-3 py-1.5 text-xs rounded-lg border transition-colors"
-            :class="(params.webhook_provider || 'generic') === prov.value
-              ? 'border-amber-500 bg-amber-600/20 text-amber-300'
-              : 'border-gray-600 text-gray-400 hover:border-gray-500'"
-          >
-            {{ prov.label }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Signature Required -->
-      <div class="flex items-center gap-2">
-        <input
-          type="checkbox"
-          :checked="params.require_signature !== false"
-          @change="updateParam('require_signature', $event.target.checked)"
-          class="rounded bg-gray-900 border-gray-600 text-amber-500 focus:ring-amber-500"
-        />
-        <label class="text-xs text-gray-400">{{ $t('triggers.requireSignature', 'Require Signature Verification') }}</label>
-      </div>
-
-      <!-- Test Button -->
-      <button
-        v-if="webhookId"
-        @click="$emit('test-webhook', webhookId)"
-        class="w-full px-3 py-2 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 text-xs rounded-lg border border-amber-600/30 transition-colors flex items-center justify-center gap-2"
-      >
-        <Play :size="14" />
-        {{ $t('triggers.testWebhook', 'Test Webhook') }}
-      </button>
-    </template>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { Hand, Webhook, Clock, Radio, Copy, Play, PlugZap } from 'lucide-vue-next'
-import { validateCron } from '@/api/triggers'
+import { Hand, Clock, Radio, PlugZap } from 'lucide-vue-next'
+import { getNextCronRuns, validateCron } from '@/api/triggers'
 
 const props = defineProps({
   params: { type: Object, default: () => ({}) },
-  webhookId: { type: String, default: null },
   readOnly: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['update:params', 'test-webhook'])
+const emit = defineEmits(['update:params'])
 
 const cronError = ref('')
 const nextRuns = ref([])
@@ -179,17 +124,9 @@ const currentType = computed(() => props.params.trigger_type || 'manual')
 
 const triggerTypes = [
   { value: 'manual', label: 'Manual', icon: Hand },
-  { value: 'webhook', label: 'Webhook', icon: Webhook },
   { value: 'schedule', label: 'Schedule', icon: Clock },
   { value: 'event', label: 'Event', icon: Radio },
   { value: 'mcp', label: 'MCP', icon: PlugZap },
-]
-
-const webhookProviders = [
-  { value: 'generic', label: 'Generic' },
-  { value: 'github', label: 'GitHub' },
-  { value: 'stripe', label: 'Stripe' },
-  { value: 'slack', label: 'Slack' },
 ]
 
 const cronPresets = [
@@ -247,8 +184,7 @@ async function fetchNextRuns() {
   if (!expr) return
 
   try {
-    const { get } = await import('@/api/client')
-    const result = await get(`/triggers/cron/next?expression=${encodeURIComponent(expr)}&timezone=${encodeURIComponent(tz)}&count=3`)
+    const result = await getNextCronRuns(expr, tz, 3)
     if (result.ok) {
       nextRuns.value = result.next_runs || []
     }
@@ -259,10 +195,6 @@ async function fetchNextRuns() {
 
 function formatDate(iso) {
   return new Date(iso).toLocaleString()
-}
-
-async function copyToClipboard(text) {
-  await navigator.clipboard.writeText(text)
 }
 
 // Auto-fetch next runs when cron changes

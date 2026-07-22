@@ -15,7 +15,6 @@ from services.template.schemas.canonical_module import (
     INCLUDE_SNAKE_CASE_ALIASES,
 )
 from services.node_config import enrich_module_with_node_config
-from services.i18n_service import translate, translate_module
 from .base import (
     normalize_icon,
     normalize_params_schema,
@@ -61,14 +60,8 @@ def normalize_atomic(raw: Dict[str, Any], level: str = "atomic", lang: str = "en
     label_key = get_value_with_aliases(raw, "ui_label_key", "label_key")
     description_key = get_value_with_aliases(raw, "ui_description_key", "description_key")
 
-    # Apply i18n translation if lang is not English
-    label, description = translate_module(
-        label=label_raw,
-        description=description_raw,
-        label_key=label_key,
-        description_key=description_key,
-        locale=lang
-    )
+    # The browser applies bundled translations through labelKey/descriptionKey.
+    label, description = label_raw, description_raw
     icon_raw = get_value_with_aliases(raw, "ui_icon", "icon", default=defaults["icon"])
     color = get_value_with_aliases(raw, "ui_color", "color", default=defaults["color"])
     group = get_value_with_aliases(raw, "ui_group", default=f"{category.title()}")
@@ -93,9 +86,7 @@ def normalize_atomic(raw: Dict[str, Any], level: str = "atomic", lang: str = "en
     params_schema_raw = get_value_with_aliases(
         raw, "ui_params_schema", "params_schema", "paramsSchema", default={}
     )
-    # Build translate function for param labels (skip for English)
-    param_translate_fn = (lambda key, fallback: translate(key, lang, fallback)) if lang != "en" else None
-    params_schema = normalize_params_schema(params_schema_raw, translate_fn=param_translate_fn)
+    params_schema = normalize_params_schema(params_schema_raw)
     params_schema = add_hidden_markers(params_schema)
 
     # Pre-compute default params

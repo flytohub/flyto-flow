@@ -1,13 +1,10 @@
 """
 Registry Loader Service
 
-Loads module registries from pip-installed flyto-core package.
+Loads module registries from the flyto-core package bundled in the CE image or
+from a wheel explicitly imported by the local operator.
 
-Import path: core.modules (unified, PyPI package)
-
-Install flyto-core:
-- Online: pip install flyto-core
-- Offline: pip install flyto_core-x.x.x.whl
+Import path: core.modules
 """
 import logging
 from typing import Optional, Any
@@ -16,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class RegistryLoader:
-    """Service for loading module registries from flyto-core (pip package)"""
+    """Load registries from CE's active local flyto-core installation."""
 
     _module_registry = None
     _composite_registry = None
@@ -44,7 +41,7 @@ class RegistryLoader:
             self._module_registry = ModuleRegistry
         except ImportError as e:
             logger.error(f"Failed to import core.modules: {e}")
-            logger.error("Install flyto-core: pip install flyto-core")
+            logger.error("The bundled flyto-core runtime is unavailable")
 
         # Discover atomic modules (separate try so _module_registry is always saved)
         if self._module_registry is not None and self._module_registry.module_count() < 10:

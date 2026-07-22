@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional
 class CredentialScope(str, Enum):
     """Credential scope levels."""
 
-    ORGANIZATION = "organization"
+    WORKSPACE = "workspace"
     PROJECT = "project"
     WORKFLOW = "workflow"
 
@@ -30,7 +30,7 @@ class CredentialAccess:
 
     id: str
     credential_name: str
-    user_id: str
+    workspace_id: str
     action: str  # access, reveal, update, delete
     timestamp: str
     ip_address: Optional[str] = None
@@ -43,7 +43,7 @@ class CredentialAccess:
         return {
             "id": self.id,
             "credential_name": self.credential_name,
-            "user_id": self.user_id,
+            "workspace_id": self.workspace_id,
             "action": self.action,
             "timestamp": self.timestamp,
             "ip_address": self.ip_address,
@@ -114,7 +114,7 @@ class SecretRef:
 
     type: str = "secretRef"  # Always "secretRef"
     credential_name: str = ""
-    scope: str = "workflow"  # organization, project, workflow
+    scope: str = "workflow"  # workspace, project, workflow
     scope_id: str = ""
 
     def to_dict(self) -> Dict[str, Any]:

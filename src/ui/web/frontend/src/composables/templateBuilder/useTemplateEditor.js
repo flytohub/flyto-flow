@@ -4,7 +4,7 @@
  * Manages inline template editing dialog state and operations:
  * - Opening/closing the template editor dialog
  * - Loading template data for editing
- * - Saving (update in place or fork)
+ * - Saving local templates
  * - Inline template creation from AddNodeMenu
  */
 
@@ -28,7 +28,6 @@ export function useTemplateEditor({
   const editingTemplate = reactive({
     id: null,
     name: '',
-    mutability: 'editable',
     elements: [],
     ui: { sections: [] },
     loading: false,
@@ -39,7 +38,6 @@ export function useTemplateEditor({
   function resetEditingTemplate() {
     editingTemplate.id = null
     editingTemplate.name = ''
-    editingTemplate.mutability = 'editable'
     editingTemplate.elements = []
     editingTemplate.ui = { sections: [] }
     editingTemplate.loading = false
@@ -63,7 +61,6 @@ export function useTemplateEditor({
       }
       const tpl = result.template
       editingTemplate.name = tpl.name || tpl.templateName || 'Template'
-      editingTemplate.mutability = tpl.mutability || 'editable'
       editingTemplate.ui = tpl.ui || { sections: [] }
 
       const steps = tpl.steps || tpl.workflowSteps || []
@@ -81,36 +78,6 @@ export function useTemplateEditor({
     }
   }
 
-  async function forkTemplate(templateId, name, steps, ui) {
-    const result = await templatesAPI.createTemplate({
-      name: (name || 'Template') + ' (copy)',
-      description: '',
-      category: 'other',
-      steps,
-      ui
-    })
-    if (!result.ok) {
-      showToast(t('templateBuilder.messages.forkFailed', 'Failed to fork template'), 'error')
-      return null
-    }
-    const newId = result.template.id
-    elements.value = elements.value.map(el => {
-      if (el.data?.module === `template.invoke:${templateId}`) {
-        return {
-          ...el,
-          data: {
-            ...el.data,
-            module: `template.invoke:${newId}`,
-            params: { ...el.data.params, template_id: newId }
-          }
-        }
-      }
-      return el
-    })
-    hasUnsavedChanges.value = true
-    return newId
-  }
-
   async function updateTemplate(templateId, steps, ui) {
     const result = await templatesAPI.updateTemplate(templateId, { steps, ui })
     if (!result.ok) {
@@ -121,10 +88,9 @@ export function useTemplateEditor({
   }
 
   async function handleTemplateEditorSave(payload) {
-    const { elements: dialogElements, ui, isNested, templateId: nestedTemplateId, mutability: nestedMutability } = payload
+    const { elements: dialogElements, ui, isNested, templateId: nestedTemplateId } = payload
 
     const tid = isNested ? nestedTemplateId : editingTemplate.id
-    const mut = isNested ? nestedMutability : editingTemplate.mutability
     if (!tid) return
 
     editingTemplate.saving = true
@@ -132,11 +98,9 @@ export function useTemplateEditor({
     try {
       const steps = await elementsToBackendStepsAsync(dialogElements)
 
-      const success = mut === 'fork_on_use'
-        ? await forkTemplate(tid, isNested ? 'Template' : editingTemplate.name, steps, ui)
-        : await updateTemplate(tid, steps, ui)
+      const success = await updateTemplate(tid, steps, ui)
 
-      if (!success && success !== null) return
+      if (!success) return
 
       if (!isNested) showTemplateEditor.value = false
 
@@ -183,6 +147,5 @@ export function useTemplateEditor({
     handleTemplateEditorSave,
     handleTemplateEditorClose,
     handleInlineTemplateCreated,
-    forkTemplate,
   }
 }

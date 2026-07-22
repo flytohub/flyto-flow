@@ -2,7 +2,7 @@
 Local SQLite Storage
 
 Stores execution records and logs locally.
-Firebase stores workflow definitions; SQLite stores execution history.
+CE stores workflow definitions and execution history in local SQLite files.
 """
 
 from gateway.storage.database import get_db, init_db, close_db

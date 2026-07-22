@@ -169,7 +169,6 @@
 import { computed, reactive, ref } from 'vue'
 import { Clock, X, Download, Copy, Check, AlertTriangle } from 'lucide-vue-next'
 import DOMPurify from 'dompurify'
-import { authAPI } from '@/api/auth'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -229,29 +228,22 @@ const outputDownloadFilename = computed(() => {
 
 const _isDesktop = !!window.__TAURI_INTERNALS__
 
-function _authHeaders() {
-  // Goes through authAPI — returns null for expired / malformed tokens so we
-  // don't leak stale Bearer headers into download requests.
-  const token = authAPI.getAccessToken()
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
-
-/** Download or open a file depending on Desktop/Cloud mode */
-async function downloadWithAuth(url, filename) {
+/** Download or open a same-origin local file. */
+async function downloadLocal(url, filename) {
   try {
     if (_isDesktop) {
       // Desktop: open file directly with OS default app
       const filePath = new URL(url, window.location.origin).searchParams.get('path')
       if (filePath) {
         await fetch(`/api/files/open?path=${encodeURIComponent(filePath)}`, {
-          method: 'POST', headers: _authHeaders(),
+          method: 'POST',
         })
         return
       }
     }
 
     // Cloud: fetch with auth → blob → download
-    const resp = await fetch(url, { headers: _authHeaders() })
+    const resp = await fetch(url)
     if (!resp.ok) throw new Error(`Download failed: ${resp.status}`)
     const blob = await resp.blob()
     const blobUrl = URL.createObjectURL(blob)
@@ -303,7 +295,7 @@ function handleDownload(item, index) {
 
   // Server-side download URL — fetch with auth then trigger download
   if (item.download_url) {
-    downloadWithAuth(item.download_url, item.download_filename || 'download')
+    downloadLocal(item.download_url, item.download_filename || 'download')
     return
   }
 

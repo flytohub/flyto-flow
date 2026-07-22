@@ -83,7 +83,7 @@ class StepTrackingHooks(ExecutorHooks):
         runs_directory: Optional["RunsDirectory"] = None,
         execution_repo: Optional[Any] = None,
         execution_info: Optional["ExecutionInfo"] = None,
-        user_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
     ):
         """
         Initialize step tracking hooks.
@@ -93,13 +93,13 @@ class StepTrackingHooks(ExecutorHooks):
             runs_directory: RunsDirectory instance for JSONL logs
             execution_repo: ExecutionRepository class for SQLite
             execution_info: ExecutionInfo instance for node state tracking
-            user_id: User ID for points deduction (None = skip deduction)
+            workspace_id: Workspace ID for points deduction (None = skip deduction)
         """
         self._execution_id = execution_id
         self._runs_directory = runs_directory
         self._execution_repo = execution_repo
         self._execution_info = execution_info
-        self._user_id = user_id
+        self._workspace_id = workspace_id
         self._step_start_times: Dict[str, float] = {}
         self._step_indices: Dict[str, int] = {}
 
@@ -354,17 +354,6 @@ class StepTrackingHooks(ExecutorHooks):
             }))
         except Exception:
             pass
-
-        # Deduct execution points for completed steps
-        if self._user_id and status == "success":
-            try:
-                import asyncio
-                from services.quota_enforcement import deduct_points_for_module
-                asyncio.ensure_future(
-                    deduct_points_for_module(self._user_id, context.module_id or "")
-                )
-            except Exception as e:
-                logger.warning(f"Failed to deduct points for step {step_id}: {e}")
 
         # Append to JSONL log
         if self._runs_directory:

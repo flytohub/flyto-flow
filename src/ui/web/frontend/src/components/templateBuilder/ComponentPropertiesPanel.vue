@@ -36,7 +36,7 @@
             :model-value="component.multiple" @update:model-value="updateField('multiple', $event)" />
           <!-- Import from Snapshot hints -->
           <div v-if="hintSelects.length" class="import-hints-section">
-            <label class="import-label">{{ $t('packages.importFromPage') }}</label>
+            <label class="import-label">{{ $t('templateBuilder.importFromPage', 'Import from page') }}</label>
             <div class="import-list">
               <button
                 v-for="(sel, idx) in hintSelects" :key="idx"

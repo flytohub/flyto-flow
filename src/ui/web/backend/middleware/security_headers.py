@@ -144,8 +144,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Referrer policy
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
-        # Allow popups (Google OAuth) to communicate back to opener
-        response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
+        response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
 
         # Disable some browser features for security
         response.headers["Permissions-Policy"] = (

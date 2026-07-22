@@ -18,7 +18,7 @@ const DEFAULT_FILTERS = {
 
 /** Default scope groups */
 const DEFAULT_SCOPE_GROUPS = {
-  organization: [],
+  workspace: [],
   project: [],
   workflow: []
 }

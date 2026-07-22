@@ -31,8 +31,7 @@ class SQLiteQueue(QueueInterface):
         self,
         execution_id: str,
         workflow_id: str,
-        user_id: Optional[str] = None,
-        org_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         priority: int = 0,
         max_attempts: int = 3,
         timeout_ms: int = 300000,
@@ -44,14 +43,14 @@ class SQLiteQueue(QueueInterface):
         job = self._repo.enqueue(
             execution_id=execution_id,
             workflow_id=workflow_id,
-            user_id=user_id,
+            workspace_id=workspace_id,
             priority=priority,
             max_attempts=max_attempts,
             timeout_ms=timeout_ms,
             visibility_timeout_ms=visibility_timeout_ms,
         )
 
-        return self._job_to_queue_job(job, org_id, metadata)
+        return self._job_to_queue_job(job, metadata=metadata)
 
     async def dequeue(
         self,
@@ -130,15 +129,14 @@ class SQLiteQueue(QueueInterface):
     async def list_jobs(
         self,
         status: Optional[str] = None,
-        user_id: Optional[str] = None,
-        org_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         limit: int = 50,
         offset: int = 0,
     ) -> List[QueueJob]:
         """List jobs with optional filters."""
         jobs = self._repo.list_jobs(
             status=status,
-            user_id=user_id,
+            workspace_id=workspace_id,
             limit=limit,
             offset=offset,
         )
@@ -163,7 +161,6 @@ class SQLiteQueue(QueueInterface):
     def _job_to_queue_job(
         self,
         job: Job,
-        org_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> QueueJob:
         """Convert Job to QueueJob."""
@@ -171,8 +168,7 @@ class SQLiteQueue(QueueInterface):
             id=job.id,
             execution_id=job.execution_id,
             workflow_id=job.workflow_id,
-            user_id=job.user_id,
-            org_id=org_id,
+            workspace_id=job.workspace_id,
             priority=job.priority,
             status=job.status,
             attempts=job.attempts,

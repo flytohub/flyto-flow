@@ -57,7 +57,7 @@ ALLOWED_MODULE_PREFIXES = {
     "compare", "condition", "logic",
 
     # AI & ML
-    "ai", "agent", "llm", "huggingface", "vision", "vector",
+    "ai", "agent", "llm", "vision", "vector",
 
     # Image & Media
     "image", "video", "audio", "media",

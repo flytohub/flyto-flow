@@ -11,7 +11,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { getTieredCatalog } from '@/api/modules'
-import { telemetry } from '@/services/telemetry'
 import { normalizeTieredCatalogResponse } from '@/utils/dataBoundary'
 
 const CACHE_KEY = 'flyto_modules_cache'
@@ -107,10 +106,6 @@ export const useModulesStore = defineStore('modules', () => {
         if (excludeTemplateId) {
           _filterExcludedTemplate(excludeTemplateId)
         }
-        telemetry.track('modules.cache_hit', {
-          count: Object.keys(modulesMetadata.value).length,
-          cacheAge: Date.now() - cached.timestamp
-        })
         return { ok: true, fromCache: true }
       }
     }
@@ -134,13 +129,6 @@ export const useModulesStore = defineStore('modules', () => {
       hydrateStore(storeData)
 
       saveToCache(locale, storeData, response.version)
-
-      telemetry.track('modules.catalog_load', {
-        totalModules: Object.keys(modulesMetadata.value).length,
-        defaultCount: defaultModulesList.value.length,
-        expertCount: expertModulesList.value.length,
-        categoriesCount: moduleCategories.value.length
-      })
 
       return { ok: true }
     } catch (err) {

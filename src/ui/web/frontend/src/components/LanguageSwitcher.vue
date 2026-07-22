@@ -63,11 +63,8 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { ChevronDown, Search, Check } from 'lucide-vue-next'
 import AppInput from '@/components/common/AppInput.vue'
 import { setLocale, getLocale, getAvailableLocales } from '@/i18n'
-import { useUserStore } from '@/stores/userStore'
-import { telemetry } from '@/services/telemetry'
 import { regionToFlag, localeToFlag, regionToFlagUrl, localeToFlagUrl } from '@/utils/emoji'
 
-const userStore = useUserStore()
 const currentLocale = ref(getLocale())
 const isOpen = ref(false)
 const switcherRef = ref(null)
@@ -129,29 +126,7 @@ function getDisplayName(lang) {
 
 const languages = computed(() => {
   const locales = getAvailableLocales()
-
-  // Get allowed languages from store (with safety check)
-  let allowed
-  let isAdmin = false
-  let isAuthenticated = false
-  try {
-    allowed = userStore.allowedLanguages
-    isAdmin = userStore.isAdmin
-    isAuthenticated = userStore.isAuthenticated
-  } catch {
-    allowed = null
-  }
-
   return locales
-    .filter(lang => {
-      // Always show all languages for:
-      // 1. Admin users (null = all allowed)
-      // 2. Not authenticated users (let them choose before login)
-      // 3. Store not ready (fallback)
-      if (allowed === null || isAdmin || !isAuthenticated) return true
-      // Otherwise filter by allowed_languages
-      return allowed.includes(lang.code)
-    })
     .map(lang => ({
       ...lang,
       flagUrl: getFlagUrlForLocale(lang),
@@ -209,14 +184,7 @@ async function selectLanguage(code, event) {
     return
   }
 
-  const oldLocale = currentLocale.value
   currentLocale.value = code
-
-  // Track language change
-  telemetry.track('settings.language_change', {
-    old_lang: oldLocale,
-    new_lang: code
-  })
 
   await setLocale(code)
   isOpen.value = false

@@ -1,4 +1,4 @@
-"""Cloud CE startup helpers with no hosted device or job polling."""
+"""Flyto2 Flow startup helpers with no hosted device or job polling."""
 
 import logging
 from pathlib import Path

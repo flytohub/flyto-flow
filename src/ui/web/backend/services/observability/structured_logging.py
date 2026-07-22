@@ -96,7 +96,7 @@ class ExecutionLogContext:
     exec_id: str
     workflow_id: Optional[str] = None
     workflow_name: Optional[str] = None
-    user_id: Optional[str] = None
+    workspace_id: Optional[str] = None
     trace_id: Optional[str] = None
     node_id: Optional[str] = None
     node_run_id: Optional[str] = None
@@ -123,7 +123,7 @@ class ExecutionLogContext:
             exec_id=self.exec_id,
             workflow_id=self.workflow_id,
             workflow_name=self.workflow_name,
-            user_id=self.user_id,
+            workspace_id=self.workspace_id,
             trace_id=self.trace_id,
             worker_id=self.worker_id,
             node_id=node_id,
@@ -283,7 +283,7 @@ class StructuredLogger:
         exec_id: str,
         workflow_id: Optional[str] = None,
         workflow_name: Optional[str] = None,
-        user_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         trace_id: Optional[str] = None,
         worker_id: Optional[str] = None,
     ) -> ExecutionContextManager:
@@ -292,7 +292,7 @@ class StructuredLogger:
             exec_id=exec_id,
             workflow_id=workflow_id,
             workflow_name=workflow_name,
-            user_id=user_id,
+            workspace_id=workspace_id,
             trace_id=trace_id or exec_id,  # Use exec_id as trace_id if not provided
             worker_id=worker_id,
         )

@@ -250,7 +250,7 @@ export async function importTemplateData(content, options = {}) {
     result.warnings.push(...importResult.warnings)
     result.errors = importResult.errors
 
-    // Extract _ui block (positions, builder sections) for flyto-cloud
+    // Extract the portable _ui block (positions and builder sections).
     if (parsedRaw?._ui) {
       result._ui = parsedRaw._ui
 

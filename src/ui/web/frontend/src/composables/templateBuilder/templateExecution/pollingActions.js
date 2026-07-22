@@ -6,7 +6,6 @@
  */
 
 import * as executionAPI from '@/api/executions'
-import * as jobsAPI from '@/api/jobs'
 import { useNodeOutputStore } from '@/stores/execution/nodeOutputStore'
 import { applyPollData, syncNodeOutputStore, handleTerminalStatus, handlePollError } from './pollingHelpers'
 import { connectExecWs, disconnectExecWs } from './pollingWebSocket'
@@ -34,10 +33,6 @@ export function createPollingActions(state, controlStore) {
   let isPolling = false
   let pollPromise = null  // FE-P0-005: Track active poll promise for atomic guard
   let currentPollInterval = BASE_POLL_INTERVAL_MS
-
-  // Cloud job mode
-  let pollingMode = 'execution'
-  let currentJobId = null
 
   // WebSocket ref container (mutable object so helpers can update it)
   const wsRef = { ws: null }
@@ -148,26 +143,14 @@ export function createPollingActions(state, controlStore) {
    */
   async function doPollExecution() {
     try {
-      const data = pollingMode === 'job' && currentJobId
-        ? await jobsAPI.getJobState(currentJobId)
-        : await executionAPI.getExecutionStatus(state.currentExecutionId.value)
+      const data = await executionAPI.getExecutionStatus(state.currentExecutionId.value)
       pollErrorCount = 0
       currentPollInterval = BASE_POLL_INTERVAL_MS
 
       if (data.ok) {
-        // Job mode: connect WebSocket once we have an executionId
-        if (pollingMode === 'job' && state.currentExecutionId.value && !wsRef.ws) {
-          connectExecWs({
-            executionId: state.currentExecutionId.value,
-            hasBrowser: state.hasBrowser,
-            wsRef,
-            disconnectFn: _disconnectWs,
-            onStepCompleted: _handleStepCompleted,
-          })
-        }
-        applyPollData(state, data, nodeOutputStore, pollingMode)
+        applyPollData(state, data, nodeOutputStore, 'execution')
         syncNodeOutputStore(nodeOutputStore, data)
-        const result = handleTerminalStatus(state, controlStore, data, pollingMode, stopExecutionPolling)
+        const result = handleTerminalStatus(state, controlStore, data, 'execution', stopExecutionPolling)
         if (result) return result
         scheduleNextPoll()
       } else {
@@ -212,8 +195,6 @@ export function createPollingActions(state, controlStore) {
 
   function startExecutionPolling() {
     stopExecutionPolling()
-    pollingMode = 'execution'
-    currentJobId = null
     pollErrorCount = 0
     currentPollInterval = BASE_POLL_INTERVAL_MS
     state.executionProgress.value = { current: 0, total: 0, percent: 0 }
@@ -229,22 +210,8 @@ export function createPollingActions(state, controlStore) {
     scheduleNextPoll()
   }
 
-  function startJobPolling(jobId) {
-    stopExecutionPolling()
-    pollingMode = 'job'
-    currentJobId = jobId
-    pollErrorCount = 0
-    currentPollInterval = 1000
-    state.executionProgress.value = { current: 0, total: 0, percent: 0 }
-    state.executionCompletedNodeIds.value = []
-    // Don't assume browser — wait for backend's browser_available WebSocket message
-    state.hasBrowser.value = false
-    scheduleNextPoll()
-  }
-
   return {
     startExecutionPolling,
-    startJobPolling,
     stopExecutionPolling,
     resetExecutionState,
     setUnmounted

@@ -59,13 +59,13 @@ class MetricsService:
         return (successful / total) * 100
 
     @classmethod
-    def get_execution_summary(cls, time_range_str: str, user_id: str = None) -> ExecutionSummary:
+    def get_execution_summary(cls, time_range_str: str, workspace_id: str = None) -> ExecutionSummary:
         """
         Get execution statistics summary with comparison to previous period.
 
         Args:
             time_range_str: Time range string (24h, 7d, 30d, 90d)
-            user_id: Filter by user ID
+            workspace_id: Filter by workspace ID
 
         Returns:
             ExecutionSummary with current stats and changes from previous period
@@ -74,10 +74,10 @@ class MetricsService:
 
         # Get stats from repository
         current_stats = ExecutionRepository.get_execution_stats_by_date_range(
-            current.start, current.end, user_id=user_id
+            current.start, current.end, workspace_id=workspace_id
         )
         prev_stats = ExecutionRepository.get_execution_stats_by_date_range(
-            previous.start, previous.end, user_id=user_id
+            previous.start, previous.end, workspace_id=workspace_id
         )
 
         # Extract current period values
@@ -108,13 +108,13 @@ class MetricsService:
         )
 
     @classmethod
-    def get_execution_trend(cls, time_range_str: str, user_id: str = None) -> List[Dict[str, Any]]:
+    def get_execution_trend(cls, time_range_str: str, workspace_id: str = None) -> List[Dict[str, Any]]:
         """
         Get daily execution trend data for charts.
 
         Args:
             time_range_str: Time range string (24h, 7d, 30d, 90d)
-            user_id: Filter by user ID
+            workspace_id: Filter by workspace ID
 
         Returns:
             List of daily stats with date, successful, failed, total
@@ -122,7 +122,7 @@ class MetricsService:
         from datetime import timedelta
 
         tr = parse_time_range(time_range_str)
-        daily_stats_list = ExecutionRepository.get_daily_stats(tr.start, tr.end, user_id=user_id)
+        daily_stats_list = ExecutionRepository.get_daily_stats(tr.start, tr.end, workspace_id=workspace_id)
 
         # Convert to dict for fast lookup
         stats_by_date = {
@@ -148,7 +148,7 @@ class MetricsService:
 
     @classmethod
     def get_top_workflows(
-        cls, time_range_str: str, limit: int = 5, user_id: str = None
+        cls, time_range_str: str, limit: int = 5, workspace_id: str = None
     ) -> List[Dict[str, Any]]:
         """
         Get top workflows by execution count.
@@ -156,14 +156,14 @@ class MetricsService:
         Args:
             time_range_str: Time range string (24h, 7d, 30d, 90d)
             limit: Maximum number of workflows to return
-            user_id: Filter by user ID
+            workspace_id: Filter by workspace ID
 
         Returns:
             List of workflow stats with id, name, executions, success_rate, avg_duration
         """
         tr = parse_time_range(time_range_str)
         top_workflows = ExecutionRepository.get_top_workflows_stats(
-            tr.start, tr.end, limit, user_id=user_id
+            tr.start, tr.end, limit, workspace_id=workspace_id
         )
 
         # Format response with success rate calculation (camelCase for frontend)

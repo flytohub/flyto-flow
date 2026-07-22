@@ -125,13 +125,11 @@ function computeInputSchema(sections) {
  * @param {Ref} options.elements - Workflow elements
  * @param {Ref} options.sections - UI sections
  * @param {Ref} options.templateData - Template data computed
- * @param {Ref} options.templateVisibility - Template visibility
- * @param {Ref} options.templateListed - Template listed status
  * @returns {Promise<Object>} Save data
  * @throws {ConversionError} In cloud mode when backend conversion fails
  */
 export async function prepareSaveData(options) {
-  const { elements, sections, templateData, templateVisibility, templateListed, viewport, errorHandling, checkpoints } = options
+  const { elements, sections, templateData, viewport, errorHandling, checkpoints } = options
 
   // Convert visual elements to backend step format using async converter
   // This ensures backend is single source of truth for format conversion
@@ -191,8 +189,6 @@ export async function prepareSaveData(options) {
     // Input schema computed from UI components - used when template is invoked as a module
     input_schema: inputSchema,
     requiredPermissions,
-    visibility: templateVisibility.value,
-    listed: templateListed.value,
     // Error handling configuration
     error_workflow_id: errorHandling?.value?.errorWorkflowId || null,
     error_handling: errorHandling?.value || null,

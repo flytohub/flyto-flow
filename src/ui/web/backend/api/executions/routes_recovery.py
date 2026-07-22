@@ -10,7 +10,7 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Depends
 
-from api.executions.auth import get_optional_user
+from gateway.local_context import get_local_actor
 from api.executions.models import (
     CheckpointInfo,
     ResumeOptionsResponse,
@@ -25,7 +25,7 @@ router = APIRouter()
 @router.get("/{execution_id}/resume-options", response_model=ResumeOptionsResponse)
 async def get_resume_options(
     execution_id: str,
-    current_user: Optional[dict] = Depends(get_optional_user)
+    _: dict = Depends(get_local_actor),
 ):
     """
     Get available resume options for a failed execution.
@@ -44,16 +44,6 @@ async def get_resume_options(
         raise HTTPException(
             status_code=404,
             detail=f"Execution {execution_id} not found"
-        )
-
-    # Check ownership
-    user_id = current_user.get("id") if current_user else None
-    exec_user_id = status.get("user_id")
-
-    if user_id and exec_user_id and user_id != exec_user_id:
-        raise HTTPException(
-            status_code=403,
-            detail="Cannot view resume options for execution owned by another user"
         )
 
     checkpoints = await checkpoint_service.get_checkpoints(execution_id)
@@ -103,7 +93,7 @@ async def get_resume_options(
 async def resume_from_checkpoint(
     execution_id: str,
     request: ResumeFromCheckpointRequest,
-    current_user: Optional[dict] = Depends(get_optional_user)
+    workspace_context: dict = Depends(get_local_actor),
 ):
     """
     Resume execution from a saved checkpoint.
@@ -126,15 +116,7 @@ async def resume_from_checkpoint(
             detail=f"Execution {execution_id} not found"
         )
 
-    # Check ownership
-    user_id = current_user.get("id") if current_user else None
-    exec_user_id = status.get("user_id")
-
-    if user_id and exec_user_id and user_id != exec_user_id:
-        raise HTTPException(
-            status_code=403,
-            detail="Cannot resume execution owned by another user"
-        )
+    workspace_id = workspace_context["id"]
 
     # Get the target checkpoint
     if request.checkpoint_id:
@@ -188,7 +170,7 @@ async def resume_from_checkpoint(
         new_execution_id = await manager.start(
             workflow_yaml=workflow_yaml,
             variables=checkpoint_data.get('params', {}),
-            user_id=user_id,
+            workspace_id=workspace_id,
             start_step=resume_step_index,
             initial_context=context,
             workflow_name=f"Resume from {checkpoint['step_id']}",

@@ -104,7 +104,7 @@ async def get_queue_stats() -> dict:
 async def enqueue_execution(
     execution_id: str,
     workflow_id: str,
-    user_id: str | None,
+    workspace_id: str | None,
     priority: int = 0,
 ) -> bool:
     """
@@ -113,7 +113,7 @@ async def enqueue_execution(
     Args:
         execution_id: Unique execution identifier
         workflow_id: Workflow being executed
-        user_id: User who started the execution
+        workspace_id: User who started the execution
         priority: Job priority (higher = more urgent)
 
     Returns:
@@ -124,7 +124,7 @@ async def enqueue_execution(
         await QueueService.enqueue_execution(
             execution_id=execution_id,
             workflow_id=workflow_id,
-            user_id=user_id,
+            workspace_id=workspace_id,
             priority=priority,
         )
         logger.info(f"Enqueued execution {execution_id} for workflow {workflow_id}")

@@ -1,0 +1,149 @@
+{
+  "version": "29392cde5c21",
+  "locales": {
+    "de": {
+      "name": "German",
+      "native": "Deutsch",
+      "region": "DE",
+      "total_keys": 6952,
+      "translated_keys": 6953,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "en": {
+      "name": "English",
+      "native": "English",
+      "region": "US",
+      "total_keys": 6953,
+      "translated_keys": 6956,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "es": {
+      "name": "Spanish",
+      "native": "Español",
+      "region": "ES",
+      "total_keys": 6952,
+      "translated_keys": 6953,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "fr": {
+      "name": "French",
+      "native": "Français",
+      "region": "FR",
+      "total_keys": 6952,
+      "translated_keys": 6953,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "hi": {
+      "name": "Hindi",
+      "native": "हिन्दी",
+      "region": "IN",
+      "total_keys": 6952,
+      "translated_keys": 6953,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "id": {
+      "name": "Indonesian",
+      "native": "Bahasa Indonesia",
+      "region": "ID",
+      "total_keys": 6952,
+      "translated_keys": 6953,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "it": {
+      "name": "Italian",
+      "native": "Italiano",
+      "region": "IT",
+      "total_keys": 6952,
+      "translated_keys": 6953,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "ja": {
+      "name": "Japanese",
+      "native": "日本語",
+      "region": "JP",
+      "total_keys": 6952,
+      "translated_keys": 6953,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "ko": {
+      "name": "Korean",
+      "native": "한국어",
+      "region": "KR",
+      "total_keys": 6952,
+      "translated_keys": 6953,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "pl": {
+      "name": "Polish",
+      "native": "Polski",
+      "region": "PL",
+      "total_keys": 6952,
+      "translated_keys": 6953,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "pt-BR": {
+      "name": "Portuguese (Brazil)",
+      "native": "Português (Brasil)",
+      "region": "BR",
+      "total_keys": 6952,
+      "translated_keys": 6953,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "th": {
+      "name": "Thai",
+      "native": "ไทย",
+      "region": "TH",
+      "total_keys": 6952,
+      "translated_keys": 6953,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "tr": {
+      "name": "Turkish",
+      "native": "Türkçe",
+      "region": "TR",
+      "total_keys": 6952,
+      "translated_keys": 6953,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "vi": {
+      "name": "Vietnamese",
+      "native": "Tiếng Việt",
+      "region": "VN",
+      "total_keys": 6952,
+      "translated_keys": 6953,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "zh-CN": {
+      "name": "Simplified Chinese",
+      "native": "简体中文",
+      "region": "CN",
+      "total_keys": 6953,
+      "translated_keys": 6954,
+      "completion": 100.0,
+      "files_merged": 174
+    },
+    "zh-TW": {
+      "name": "Traditional Chinese",
+      "native": "繁體中文",
+      "region": "TW",
+      "total_keys": 6953,
+      "translated_keys": 6954,
+      "completion": 100.0,
+      "files_merged": 174
+    }
+  }
+}

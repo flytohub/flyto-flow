@@ -2,7 +2,6 @@
   <div
     class="workflow-canvas-container"
     :class="{ 'debug-mode': debugMode }"
-    @mousemove="onCanvasMouseMove"
   >
     <!-- SVG filter definitions for edge glow effects (must be in DOM for filter: url(#...) to work) -->
     <div v-html="edgeFilterSvg" style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none"></div>
@@ -27,7 +26,6 @@
       @node-context-menu="handleNodeContextMenuEvent"
       @edge-click="handleEdgeClick"
       @pane-click="handlePaneClick"
-      @move="onViewportMove"
       @move-end="handleViewportChange"
       :fit-view-on-init="!props.savedViewport"
       class="workflow-canvas"
@@ -100,9 +98,6 @@
       </template>
 
     </VueFlow>
-
-    <!-- Collaboration Cursors Overlay -->
-    <CollaborationCursors v-if="collaborationStore.isConnected" :viewport="currentViewport" />
 
     <!-- Empty State -->
     <EmptyCanvasState
@@ -226,7 +221,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, markRaw, nextTick, provide } from 'vue'
-import { useDebounceFn, useThrottleFn } from '@vueuse/core'
+import { useDebounceFn } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
@@ -276,8 +271,6 @@ import { useCanvasDialogs } from '../composables/workflowEditor/useCanvasDialogs
 import { useCanvasViewport } from '../composables/workflowEditor/useCanvasViewport'
 import { useCanvasEvents } from '../composables/workflowEditor/useCanvasEvents'
 import { useToast } from '../composables/useToast'
-import { useCollaborationStore } from '@/stores/collaborationStore'
-import CollaborationCursors from './collaboration/CollaborationCursors.vue'
 
 const props = defineProps({
   elements: { type: Array, default: () => [] },
@@ -319,28 +312,8 @@ const emit = defineEmits([
 const { t } = useI18n()
 const toast = useToast()
 const controlStore = useExecutionControlStore()
-const { updateNodeInternals, project, getViewport } = useVueFlow()
+const { updateNodeInternals } = useVueFlow()
 const { layout: autoLayout } = useAutoLayout()
-
-// === Collaboration Cursors ===
-const collaborationStore = useCollaborationStore()
-const currentViewport = ref({ x: 0, y: 0, zoom: 1 })
-
-function onViewportMove() {
-  const vp = getViewport()
-  currentViewport.value = { x: vp.x, y: vp.y, zoom: vp.zoom }
-}
-
-const throttledBroadcastCursor = useThrottleFn((x, y) => {
-  if (collaborationStore.isConnected) collaborationStore.broadcastCursor(x, y)
-}, 50)
-
-function onCanvasMouseMove(event) {
-  if (!collaborationStore.isConnected) return
-  const bounds = event.currentTarget.getBoundingClientRect()
-  const flowPos = project({ x: event.clientX - bounds.left, y: event.clientY - bounds.top })
-  throttledBroadcastCursor(flowPos.x, flowPos.y)
-}
 
 // === Edge SVG Filters (injected once into DOM for glow effects) ===
 const edgeFilterSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"><defs>${getEdgeFilterDefs()}</defs></svg>`
@@ -523,7 +496,6 @@ const {
   controlStore,
   toast,
   t,
-  collaborationStore,
   updateNodeInternals,
   saveHistoryState,
   syncToParent,
@@ -613,8 +585,6 @@ watch(() => props.elements, (elements) => {
 onMounted(() => {
   document.addEventListener('keydown', onKeyDown, true)
   restoreViewport(props.savedViewport)
-  const vp = getViewport()
-  currentViewport.value = { x: vp.x, y: vp.y, zoom: vp.zoom }
 })
 
 onUnmounted(() => {

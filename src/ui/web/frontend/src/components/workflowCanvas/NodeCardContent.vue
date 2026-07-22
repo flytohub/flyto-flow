@@ -141,6 +141,11 @@ const executionStateClass = computed(() => ({
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
   gap: 10px;
   padding: 10px 14px;
   background: rgba(15, 23, 42, 0.85);

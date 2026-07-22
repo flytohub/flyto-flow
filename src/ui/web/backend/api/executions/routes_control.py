@@ -10,7 +10,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
-from api.executions.auth import get_optional_user
+from gateway.local_context import get_local_actor
 from api.executions.models import (
     PauseResponse,
     ResumeResponse,
@@ -53,7 +53,7 @@ def safe_serialize(obj: Any) -> Any:
 @router.post("/{execution_id}/pause", response_model=PauseResponse)
 async def pause_execution(
     execution_id: str,
-    current_user: Optional[dict] = Depends(get_optional_user)
+    _: dict = Depends(get_local_actor),
 ):
     """
     Pause a running workflow execution.
@@ -72,16 +72,6 @@ async def pause_execution(
         raise HTTPException(
             status_code=404,
             detail=f"Execution {execution_id} not found"
-        )
-
-    # Check ownership
-    user_id = current_user.get("id") if current_user else None
-    exec_user_id = status.get("user_id")
-
-    if user_id and exec_user_id and user_id != exec_user_id:
-        raise HTTPException(
-            status_code=403,
-            detail="Cannot pause execution owned by another user"
         )
 
     # Check if execution is running
@@ -113,7 +103,7 @@ async def pause_execution(
 @router.post("/{execution_id}/resume", response_model=ResumeResponse)
 async def resume_execution(
     execution_id: str,
-    current_user: Optional[dict] = Depends(get_optional_user)
+    _: dict = Depends(get_local_actor),
 ):
     """
     Resume a paused workflow execution.
@@ -130,16 +120,6 @@ async def resume_execution(
         raise HTTPException(
             status_code=404,
             detail=f"Execution {execution_id} not found"
-        )
-
-    # Check ownership
-    user_id = current_user.get("id") if current_user else None
-    exec_user_id = status.get("user_id")
-
-    if user_id and exec_user_id and user_id != exec_user_id:
-        raise HTTPException(
-            status_code=403,
-            detail="Cannot resume execution owned by another user"
         )
 
     # Check if execution is paused (check both manager and controller state)
@@ -176,7 +156,7 @@ async def resume_execution(
 @router.post("/{execution_id}/step", response_model=StepResponse)
 async def step_execution(
     execution_id: str,
-    current_user: Optional[dict] = Depends(get_optional_user)
+    _: dict = Depends(get_local_actor),
 ):
     """
     Execute a single step and pause again.
@@ -195,16 +175,6 @@ async def step_execution(
         raise HTTPException(
             status_code=404,
             detail=f"Execution {execution_id} not found"
-        )
-
-    # Check ownership
-    user_id = current_user.get("id") if current_user else None
-    exec_user_id = status.get("user_id")
-
-    if user_id and exec_user_id and user_id != exec_user_id:
-        raise HTTPException(
-            status_code=403,
-            detail="Cannot step execution owned by another user"
         )
 
     # Check if execution is paused
@@ -232,7 +202,7 @@ async def step_execution(
 @router.post("/{execution_id}/run-to-end", response_model=RunToEndResponse)
 async def run_to_end(
     execution_id: str,
-    current_user: Optional[dict] = Depends(get_optional_user)
+    _: dict = Depends(get_local_actor),
 ):
     """
     Resume a paused execution and ignore all breakpoints.
@@ -251,16 +221,6 @@ async def run_to_end(
         raise HTTPException(
             status_code=404,
             detail=f"Execution {execution_id} not found"
-        )
-
-    # Check ownership
-    user_id = current_user.get("id") if current_user else None
-    exec_user_id = status.get("user_id")
-
-    if user_id and exec_user_id and user_id != exec_user_id:
-        raise HTTPException(
-            status_code=403,
-            detail="Cannot control execution owned by another user"
         )
 
     # Check if execution is paused
@@ -296,7 +256,7 @@ async def run_to_end(
 @router.get("/{execution_id}/state", response_model=ExecutionStateResponse)
 async def get_execution_state(
     execution_id: str,
-    current_user: Optional[dict] = Depends(get_optional_user)
+    _: dict = Depends(get_local_actor),
 ):
     """
     Get detailed state of a paused or running execution.
@@ -315,16 +275,6 @@ async def get_execution_state(
         raise HTTPException(
             status_code=404,
             detail=f"Execution {execution_id} not found"
-        )
-
-    # Check ownership
-    user_id = current_user.get("id") if current_user else None
-    exec_user_id = status.get("user_id")
-
-    if user_id and exec_user_id and user_id != exec_user_id:
-        raise HTTPException(
-            status_code=403,
-            detail="Cannot view state of execution owned by another user"
         )
 
     # Get state from controller if registered
@@ -364,7 +314,7 @@ async def get_execution_state(
 @router.post("/{execution_id}/continue-checkpoint")
 async def continue_checkpoint(
     execution_id: str,
-    current_user: Optional[dict] = Depends(get_optional_user)
+    _: dict = Depends(get_local_actor),
 ):
     """
     Continue execution from a human checkpoint.
@@ -384,16 +334,6 @@ async def continue_checkpoint(
         raise HTTPException(
             status_code=404,
             detail=f"Execution {execution_id} not found"
-        )
-
-    # Check ownership
-    user_id = current_user.get("id") if current_user else None
-    exec_user_id = status.get("user_id")
-
-    if user_id and exec_user_id and user_id != exec_user_id:
-        raise HTTPException(
-            status_code=403,
-            detail="Cannot continue execution owned by another user"
         )
 
     # Check if execution is paused (at checkpoint)
@@ -437,7 +377,7 @@ class BypassCheckpointRequest(BaseModel):
 async def bypass_checkpoint(
     execution_id: str,
     request: Optional[BypassCheckpointRequest] = None,
-    current_user: Optional[dict] = Depends(get_optional_user)
+    _: dict = Depends(get_local_actor),
 ):
     """
     Bypass a human checkpoint and continue to completion.
@@ -466,16 +406,6 @@ async def bypass_checkpoint(
         raise HTTPException(
             status_code=404,
             detail=f"Execution {execution_id} not found"
-        )
-
-    # Check ownership
-    user_id = current_user.get("id") if current_user else None
-    exec_user_id = status.get("user_id")
-
-    if user_id and exec_user_id and user_id != exec_user_id:
-        raise HTTPException(
-            status_code=403,
-            detail="Cannot bypass checkpoint for execution owned by another user"
         )
 
     # Check if execution is paused

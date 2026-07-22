@@ -40,27 +40,16 @@ export function useWorkflowExecution({
     t
   })
 
-  /**
-   * Collect UI inputs and run workflow
-   * For locked templates (no elements but has templateId), uses direct API execution
-   */
+  /** Collect UI inputs and run the local workflow. */
   async function runWorkflow() {
     const uiInputValues = collectUIInputValues(templateData)
-
-    // Check if this is a locked template:
-    // If we have a templateId but elements array is empty, it's locked
-    const elementsArray = elements?.value || elements || []
-    const hasTemplateId = !!(templateId?.value || templateId)
-    const hasNoElements = elementsArray.length === 0
-    const isWorkflowLocked = hasTemplateId && hasNoElements
 
     return executionControls.runWorkflow({
       elements,
       templateId,
       templateName,
       uiInputValues,
-      checkpoints: builderStore.checkpoints,
-      isWorkflowLocked
+      checkpoints: builderStore.checkpoints
     })
   }
 

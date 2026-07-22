@@ -1,8 +1,7 @@
 """
 Gateway Provider Exceptions
 
-Unified exception classes for all providers (Firebase, Enterprise, Offline).
-This ensures consistent error handling across different deployment modes.
+Exception classes for local CE provider operations.
 """
 
 from typing import Optional, Dict, Any
@@ -11,16 +10,6 @@ from enum import Enum
 
 class ErrorCode(str, Enum):
     """Standard error codes for provider exceptions."""
-
-    # Authentication errors
-    AUTH_INVALID_CREDENTIALS = "AUTH_INVALID_CREDENTIALS"
-    AUTH_TOKEN_EXPIRED = "AUTH_TOKEN_EXPIRED"
-    AUTH_TOKEN_INVALID = "AUTH_TOKEN_INVALID"
-    AUTH_UNAUTHORIZED = "AUTH_UNAUTHORIZED"
-
-    # Authorization errors
-    PERMISSION_DENIED = "PERMISSION_DENIED"
-    RESOURCE_FORBIDDEN = "RESOURCE_FORBIDDEN"
 
     # Resource errors
     RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND"
@@ -49,7 +38,7 @@ class ProviderException(Exception):
     """
     Base exception for all provider operations.
 
-    Provides a unified error format across Firebase, Enterprise, and Offline providers.
+    Provides a consistent error format for local provider failures.
 
     Usage:
         raise ProviderException(
@@ -93,42 +82,6 @@ class ProviderException(Exception):
 
 
 # Convenience exception classes
-
-class AuthenticationError(ProviderException):
-    """Authentication failed."""
-
-    def __init__(
-        self,
-        message: str = "Authentication failed",
-        code: ErrorCode = ErrorCode.AUTH_UNAUTHORIZED,
-        details: Optional[Dict[str, Any]] = None,
-    ):
-        """Initialize with 401 status and optional error code override."""
-        super().__init__(
-            code=code,
-            message=message,
-            http_status=401,
-            details=details,
-        )
-
-
-class AuthorizationError(ProviderException):
-    """Authorization/permission denied."""
-
-    def __init__(
-        self,
-        message: str = "Permission denied",
-        code: ErrorCode = ErrorCode.PERMISSION_DENIED,
-        details: Optional[Dict[str, Any]] = None,
-    ):
-        """Initialize with 403 status."""
-        super().__init__(
-            code=code,
-            message=message,
-            http_status=403,
-            details=details,
-        )
-
 
 class NotFoundError(ProviderException):
     """Resource not found."""

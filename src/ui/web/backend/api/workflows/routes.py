@@ -1,10 +1,6 @@
-"""
-Workflow API
+"""Local CE workflow API.
 
-Unified workflow management API using gateway providers.
-Works across all deployment modes (Cloud/Enterprise/Offline).
-
-All functionality has been split into:
+Functionality is split into:
 - models.py - Pydantic request/response models
 - validation.py - Connection validation
 - websocket.py - WebSocket connection management
@@ -14,19 +10,14 @@ All functionality has been split into:
 
 from fastapi import APIRouter
 
-from api.workflows import crud, execution, websocket
+from api.workflows import crud, execution
 
-# Local router: conversion + run + websocket (no Firebase needed)
+# Local router: conversion + run + websocket.
 local_router = APIRouter()
 local_router.include_router(crud.conversion_router)
 local_router.include_router(execution.run_router)
-local_router.include_router(websocket.router)
 
-# Full router: all endpoints (for cloud + dev mode)
-router = APIRouter()
-router.include_router(crud.router)
-router.include_router(execution.router)
-router.include_router(websocket.router)
+router = local_router
 
 # Re-exports for backwards compatibility
 from api.workflows.models import (
@@ -37,7 +28,7 @@ from api.workflows.models import (
     WorkflowRunRequest,
 )
 from api.workflows.validation import validate_workflow_connections_for_api
-from api.workflows.websocket import ConnectionManager, manager, get_connection_manager
+from services.websocket_manager import ConnectionManager, manager, get_connection_manager
 
 __all__ = [
     "router",

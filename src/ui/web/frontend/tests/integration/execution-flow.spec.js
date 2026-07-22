@@ -25,11 +25,6 @@ vi.mock('@/api/executions', () => ({
   default: {}
 }))
 
-// Mock telemetry (side-effect only, not business logic)
-vi.mock('@/services/telemetry', () => ({
-  telemetry: { track: vi.fn() }
-}))
-
 import { useExecutionControlStore, useNodeOutputStore } from '@/stores/execution'
 import * as executionAPI from '@/api/executions'
 

@@ -81,7 +81,7 @@ export function useNodeStyles() {
    * Get module icon from store
    *
    * Backend is single source of truth.
-   * Backend always returns icon as object: { type: "lucide"|"url", name?, url? }
+   * Backend returns bundled Lucide icons or embedded data images.
    * Frontend just renders - no format detection needed.
    *
    * @param {string} moduleId - Module ID
@@ -98,8 +98,9 @@ export function useNodeStyles() {
     // Also supports old format with name/url for backward compatibility
     if (typeof icon === 'object' && icon.type) {
       if (icon.type === 'url') {
-        const url = icon.value || icon.url
-        return { type: 'url', url: url }
+        const url = icon.value || icon.url || ''
+        if (url.startsWith('data:image/')) return { type: 'url', url }
+        return Box
       }
       // Lucide icon - lookup by name
       if (icon.type === 'lucide') {
@@ -118,10 +119,10 @@ export function useNodeStyles() {
   }
 
   /**
-   * Check if icon is a custom URL icon
+   * Check if icon is a safe embedded image.
    */
   function isCustomUrlIcon(icon) {
-    return icon && typeof icon === 'object' && icon.type === 'url'
+    return icon && typeof icon === 'object' && icon.type === 'url' && icon.url?.startsWith('data:image/')
   }
 
   /**

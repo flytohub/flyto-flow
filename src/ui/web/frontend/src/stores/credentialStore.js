@@ -10,7 +10,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import variablesAPI from '@/api/variables'
-import { telemetry } from '@/services/telemetry'
 
 export const useCredentialStore = defineStore('credentials', () => {
   // ========== State ==========
@@ -92,10 +91,6 @@ export const useCredentialStore = defineStore('credentials', () => {
       if (result.ok) {
         credentials.value.push(result.credential)
 
-        // Track credential creation
-        telemetry.track('credential.create', {
-          type: data.type
-        })
       } else {
         error.value = result.error
       }
@@ -178,10 +173,6 @@ export const useCredentialStore = defineStore('credentials', () => {
       if (result.ok) {
         credentials.value = credentials.value.filter(c => c.id !== id)
 
-        // Track credential deletion
-        telemetry.track('credential.delete', {
-          credential_id: id
-        })
       } else {
         error.value = result.error
       }

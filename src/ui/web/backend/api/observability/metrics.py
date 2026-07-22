@@ -13,7 +13,9 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query, Response
 from pydantic import BaseModel
 
-from api.auth import get_current_user
+from gateway.local_context import get_local_actor
+
+get_workspace_context = get_local_actor
 from capabilities import Feature, require_any_feature
 from services.observability.metrics.aggregator import MetricsAggregator
 from services.observability.metrics.collector import get_collector
@@ -29,7 +31,6 @@ router = APIRouter(
     tags=["metrics"],
     dependencies=[Depends(require_any_feature(
         Feature.LOCAL_METRICS,
-        Feature.HOSTED_OBSERVABILITY,
     ))],
 )
 
@@ -255,7 +256,7 @@ async def cleanup_old_metrics(
 @router.get("/summary")
 async def get_execution_summary(
     time_range: str = Query(default="7d", alias="range", pattern="^(24h|7d|30d|90d)$"),
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """
     Get execution statistics summary.
@@ -268,14 +269,14 @@ async def get_execution_summary(
     """
     from services.observability.metrics_service import MetricsService
 
-    summary = MetricsService.get_execution_summary(time_range, user_id=current_user["id"])
+    summary = MetricsService.get_execution_summary(time_range, workspace_id=workspace_context["id"])
     return summary.to_dict()
 
 
 @router.get("/trend")
 async def get_execution_trend(
     time_range: str = Query(default="7d", alias="range", pattern="^(24h|7d|30d|90d)$"),
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """
     Get execution trend data for charts.
@@ -288,7 +289,7 @@ async def get_execution_trend(
     """
     from services.observability.metrics_service import MetricsService
 
-    trend = MetricsService.get_execution_trend(time_range, user_id=current_user["id"])
+    trend = MetricsService.get_execution_trend(time_range, workspace_id=workspace_context["id"])
     return {"trend": trend}
 
 
@@ -296,7 +297,7 @@ async def get_execution_trend(
 async def get_top_workflows(
     limit: int = Query(default=5, ge=1, le=20),
     time_range: str = Query(default="7d", alias="range", pattern="^(24h|7d|30d|90d)$"),
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """
     Get top workflows by execution count.
@@ -310,14 +311,14 @@ async def get_top_workflows(
     """
     from services.observability.metrics_service import MetricsService
 
-    workflows = MetricsService.get_top_workflows(time_range, limit, user_id=current_user["id"])
+    workflows = MetricsService.get_top_workflows(time_range, limit, workspace_id=workspace_context["id"])
     return {"workflows": workflows}
 
 
 @router.get("/recent-failures")
 async def get_recent_failures(
     limit: int = Query(default=5, ge=1, le=20),
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """
     Get recent failed executions.
@@ -332,10 +333,10 @@ async def get_recent_failures(
     from gateway.storage.execution_repo import ExecutionRepository
 
     # Get failed executions using multi-status filter
-    # Handles both 'failure' (SQLite) and 'failed' (Firebase) status values
+    # Accept both historic local failure spellings.
     all_execs = ExecutionRepository.list_executions(
         statuses=["failure", "failed"],
-        user_id=current_user["id"],
+        workspace_id=workspace_context["id"],
         limit=limit,
     )
 

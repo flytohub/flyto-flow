@@ -97,7 +97,7 @@
           <AppSelect
             v-model="form.scope"
             :options="[
-              { value: 'organization', label: $t('variables.scopes.organization') },
+              { value: 'workspace', label: 'Workspace' },
               { value: 'project', label: $t('variables.scopes.project') },
               { value: 'workflow', label: $t('variables.scopes.workflow') }
             ]"
@@ -105,7 +105,7 @@
         </div>
 
         <!-- Scope ID -->
-        <div v-if="form.scope !== 'organization'">
+        <div v-if="form.scope !== 'workspace'">
           <label class="block text-xs text-gray-500 mb-1">
             {{ form.scope === 'project' ? 'Project ID' : 'Workflow ID' }} *
           </label>
@@ -184,7 +184,7 @@ const form = ref({
   name: '',
   type: 'string',
   value: '',
-  scope: 'organization',
+  scope: 'workspace',
   scopeId: '',
   environment: 'all'
 })
@@ -196,7 +196,7 @@ watch(() => props.variable, (v) => {
       name: v.name || '',
       type: v.type || 'string',
       value: v.type === 'json' ? JSON.stringify(v.value, null, 2) : v.value,
-      scope: v.scope || 'organization',
+      scope: v.scope || 'workspace',
       scopeId: v.scopeId || '',
       environment: v.environment || 'all'
     }
@@ -205,7 +205,7 @@ watch(() => props.variable, (v) => {
       name: '',
       type: 'string',
       value: '',
-      scope: 'organization',
+      scope: 'workspace',
       scopeId: '',
       environment: 'all'
     }

@@ -5,12 +5,6 @@
  * All colors should be referenced from here, not hardcoded.
  */
 
-// HuggingFace theme colors
-export const HUGGINGFACE_COLORS = {
-  primary: '#FFD21E',
-  success: '#22C55E'
-}
-
 // Component type colors
 export const COMPONENT_COLORS = {
   input: '#3B82F6',
@@ -106,7 +100,6 @@ export function getComponentCSSVars(type) {
 }
 
 export default {
-  HUGGINGFACE_COLORS,
   COMPONENT_COLORS,
   STATE_COLORS,
   BG_COLORS,

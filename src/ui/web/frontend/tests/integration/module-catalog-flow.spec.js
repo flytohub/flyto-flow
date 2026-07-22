@@ -18,11 +18,6 @@ vi.mock('@/api/modules', () => ({
   getModule: vi.fn()
 }))
 
-// Mock telemetry
-vi.mock('@/services/telemetry', () => ({
-  telemetry: { track: vi.fn() }
-}))
-
 import { useModulesStore } from '@/stores/modulesStore'
 import { useModuleFiltering, groupModulesByCategory, filterModulesByQuery } from '@/composables/useModuleFiltering'
 import { getTieredCatalog } from '@/api/modules'

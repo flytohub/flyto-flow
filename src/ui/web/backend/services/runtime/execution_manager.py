@@ -16,7 +16,7 @@ All functionality has been split into:
 - services/execution/models.py - ExecutionInfo class
 - services/execution/utils.py - Helper functions
 - services/execution/hooks_setup.py - Hook configuration
-- services/execution/persistence.py - SQLite/Firebase persistence
+- services/execution/persistence.py - local SQLite persistence
 - services/execution/queue_integration.py - Worker pool (Phase 1)
 - services/execution/service.py - Main ExecutionManager class
 """

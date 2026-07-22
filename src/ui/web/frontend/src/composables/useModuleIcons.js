@@ -2,7 +2,7 @@
  * Module Icons Composable
  *
  * Simplified icon handling - backend is single source of truth.
- * Backend returns icon as object: { type: "lucide"|"url", value: string }
+ * Backend returns a bundled Lucide icon or an embedded data image.
  * Frontend just renders, no format detection needed.
  *
  * v2.0 Changes:
@@ -34,9 +34,9 @@ export function useModuleIcons() {
     // Backend returns object format: { type, value }
     if (typeof icon === 'object' && icon.type) {
       if (icon.type === 'url') {
-        // Use "value" (new format) or fallback to "url" (old format)
-        const url = icon.value || icon.url
-        return { type: 'url', url: url }
+        const url = icon.value || icon.url || ''
+        if (url.startsWith('data:image/')) return { type: 'url', url }
+        return Package
       }
       // Lucide icon - lookup by name
       if (icon.type === 'lucide') {

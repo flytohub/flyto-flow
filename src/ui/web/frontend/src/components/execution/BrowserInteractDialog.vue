@@ -190,7 +190,6 @@ const { t } = useI18n()
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
   breakpoint: { type: Object, default: null },
-  userId: { type: String, default: 'current_user' },
 })
 
 const emit = defineEmits(['close', 'approve', 'reject'])
@@ -206,7 +205,7 @@ const contextSnapshot = computed(() => {
   return props.breakpoint?.contextSnapshot || props.breakpoint?.context_snapshot || {}
 })
 
-// Support both URL (cloud) and base64 (local) screenshot
+// Support both stored URL and inline base64 screenshots.
 const screenshotSrc = computed(() => {
   const ctx = contextSnapshot.value
   if (ctx.screenshot_url) return ctx.screenshot_url
@@ -278,7 +277,6 @@ async function handleConfirm() {
   try {
     emit('approve', {
       breakpointId: getBpId(),
-      userId: props.userId,
       comment: '',
       customInputs: {
         action: selectedAction.value,
@@ -296,8 +294,7 @@ async function handleSkip() {
   try {
     emit('reject', {
       breakpointId: getBpId(),
-      userId: props.userId,
-      comment: 'Skipped by user',
+      comment: 'Skipped locally',
     })
   } finally {
     submitting.value = false

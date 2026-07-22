@@ -107,13 +107,13 @@ async def _handle_replay_execution(manager, request, context, start_step_index, 
         from services.runtime.execution_manager import get_execution_manager
         exec_manager = get_execution_manager()
 
-        user_id = None
+        workspace_id = None
         try:
             original_status = exec_manager.get_status(request.execution_id)
             if original_status:
-                user_id = original_status.get("user_id")
+                workspace_id = original_status.get("workspace_id")
         except Exception as e:
-            logger.warning(f"Could not get user_id from original execution: {e}")
+            logger.warning(f"Could not get workspace_id from original execution: {e}")
 
         replay_execution_id = await exec_manager.start(
             workflow_yaml=workflow_yaml,
@@ -122,7 +122,7 @@ async def _handle_replay_execution(manager, request, context, start_step_index, 
             end_step=end_step_index,
             breakpoints=request.breakpoints if request.breakpoints else None,
             workflow_name=f"Replay from {request.step_id or 'start'}",
-            user_id=user_id,
+            workspace_id=workspace_id,
             initial_context=context,
         )
 
@@ -335,13 +335,13 @@ async def replay_single_step(
         from services.runtime.execution_manager import get_execution_manager
         exec_manager = get_execution_manager()
 
-        user_id = None
+        workspace_id = None
         try:
             original_status = exec_manager.get_status(request.execution_id)
             if original_status:
-                user_id = original_status.get("user_id")
+                workspace_id = original_status.get("workspace_id")
         except Exception as e:
-            logger.warning(f"Could not get user_id from original execution: {e}")
+            logger.warning(f"Could not get workspace_id from original execution: {e}")
 
         replay_execution_id = await exec_manager.start(
             workflow_yaml=workflow_yaml,
@@ -349,7 +349,7 @@ async def replay_single_step(
             start_step=step_index,
             end_step=step_index,
             workflow_name=f"Replay step {request.step_id}",
-            user_id=user_id,
+            workspace_id=workspace_id,
             initial_context=context,
         )
 

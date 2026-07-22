@@ -47,24 +47,10 @@
     @navigate-root="$emit('navigate-root')"
   />
 
-  <!-- Protected Workflow Placeholder (for locked templates) -->
-  <div
-    v-if="isWorkflowLocked && activeTab === 'workflow'"
-    class="flex-1 flex items-center justify-center bg-gray-900/50"
-  >
-    <div class="text-center p-8">
-      <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
-        <Lock :size="40" class="text-amber-500" />
-      </div>
-      <h2 class="text-xl font-semibold text-white mb-2">{{ $t('templateBuilder.protectedWorkflow.title', 'Protected Workflow') }}</h2>
-      <p class="text-gray-400 max-w-md">{{ $t('templateBuilder.protectedWorkflow.description', 'This workflow is protected by the author. You can run this template using the UI form, but the internal workflow structure is not visible.') }}</p>
-    </div>
-  </div>
-
   <!-- Workflow Tab -->
   <WorkflowTab
     ref="workflowTabRef"
-    v-show="activeTab === 'workflow' && !isWorkflowLocked"
+    v-show="activeTab === 'workflow'"
     :elements="displayElements"
     :selected-node="selectedNode"
     :default-modules="defaultModules"
@@ -108,7 +94,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { AlertCircle, X, Lock } from 'lucide-vue-next'
+import { AlertCircle, X } from 'lucide-vue-next'
 import { UIDesignTab, WorkflowTab, SubflowBreadcrumbs } from '../templateBuilder'
 
 defineProps({
@@ -125,8 +111,6 @@ defineProps({
   // Subflow Breadcrumbs
   currentDepth: { type: Number, default: 0 },
   breadcrumbs: { type: Array, default: () => [] },
-  // Workflow locked
-  isWorkflowLocked: { type: Boolean, default: false },
   // Workflow Tab
   displayElements: { type: Array, default: () => [] },
   selectedNode: { type: Object, default: null },

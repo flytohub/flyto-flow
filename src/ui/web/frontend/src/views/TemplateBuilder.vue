@@ -29,8 +29,6 @@
       @toggle-settings="handleToggleSettings"
       @tidy-nodes="handleTidyNodes"
       @toggle-debug-panel="handleToggleDebugPanel"
-      @show-upgrade="showUpgradeModal = true"
-      @toggle-collaboration="showCollaborationPanel = !showCollaborationPanel"
       :has-browser="hasBrowser"
       :is-recording="recordingStore.isRecording"
       @toggle-browser="showBrowserPanel = !showBrowserPanel"
@@ -68,7 +66,6 @@
       :available-steps="availableSteps"
       :is-loading-modules="isLoadingModules"
       :is-adding-first-node="builderStore.isAddingFirstNode"
-      :show-upgrade-modal="showUpgradeModal"
       @update:show-save-dialog="showSaveDialog = $event"
       @leave-without-saving="leaveWithoutSaving"
       @save-and-leave="saveAndLeave"
@@ -86,7 +83,6 @@
       @close-toast="toast.show = false"
       @close-module-selector="closeModuleSelector"
       @module-select="handleModuleSelect"
-      @update:show-upgrade-modal="showUpgradeModal = $event"
     />
 
     <!-- Hidden file input for import (bound to composable ref) -->
@@ -102,7 +98,6 @@
     <BuilderTabBar
       v-model:active-tab="activeTab"
       :show-terminal="showTerminal"
-      :is-workflow-locked="isWorkflowLocked"
       @toggle-terminal="showTerminal = true"
     />
 
@@ -120,7 +115,6 @@
       :show-properties-panel="showPropertiesPanel"
       :current-depth="currentDepth"
       :breadcrumbs="subflowBreadcrumbs"
-      :is-workflow-locked="isWorkflowLocked"
       :display-elements="displayElements"
       :selected-node="selectedWorkflowNode"
       :default-modules="defaultModulesList"
@@ -133,7 +127,6 @@
       :ui-input-fields="uiInputFields"
       :previous-steps="previousSteps"
       :modules-metadata="modulesMetadata"
-      :read-only="isReadOnly"
       :checkpoints="builderStore.checkpoints"
       :can-use-checkpoint="hasHumanCheckpoint"
       :can-use-data-pinning="hasDataPinning"
@@ -191,9 +184,6 @@
       :checkpoint-progress="controlStore.checkpointProgress"
       :show-browser-panel="showBrowserPanel"
       :execution-id="currentExecutionId || ''"
-      :user-id="userStore.user?.uid || ''"
-      :user-name="userStore.user?.displayName || 'Anonymous'"
-      :cloud-mode="isCloudExecution"
       :active-debug-panel="activeDebugPanel"
       :timeline-nodes="timelineNodes"
       :show-settings-panel="showSettingsPanel"
@@ -211,18 +201,6 @@
       :used-modules="usedModules"
       :execution-history="executionHistory"
       :is-loading-history="isLoadingHistory"
-      :show-collaboration-panel="showCollaborationPanel"
-      :show-invite-modal="showInviteModal"
-      :collaboration-session-id="collaborationStore.sessionId || ''"
-      :collaboration-participants="collaborationStore.participants"
-      :current-user-id="userStore.user?.uid"
-      :collaboration-is-connected="collaborationStore.isConnected"
-      :collaboration-is-connecting="collaborationStore.isConnecting"
-      :collaboration-error="collaborationStore.error"
-      :collaboration-is-owner="collaborationStore.isOwner"
-      :collaboration-quota-info="collaborationStore.quotaInfo"
-      :collaboration-chat-messages="collaborationStore.chatMessages"
-      :is-pro="capabilitiesStore.isPro"
       @dismiss-resume-panel="dismissResumePanel"
       @resume-from-checkpoint="handleResumeFromCheckpoint"
       @retry-execution="handleRetryExecution"
@@ -247,12 +225,6 @@
       @select-execution="handleSelectExecution"
       @replay-execution="handleReplayExecution"
       @stop-execution="handleStopExecution"
-      @update:show-collaboration-panel="showCollaborationPanel = $event"
-      @show-invite-modal="showInviteModal = true"
-      @send-chat="collaborationStore.sendChatMessage($event)"
-      @terminate-collaboration="handleTerminateCollaboration"
-      @update:show-invite-modal="showInviteModal = $event"
-      @show-upgrade-from-invite="showUpgradeModal = true; showInviteModal = false"
     />
 
     </template>
@@ -323,8 +295,7 @@ const {
 
 const {
   activeTab, showTerminal, templateName, templateId, templateDescription,
-  existingTemplateId, templateCreatorId, templateMutability, templateVisibility,
-  templateListed, isWorkflowVisible, hasUnsavedChanges, isSaving,
+  existingTemplateId, hasUnsavedChanges, isSaving,
   isLoadingTemplate, loadError, sections, autoSaveEnabled,
   showLayoutPicker, showGridEditDialog, showPropertiesPanel, showSaveDialog,
   showTestModal, showSettingsPanel, nodePropertiesCollapsed,
@@ -395,15 +366,14 @@ const {
   leaveWithoutSaving, saveAndLeave
 } = useTemplateSave({
   elements, sections, templateData, templateName, existingTemplateId,
-  templateVisibility, templateListed, viewport: computed(() => builderStore.viewport),
+  viewport: computed(() => builderStore.viewport),
   errorHandling, checkpoints: computed(() => builderStore.checkpoints),
   hasUnsavedChanges, isSaving, showSaveDialog, showToast
 })
 
 const { loadExistingTemplate } = useTemplateLoad({
   isLoadingTemplate, loadError, existingTemplateId, templateName, templateId,
-  templateDescription, templateCreatorId, templateMutability, templateVisibility,
-  templateListed, isWorkflowVisible, sections, elements,
+  templateDescription, sections, elements,
   viewport: computed({ get: () => builderStore.viewport, set: (v) => builderStore.setViewport(v) }),
   activeTab, hasUnsavedChanges, errorHandling, modulesMetadata, iconMap, showToast
 })
@@ -411,7 +381,7 @@ const { loadExistingTemplate } = useTemplateLoad({
 const {
   executionHistory, isLoadingHistory, handleSelectExecution,
   handleReplayExecution: handleReplayExecutionBase, handleStopExecution,
-  handleRetryFromNode, trackSessionStart, trackSessionEnd
+  handleRetryFromNode
 } = useBuilderSession({
   elements, existingTemplateId, currentExecutionId, isExecuting,
   executionStatus, controlStore, startExecutionPolling, screenshotMode,
@@ -485,17 +455,16 @@ async function handleApplyRecording() {
   recordingStore.reset()
 }
 
-// ===== Lifecycle (collaboration, auto-save, handlers, computed, mount/unmount) =====
+// ===== Local builder lifecycle =====
 const lifecycle = useBuilderLifecycle({
   elements, displayElements, templateName, templateId, templateDescription,
-  existingTemplateId, templateCreatorId, templateMutability, templateVisibility,
-  templateListed, isWorkflowVisible, hasUnsavedChanges, isLoadingTemplate,
+  existingTemplateId, hasUnsavedChanges, isLoadingTemplate,
   loadError, autoSaveEnabled, activeTab, showSettingsPanel,
   showBrowserPanel, executionStatus, executionNodeTimings, executionNodeStates,
   controlStore, hasBrowser, screenshotMode, debugMode, currentExecutionId,
   isExecuting, startExecutionPolling, toggleDebugMode,
   autoSave, showToast, triggerImport, handleExport, loadExistingTemplate,
-  trackSessionStart, trackSessionEnd, activeDebugPanel, handleReplayStarted,
+  activeDebugPanel, handleReplayStarted,
   builderStore, builderCanvasRef, selectedWorkflowNode, onWorkflowNodeClick,
   createNodeFromModule, subflowBreadcrumbs, navigateToBreadcrumb, openSubflow,
   initSubflowElements, modulesMetadata,
@@ -503,23 +472,15 @@ const lifecycle = useBuilderLifecycle({
 })
 
 const {
-  isPageReady, showCollaborationPanel, showInviteModal, showUpgradeModal,
-  testResult, isCloudExecution,
-  showResumePanel, isReadOnly, timelineNodes,
+  isPageReady, testResult,
+  showResumePanel, timelineNodes,
   handleToggleAutoSave, handleToggleSettings, handleTidyNodes,
-  handleSettingsImport, handleSettingsExport, handleTerminateCollaboration,
+  handleSettingsImport, handleSettingsExport,
   handleTimelineNodeSelect, handleAddFirstNode, handleModuleSelect,
   closeModuleSelector, handleWorkflowNodeDelete, handleContainerEdit,
   handleNavigateUp, handleNavigateRoot, reloadAvailableModules,
-  userStore, capabilitiesStore, collaborationStore,
+  capabilitiesStore,
 } = lifecycle
-
-// ===== Workflow Locked =====
-const isWorkflowLocked = computed(() => {
-  if (!existingTemplateId.value) return false
-  if (collaborationStore.isConnected) return false
-  return !isWorkflowVisible.value
-})
 
 // ===== Template Editor (after lifecycle for reloadAvailableModules) =====
 const {

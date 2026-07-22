@@ -49,9 +49,7 @@ class RecordingService:
                 from playwright.async_api import async_playwright
                 self._playwright = await async_playwright().start()
             except ImportError:
-                raise ImportError(
-                    "Playwright not installed. Run: pip install playwright && playwright install"
-                )
+                raise RuntimeError("The bundled Playwright runtime is unavailable")
 
     async def start_recording(
         self,

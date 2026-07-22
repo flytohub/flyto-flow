@@ -1,43 +1,21 @@
-# Flyto2 Cloud Edition Matrix
+# Flyto2 Product Boundary
 
-| Profile | Edition | Deployment | Auth | License | Cloud Bridge |
-| --- | --- | --- | --- | --- | --- |
-| `cloud_saas` | SaaS | hosted | Flyto2 account / OIDC | subscription | managed |
-| `cloud_ce` | Open Source CE | local offline / self-host | local JWT | CE export license | disabled by default |
-| `cloud_enterprise_selfhost` | Self-host Enterprise | customer infra | enterprise IdP or local JWT fallback | commercial enterprise | optional signed token |
-| `cloud_enterprise_airgap` | Enterprise Airgap | airgap | enterprise IdP or local JWT fallback | signed offline license | disabled |
+| Concern | Flyto2 Flow (this repository) | `flyto-cloud` (downstream) |
+| --- | --- | --- |
+| Workspace | One fixed local workspace | Downstream-defined |
+| Account or password | None | Downstream-defined |
+| Storage | Local SQLite and local files | May add managed storage |
+| Execution | Local `flyto-core` | May add managed execution |
+| MCP | Local stdio and loopback HTTP | May add hosted delivery |
+| Network behavior | No implicit outbound requests | Downstream-defined |
+| Updates | Operator-transferred wheel only | May add managed updates |
+| UI source | Shared pages and layout shells | Same Flow files |
+| UI extension | Empty additive `@edition` slots | Downstream slot components |
 
-## Product Roles
+Flyto2 Flow does not implement dormant hosted pages, routes, stores, database
+models, or SDK clients. A capability being disabled at runtime is not a clean
+boundary; the implementation must be absent from this repository.
 
-Flyto2 Cloud is the workflow/template/MCP factory and automation control plane.
-Public marketplace, Stripe billing, creator payouts, and managed runner fleet
-are SaaS-only. Enterprise profiles expose private registries and audit/RBAC
-controls without requiring SaaS marketplace services.
-
-Flyto2 Warroom is the security war room, verification, evidence, remediation,
-and runtime/security workflow product.
-
-## Shared Contract
-
-Both products use `flyto.editions.v1`:
-
-- `product`
-- `edition`
-- `deployment`
-- `auth_mode`
-- `license_mode`
-- `capabilities`
-- `pages`
-- `bridge_policy`
-
-UI routes, API routes, MCP tools, and bridge actions must default deny unless
-the backend capability response explicitly exposes them.
-
-## Auth Boundary
-
-Cloud and Warroom do not share password databases.
-
-CE defaults to local JWT per product. SaaS and enterprise can share an IdP or
-Flyto2 account. Warroom-to-Cloud automation uses signed short-lived bridge or
-bundle tokens. `auth=none` is only valid for loopback single-user flows with a
-local sidecar secret.
+Workflow atoms that explicitly access a URL remain valid. Their network access
+occurs only when the local operator creates and runs such a workflow and is not
+application phone-home behavior.

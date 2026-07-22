@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 async def load_template_definitions(
     steps: List[Dict[str, Any]],
-    user_id: Optional[str],
+    workspace_id: Optional[str],
     embedded_templates: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
@@ -22,11 +22,11 @@ async def load_template_definitions(
 
     Resolution order:
     1. embedded_templates (bundled into snapshot at publish time)
-    2. Live fetch from cloud API
+    2. Local CE template storage
 
     Args:
         steps: Workflow steps to scan
-        user_id: Current user ID
+        workspace_id: Current workspace ID
         embedded_templates: Pre-bundled definitions from snapshot (publisher's own templates)
 
     Returns:
@@ -35,9 +35,9 @@ async def load_template_definitions(
     Raises:
         TemplateDependencyError: If any referenced template is unavailable
     """
-    logger.debug(f"load_template_definitions called with user_id={user_id}")
-    if not user_id:
-        logger.debug("No user_id, returning empty")
+    logger.debug(f"load_template_definitions called with workspace_id={workspace_id}")
+    if not workspace_id:
+        logger.debug("No workspace_id, returning empty")
         return {}
 
     embedded = embedded_templates or {}
@@ -73,9 +73,9 @@ async def load_template_definitions(
             logger.debug(f"Using embedded definition for {library_id}")
             continue
 
-        # 2. Fetch from cloud API
+        # 2. Fetch from local CE storage.
         try:
-            definition = await fetch_template_definition(library_id, user_id)
+            definition = await fetch_template_definition(library_id, workspace_id)
             if definition:
                 template_definitions[library_id] = definition
                 logger.debug(f"Loaded template definition for {library_id}: "
@@ -101,22 +101,24 @@ class TemplateDependencyError(Exception):
         names = ", ".join(missing_ids)
         super().__init__(
             f"Cannot execute: {len(missing_ids)} required sub-template(s) unavailable: {names}. "
-            f"Please install or purchase the missing templates."
+            f"Import the missing templates into this CE workspace."
         )
 
 
 async def fetch_template_definition(
     library_id: str,
-    user_id: str,
+    workspace_id: str,
 ) -> Optional[Dict[str, Any]]:
     """Fetch template definition from provider."""
     try:
-        from services.cloud_client import cloud_get
+        from gateway.providers.hub import get_data_provider
 
-        # Try fetching template directly (cloud handles purchases/forks/owned)
-        data = await cloud_get(f"templates/{library_id}")
+        data = await get_data_provider().templates.get_template(
+            library_id,
+            workspace_id=workspace_id,
+        )
         if data:
-            template = data if isinstance(data, dict) else {}
+            template = data.model_dump() if hasattr(data, "model_dump") else data
             return {
                 "steps": template.get("steps", []),
                 "templateId": template.get("id") or library_id,
@@ -130,22 +132,23 @@ async def fetch_template_definition(
 
 async def fetch_workflow_yaml(
     workflow_id: str,
-    user_id: Optional[str],
+    workspace_id: Optional[str],
 ) -> Optional[str]:
     """
     Fetch workflow YAML by ID.
 
     Retrieves the workflow definition and converts it to YAML format.
     """
-    if not user_id:
+    if not workspace_id:
         return None
 
     try:
-        from services.cloud_client import cloud_get
+        from gateway.providers.hub import get_data_provider
 
-        wf_data = await cloud_get(
-            f"workflows/{workflow_id}",
-            params={"include_graph": "true"},
+        wf_data = await get_data_provider().workflows.get_workflow(
+            workspace_id=workspace_id,
+            workflow_id=workflow_id,
+            include_graph=True,
         )
         workflow = wf_data
 

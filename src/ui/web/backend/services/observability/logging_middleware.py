@@ -57,13 +57,12 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         # Extract execution context from headers if present
         exec_id = request.headers.get("X-Execution-ID")
-        user_id = request.headers.get("X-User-ID")
 
         # Set up context
         context = ExecutionLogContext(
             exec_id=exec_id or f"req-{trace_id[:8]}",
             trace_id=trace_id,
-            user_id=user_id,
+            workspace_id="local-workspace",
         )
         set_context(context)
 
@@ -134,13 +133,12 @@ class ExecutionContextMiddleware(BaseHTTPMiddleware):
 
         # Extract execution context
         exec_id = request.headers.get("X-Execution-ID")
-        user_id = request.headers.get("X-User-ID")
 
         if exec_id:
             context = ExecutionLogContext(
                 exec_id=exec_id,
                 trace_id=trace_id,
-                user_id=user_id,
+                workspace_id="local-workspace",
             )
             set_context(context)
 

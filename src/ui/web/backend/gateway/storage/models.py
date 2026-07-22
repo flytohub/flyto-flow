@@ -75,7 +75,7 @@ class Execution:
     workflow_id: str
     workflow_name: str = ""
     workflow_version: str = "1.0.0"
-    user_id: Optional[str] = None
+    workspace_id: Optional[str] = None
 
     status: str = "pending"  # pending, running, success, failure, cancelled
 
@@ -112,7 +112,7 @@ class Execution:
             "workflow_id": self.workflow_id,
             "workflow_name": self.workflow_name,
             "workflow_version": self.workflow_version,
-            "user_id": self.user_id,
+            "workspace_id": self.workspace_id,
             "status": self.status,
             "started_at": self.started_at,
             "finished_at": self.finished_at,
@@ -151,7 +151,7 @@ class Execution:
             workflow_id=row["workflow_id"],
             workflow_name=row["workflow_name"] or "",
             workflow_version=row["workflow_version"] or "1.0.0",
-            user_id=row["user_id"],
+            workspace_id=row["workspace_id"],
             status=row["status"] or "pending",
             started_at=row["started_at"] or "",
             finished_at=row["finished_at"],

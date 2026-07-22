@@ -9,7 +9,7 @@ Manages workflow execution lifecycle:
 Storage:
 - In-memory: Active/recent executions for fast access
 - SQLite: All execution history for persistence
-- Firebase: Summary stats only (success/failed counts)
+- SQLite: execution state, summaries, and evidence references
 
 Phase 0 Features:
 - Execution snapshots for reproducibility

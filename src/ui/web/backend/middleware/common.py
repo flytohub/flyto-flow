@@ -1,9 +1,7 @@
 """
 Common Middleware & CORS Setup
 
-Single source of truth for middleware and CORS shared across all entry points
-(main_cloud.py, main_local.py). Mode-specific middleware (sidecar auth,
-token capture, version header) stays in each entry point.
+Local middleware and CORS assembly for Flyto2 Flow.
 
 Change middleware here → both cloud and local pick it up automatically.
 """
@@ -15,7 +13,6 @@ from starlette.middleware.gzip import GZipMiddleware
 from middleware.cache import APICacheMiddleware
 from middleware.csrf import CSRFProtectionMiddleware
 from middleware.rate_limiter import RateLimiterMiddleware, RateLimitConfig
-from middleware.request_context import GatewayRequestContextMiddleware
 from middleware.security_headers import SecurityHeadersMiddleware
 from middleware.trailing_slash import TrailingSlashMiddleware
 from services.observability.logging_middleware import RequestLoggingMiddleware
@@ -26,7 +23,7 @@ from api.errors import register_exception_handlers
 
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
 
-# Headers accepted by both cloud and local
+# Headers accepted by the local browser client.
 CORS_BASE_HEADERS = [
     "Authorization",
     "Content-Type",
@@ -46,9 +43,8 @@ def setup_cors(
     expose_headers: list[str] | None = None,
 ) -> None:
     """
-    Register CORS middleware with shared defaults.
+    Register CORS middleware with local defaults.
 
-    Only origins and mode-specific headers differ between entry points.
     Methods and base headers are defined once here.
 
     Args:
@@ -79,21 +75,17 @@ def setup_common_middleware(
     csrf_exempt_prefixes: list[str] | None = None,
 ) -> None:
     """
-    Register middleware shared by all deployment modes.
+    Register middleware for Flyto2 Flow.
 
-    Mode-specific middleware (CORS, sidecar auth, version header, etc.)
-    must be added by each entry point BEFORE calling this function,
-    because Starlette executes middleware in reverse registration order
-    (last registered = outermost = runs first).
+    Starlette executes middleware in reverse registration order
+    (last registered is outermost and runs first).
 
     Args:
         app: FastAPI application instance.
         extra_logging_excludes: Additional paths to exclude from request logging.
         csrf_allowed_origins: Origin allowlist for CSRF enforcement. Should mirror
             the CORS origin allowlist for this deployment mode.
-        csrf_exempt_prefixes: Additional path prefixes to exempt from CSRF (e.g.
-            mode-specific sidecar endpoints). Webhook/OAuth defaults are always
-            applied.
+        csrf_exempt_prefixes: Additional local path prefixes to exempt from CSRF.
     """
     # --- API Cache-Control headers ---
     app.add_middleware(APICacheMiddleware)
@@ -110,8 +102,7 @@ def setup_common_middleware(
     # --- Rate limiting ---
     rate_limit_config = RateLimitConfig(
         default_rpm=60,
-        auth_rpm=120,
-        webhook_rpm=300,
+        local_rpm=120,
         enabled=True,
     )
     app.add_middleware(RateLimiterMiddleware, config=rate_limit_config)
@@ -138,11 +129,6 @@ def setup_common_middleware(
         log_response_body=False,
         exclude_paths=exclude_paths,
     )
-
-    # --- Request-scoped gateway context ---
-    # Registered last so it is outermost and can bind/reset context around the
-    # complete middleware and route stack.
-    app.add_middleware(GatewayRequestContextMiddleware)
 
     # --- Exception handlers ---
     register_exception_handlers(app)

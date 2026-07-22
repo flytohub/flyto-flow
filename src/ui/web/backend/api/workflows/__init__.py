@@ -13,7 +13,7 @@ from api.workflows.models import (
     WorkflowRunRequest,
 )
 from api.workflows.validation import validate_workflow_connections_for_api
-from api.workflows.websocket import ConnectionManager, manager, get_connection_manager
+from services.websocket_manager import ConnectionManager, manager, get_connection_manager
 
 __all__ = [
     "router",

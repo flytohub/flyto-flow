@@ -18,20 +18,6 @@
 
     <!-- Right section - Actions -->
     <div class="header-right-section">
-      <!-- Collaboration Button (always visible for saved templates) -->
-      <button
-        v-if="existingTemplateId"
-        @click="$emit('toggle-collaboration')"
-        class="header-action-btn collab"
-        :class="{ active: isCollabConnected, 'has-error': collabError }"
-        :title="collabError || $t('collaboration.title', 'Collaboration')"
-      >
-        <Users :size="16" />
-        <span v-if="isCollabConnected && participants.length > 1" class="collab-count">
-          {{ participants.length }}
-        </span>
-        <span v-else-if="collabError" class="collab-error-dot"></span>
-      </button>
       <!-- Tidy Nodes button for workflow tab -->
       <button
         v-if="activeTab === 'workflow'"
@@ -87,7 +73,6 @@
       <!-- Breakpoint Approval Badge -->
       <BreakpointBadge
         v-if="isExecuting || hasPendingBreakpoints"
-        :user-id="userId"
         @approved="$emit('breakpoint-approved', $event)"
         @rejected="$emit('breakpoint-rejected', $event)"
       />
@@ -176,14 +161,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { ArrowLeft, Play, Square, Save, ChevronDown, FilePlus, Settings as SettingsIcon, Wrench, LayoutGrid, Users, Globe, Video } from 'lucide-vue-next'
+import { ArrowLeft, Play, Square, Save, ChevronDown, FilePlus, Settings as SettingsIcon, Wrench, LayoutGrid, Globe, Video } from 'lucide-vue-next'
 import { BreakpointBadge } from '../execution'
 import { DebugToolbar } from '../debug'
-import { useCollaborationStore } from '@/stores/collaborationStore'
 import { useCapabilitiesStore } from '@/stores/capabilities'
-
-const collaborationStore = useCollaborationStore()
-const { participants, isConnected: isCollabConnected, error: collabError } = storeToRefs(collaborationStore)
 
 const capabilitiesStore = useCapabilitiesStore()
 const { hasRecording } = storeToRefs(capabilitiesStore)
@@ -212,10 +193,6 @@ const props = defineProps({
   hasPendingBreakpoints: {
     type: Boolean,
     default: false
-  },
-  userId: {
-    type: String,
-    default: 'current_user'
   },
   showDebugToolbar: {
     type: Boolean,
@@ -267,8 +244,6 @@ const emit = defineEmits([
   'breakpoint-approved',
   'breakpoint-rejected',
   'toggle-debug-panel',
-  'show-upgrade',
-  'toggle-collaboration',
   'toggle-browser',
   'start-recording',
   'stop-recording'
@@ -390,63 +365,6 @@ onUnmounted(() => {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-.header-action-btn.collab {
-  position: relative;
-  background: rgba(71, 85, 105, 0.3);
-  border: 1px solid rgba(71, 85, 105, 0.5);
-  color: #94a3b8;
-  padding: 8px 10px;
-}
-
-.header-action-btn.collab:hover {
-  background: rgba(139, 92, 246, 0.15);
-  border-color: rgba(139, 92, 246, 0.4);
-  color: #a78bfa;
-}
-
-.header-action-btn.collab.active {
-  background: rgba(34, 197, 94, 0.15);
-  border-color: rgba(34, 197, 94, 0.5);
-  color: #22c55e;
-}
-
-.header-action-btn.collab.active:hover {
-  background: rgba(34, 197, 94, 0.25);
-  border-color: rgba(34, 197, 94, 0.6);
-}
-
-.collab-count {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #22c55e;
-  border-radius: 8px;
-  font-size: 10px;
-  font-weight: 700;
-  color: white;
-  padding: 0 4px;
-}
-
-.header-action-btn.collab.has-error {
-  border-color: rgba(251, 191, 36, 0.4);
-}
-
-.collab-error-dot {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 8px;
-  height: 8px;
-  background: #fbbf24;
-  border-radius: 50%;
-  border: 2px solid #0c1222;
 }
 
 .header-action-btn.tidy {

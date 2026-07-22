@@ -4,7 +4,7 @@ Core Package Management API
 Split into focused modules:
 - health.py  — health check, version, status
 - plugins.py — plugin system, registry snapshot/refresh
-- updater.py — PyPI update, .whl upload, base install
+- updater.py — verified offline .whl import and activation
 """
 from fastapi import APIRouter
 

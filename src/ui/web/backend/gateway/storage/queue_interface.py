@@ -2,7 +2,7 @@
 Queue Interface
 
 Abstract interface for job queue implementations.
-Allows swapping between SQLite (single instance) and Redis (distributed).
+Defines the bundled local SQLite queue contract.
 """
 
 from abc import ABC, abstractmethod
@@ -21,8 +21,7 @@ class QueueJob:
     id: str
     execution_id: str
     workflow_id: str
-    user_id: Optional[str] = None
-    org_id: Optional[str] = None
+    workspace_id: Optional[str] = None
 
     priority: int = 0
     status: str = "pending"
@@ -55,8 +54,7 @@ class QueueJob:
             "id": self.id,
             "execution_id": self.execution_id,
             "workflow_id": self.workflow_id,
-            "user_id": self.user_id,
-            "org_id": self.org_id,
+            "workspace_id": self.workspace_id,
             "priority": self.priority,
             "status": self.status,
             "attempts": self.attempts,
@@ -100,11 +98,7 @@ class QueueInterface(ABC):
     """
     Abstract interface for job queue implementations.
 
-    Implementations:
-    - SQLiteQueue: Single-instance, file-based (default)
-    - RedisQueue: Distributed, high-performance
-
-    All methods are async to support both sync and async backends.
+    Methods are async so queue use composes cleanly with the execution worker.
     """
 
     @abstractmethod
@@ -112,8 +106,7 @@ class QueueInterface(ABC):
         self,
         execution_id: str,
         workflow_id: str,
-        user_id: Optional[str] = None,
-        org_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         priority: int = 0,
         max_attempts: int = 3,
         timeout_ms: int = 300000,
@@ -127,8 +120,7 @@ class QueueInterface(ABC):
         Args:
             execution_id: Link to execution record
             workflow_id: Workflow being executed
-            user_id: User who triggered execution
-            org_id: Organization ID
+            workspace_id: Workspace that triggered execution
             priority: Job priority (higher = more urgent)
             max_attempts: Maximum retry attempts
             timeout_ms: Execution timeout
@@ -280,8 +272,7 @@ class QueueInterface(ABC):
     async def list_jobs(
         self,
         status: Optional[str] = None,
-        user_id: Optional[str] = None,
-        org_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         limit: int = 50,
         offset: int = 0,
     ) -> List[QueueJob]:
@@ -290,8 +281,7 @@ class QueueInterface(ABC):
 
         Args:
             status: Filter by status
-            user_id: Filter by user
-            org_id: Filter by organization
+            workspace_id: Filter by workspace
             limit: Maximum results
             offset: Skip first N results
 

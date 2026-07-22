@@ -52,13 +52,11 @@
     :show="showTemplateEditor"
     :template-id="editingTemplate.id"
     :template-name="editingTemplate.name"
-    :mutability="editingTemplate.mutability"
     :elements="editingTemplate.elements"
     :template-ui="editingTemplate.ui"
     :default-modules="defaultModules"
     :expert-modules="expertModules"
     :modules-metadata="modulesMetadata"
-    :read-only="editingTemplate.mutability === 'locked'"
     :loading="editingTemplate.loading"
     :saving="editingTemplate.saving"
     :error="editingTemplate.error"
@@ -88,8 +86,6 @@
     @select="$emit('module-select', $event)"
   />
 
-  <!-- Upgrade Modal (for premium feature gating) -->
-  <UpgradeModal v-model="showUpgradeModalLocal" />
 </template>
 
 <script setup>
@@ -106,7 +102,6 @@ const GridEditDialog = defineAsyncComponent(() => import('../templateBuilder/Gri
 const TestModal = defineAsyncComponent(() => import('../templateBuilder/TestModal.vue'))
 const TemplateEditorDialog = defineAsyncComponent(() => import('../templates/TemplateEditorDialog.vue'))
 const CreateTemplateModal = defineAsyncComponent(() => import('../templates/CreateTemplateModal.vue'))
-const UpgradeModal = defineAsyncComponent(() => import('../common/UpgradeModal.vue'))
 
 const props = defineProps({
   activeTab: { type: String, required: true },
@@ -139,8 +134,6 @@ const props = defineProps({
   availableSteps: { type: Array, default: () => [] },
   isLoadingModules: { type: Boolean, default: false },
   isAddingFirstNode: { type: Boolean, default: false },
-  // Upgrade modal
-  showUpgradeModal: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -153,18 +146,12 @@ const emit = defineEmits([
   'template-editor-save', 'template-editor-close',
   'close-toast',
   'close-module-selector', 'module-select',
-  'update:showUpgradeModal',
 ])
 
 // v-model proxies for components that need v-model
 const showCreateTemplateModalLocal = computed({
   get: () => props.showCreateTemplateModal,
   set: (v) => emit('update:showCreateTemplateModal', v)
-})
-
-const showUpgradeModalLocal = computed({
-  get: () => props.showUpgradeModal,
-  set: (v) => emit('update:showUpgradeModal', v)
 })
 
 </script>

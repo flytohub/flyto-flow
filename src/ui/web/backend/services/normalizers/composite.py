@@ -16,7 +16,6 @@ from services.template.schemas.canonical_module import (
     INCLUDE_SNAKE_CASE_ALIASES,
 )
 from services.node_config import enrich_module_with_node_config
-from services.i18n_service import translate_module
 from .base import (
     normalize_icon,
     normalize_params_schema,
@@ -65,14 +64,8 @@ def normalize_composite(raw: Dict[str, Any], lang: str = "en") -> CanonicalModul
     label_key = get_value_with_aliases(raw, "ui_label_key", "label_key")
     description_key = get_value_with_aliases(raw, "ui_description_key", "description_key")
 
-    # Apply i18n translation from flyto-i18n
-    label, description = translate_module(
-        label=label_raw,
-        description=description_raw,
-        label_key=label_key,
-        description_key=description_key,
-        locale=lang
-    )
+    # The browser applies bundled translations through labelKey/descriptionKey.
+    label, description = label_raw, description_raw
 
     # Visual properties
     icon_raw = get_value_with_aliases(raw, "ui_icon", "icon", default=defaults["icon"])

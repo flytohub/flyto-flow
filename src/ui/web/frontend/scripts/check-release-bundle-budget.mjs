@@ -70,7 +70,7 @@ for (const chunk of monacoChunks) {
 }
 
 const report = {
-  project: 'flyto-cloud',
+  project: 'flyto2-flow',
   surface: 'web-frontend',
   generatedAt: new Date().toISOString(),
   budget,

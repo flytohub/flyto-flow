@@ -35,20 +35,6 @@
               </span>
             </template>
 
-            <span
-              v-if="currentMutability === 'locked'"
-              class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded-full shrink-0 ml-2"
-            >
-              <Lock :size="12" />
-              Locked
-            </span>
-            <span
-              v-else-if="currentMutability === 'fork_on_use'"
-              class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded-full shrink-0 ml-2"
-            >
-              <GitFork :size="12" />
-              Fork on edit
-            </span>
           </div>
 
           <!-- Tab switcher -->
@@ -72,22 +58,12 @@
           </div>
 
           <button
-            v-if="!currentReadOnly"
             class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
             :disabled="saving || !dirty"
             @click="handleSave"
           >
             {{ saving ? 'Saving...' : 'Save' }}
           </button>
-        </div>
-
-        <!-- Fork banner -->
-        <div
-          v-if="currentMutability === 'fork_on_use' && !currentReadOnly"
-          class="px-4 py-2 bg-blue-500/10 border-b border-blue-500/20 text-blue-300 text-xs flex items-center gap-2 shrink-0"
-        >
-          <GitFork :size="14" />
-          Editing will create a copy of this template.
         </div>
 
         <!-- Loading -->
@@ -113,7 +89,6 @@
             :selected-node="selectedNode"
             :default-modules="defaultModules"
             :expert-modules="expertModules"
-            :read-only="currentReadOnly"
             :collapsed="panelCollapsed"
             :modules-metadata="modulesMetadata"
             @update:elements="onElementsUpdate"
@@ -179,7 +154,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { ArrowLeft, Lock, GitFork, AlertCircle, Workflow, LayoutDashboard, ChevronRight } from 'lucide-vue-next'
+import { ArrowLeft, AlertCircle, Workflow, LayoutDashboard, ChevronRight } from 'lucide-vue-next'
 import WorkflowTab from '@/components/templateBuilder/WorkflowTab.vue'
 import UIDesignTab from '@/components/templateBuilder/UIDesignTab.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
@@ -193,13 +168,11 @@ const props = defineProps({
   show:            { type: Boolean, default: false },
   templateName:    { type: String, default: '' },
   templateId:      { type: String, default: null },
-  mutability:      { type: String, default: 'editable' },
   elements:        { type: Array, default: () => [] },
   templateUi:      { type: Object, default: () => ({ sections: [] }) },
   defaultModules:  { type: Array, default: () => [] },
   expertModules:   { type: Array, default: () => [] },
   modulesMetadata: { type: Object, default: () => ({}) },
-  readOnly:        { type: Boolean, default: false },
   loading:         { type: Boolean, default: false },
   saving:          { type: Boolean, default: false },
   error:           { type: String, default: null },
@@ -213,7 +186,7 @@ const emit = defineEmits(['close', 'save'])
 const editorTab = ref('workflow')
 
 // ===== Nested Template Stack =====
-// Each entry: { templateId, name, mutability, elements, sections, dirty }
+// Each entry: { templateId, name, elements, sections, dirty }
 const templateStack = ref([])
 const innerLoading = ref(false)
 const innerError = ref(null)
@@ -231,12 +204,6 @@ const breadcrumbs = computed(() => {
 const isNested = computed(() => templateStack.value.length > 0)
 const currentEntry = computed(() =>
   isNested.value ? templateStack.value[templateStack.value.length - 1] : null
-)
-const currentMutability = computed(() =>
-  currentEntry.value?.mutability || props.mutability
-)
-const currentReadOnly = computed(() =>
-  currentMutability.value === 'locked' || props.readOnly
 )
 
 // ===== Workflow State =====
@@ -401,7 +368,6 @@ async function onEditNestedTemplate({ templateId }) {
     }
     const tpl = result.template
     const name = tpl.name || tpl.templateName || 'Template'
-    const mut = tpl.mutability || 'editable'
     const steps = tpl.steps || tpl.workflowSteps || []
     const ui = tpl.ui || { sections: [] }
 
@@ -415,7 +381,6 @@ async function onEditNestedTemplate({ templateId }) {
     templateStack.value.push({
       templateId,
       name,
-      mutability: mut,
       elements,
       sections: ui.sections ? JSON.parse(JSON.stringify(ui.sections)) : [],
       dirty: false,
@@ -469,7 +434,6 @@ function handleSave() {
     const entry = currentEntry.value
     emit('save', {
       templateId: entry.templateId,
-      mutability: entry.mutability,
       elements: localElements.value,
       ui: { sections: localSections.value },
       isNested: true

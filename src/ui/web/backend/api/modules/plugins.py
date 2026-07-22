@@ -1,13 +1,13 @@
 """
 Plugin Management Endpoints
 
-Plugin catalog, status, and community registry.
+Local plugin catalog and status.
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, HTTPException
 
 from api.modules.catalog import get_plugin_manager, PLUGIN_RUNTIME_AVAILABLE
 
@@ -116,66 +116,3 @@ async def get_plugin_status(plugin_id: str) -> Dict[str, Any]:
         raise HTTPException(status_code=404, detail=f"Plugin not found: {plugin_id}")
 
     return {"ok": True, "plugin": status}
-
-
-# =============================================================================
-# Community Plugin Registry
-# =============================================================================
-
-@router.get("/plugins/registry")
-async def get_plugin_registry(
-    query: Optional[str] = Query(None, description="Search query"),
-    force_refresh: bool = Query(False, description="Force refresh from remote"),
-) -> Dict[str, Any]:
-    """
-    Get available community plugins from the remote registry.
-
-    Returns plugins that can be installed via `flyto plugin install <name>`.
-    """
-    try:
-        from core.plugin.registry import PluginRegistry
-
-        registry = PluginRegistry()
-
-        if query:
-            entries = registry.search(query)
-        else:
-            entries = registry.list_available(force_refresh=force_refresh)
-
-        # Check which ones are installed locally
-        installed_names = set()
-        try:
-            from core.plugin.loader import get_plugin_loader
-            loader = get_plugin_loader()
-            for name in loader.discover_plugins():
-                installed_names.add(name)
-        except Exception:
-            pass
-
-        plugins = []
-        for entry in entries:
-            data = entry.to_dict()
-            data["installed"] = entry.name in installed_names
-            plugins.append(data)
-
-        return {
-            "ok": True,
-            "total": len(plugins),
-            "plugins": plugins,
-        }
-
-    except ImportError:
-        return {
-            "ok": True,
-            "total": 0,
-            "plugins": [],
-            "message": "Plugin registry not available (flyto-core < 2.17)",
-        }
-    except Exception:
-        logger.exception("Plugin registry error")
-        return {
-            "ok": False,
-            "total": 0,
-            "plugins": [],
-            "error": "Unable to load plugin registry",
-        }

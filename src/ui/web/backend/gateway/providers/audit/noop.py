@@ -1,21 +1,14 @@
-"""
-No-op Audit Provider
-
-Minimal audit logging for Cloud mode.
-Logs to standard logger only, no persistent storage.
-"""
+"""Minimal local audit sink that writes only to the process log."""
 
 import logging
 from typing import Any
 
-from gateway.providers.base import AuditProvider
-
 logger = logging.getLogger(__name__)
 
 
-class NoopAuditProvider(AuditProvider):
+class NoopAuditProvider:
     """
-    No-op audit provider for Cloud mode.
+    No-op audit provider for CE.
 
     Simply logs audit events to the standard logger.
     Does not persist to database or storage.
@@ -43,7 +36,7 @@ class NoopAuditProvider(AuditProvider):
         Log audit event.
 
         Simply logs to standard Python logger.
-        No persistent storage in Cloud mode.
+        No persistent storage.
 
         Args:
             action: Action performed

@@ -1,5 +1,5 @@
 """
-Plugin Runtime Bridge — connects flyto-core's PluginManager to flyto-cloud's WebSocket layer.
+Local plugin runtime bridge for flyto-core UI notifications.
 
 flyto-core already handles:
   - Plugin discovery, manifest parsing, security validation
@@ -12,7 +12,7 @@ This bridge adds:
   - Plugin step registration in ModuleRegistry on worker startup
   - Singleton access for the worker
 
-Used by both main_worker.py (cloud) and main_local.py (desktop).
+Used by the local application lifecycle.
 """
 
 import logging

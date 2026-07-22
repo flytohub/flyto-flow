@@ -5,7 +5,6 @@
       @click.stop="$emit('delete-node', { nodeId: id })"
       aria-label="Delete node"
       class="delete-btn"
-      :disabled="isLockedByOther"
     >
       <X :size="14" />
     </button>
@@ -25,7 +24,6 @@
       @click.stop="$emit('replace-node', { nodeId: id, moduleId: data?.module })"
       class="replace-btn"
       title="Replace with another module"
-      :disabled="isLockedByOther"
     >
       <RefreshCw :size="14" />
     </button>
@@ -39,21 +37,6 @@
     >
       <Pencil :size="14" />
     </button>
-
-    <!-- Lock badge (collaboration) -->
-    <NodeLockBadge
-      v-if="showLockBadge"
-      :node-id="id"
-      class="lock-badge"
-    />
-
-    <!-- Collaboration selection ring (another user is viewing this node) -->
-    <div
-      v-if="selectedByOther"
-      class="collab-selection-ring"
-      :style="{ '--ring-color': selectedByOther.color }"
-      :title="`${selectedByOther.displayName} is viewing this node`"
-    />
 
     <!-- Node card -->
     <NodeCardContent
@@ -150,11 +133,8 @@ import { computed } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
 import { Plus, X, RotateCcw, RefreshCw, Pencil } from 'lucide-vue-next'
 import NodeCardContent from '../NodeCardContent.vue'
-import NodeLockBadge from '@/components/collaboration/NodeLockBadge.vue'
-import { useCollaborationStore } from '@/stores/collaborationStore'
 import { useNodeOutputStore } from '@/stores/execution/nodeOutputStore'
 
-const collaborationStore = useCollaborationStore()
 const nodeOutputStore = useNodeOutputStore()
 
 const props = defineProps({
@@ -204,17 +184,6 @@ const templateIdFromModule = computed(() => {
   return moduleId.split('template.invoke:')[1] || null
 })
 
-// Collaboration lock state
-const showLockBadge = computed(() => {
-  if (!collaborationStore.isConnected) return false
-  return !!collaborationStore.nodeLocks[props.id]
-})
-
-const isLockedByOther = computed(() => {
-  if (!collaborationStore.isConnected) return false
-  return collaborationStore.isNodeLockedByOther(props.id)
-})
-
 // Get node input, error, and display outputs from store
 const nodeInput = computed(() => nodeOutputStore.getNodeInputs(props.id))
 const nodeError = computed(() => nodeOutputStore.getNodeError(props.id))
@@ -227,15 +196,6 @@ const formattedDuration = computed(() => {
   if (durationMs < 1000) return `${durationMs}ms`
   if (durationMs < 60000) return `${(durationMs / 1000).toFixed(1)}s`
   return `${(durationMs / 60000).toFixed(1)}m`
-})
-
-// Collaboration: check if another user has selected/editing this node
-const selectedByOther = computed(() => {
-  if (!collaborationStore.isConnected) return null
-  return collaborationStore.participants.find(
-    p => p.userId !== collaborationStore.currentParticipantId
-      && (p.selectedNode === props.id || p.editingNode === props.id)
-  ) || null
 })
 
 const nodeClasses = computed(() => ({
@@ -251,8 +211,7 @@ const nodeClasses = computed(() => ({
   'execution-pending': props.executionState === 'pending',
   'execution-error': props.executionState === 'error',
   'compact-mode': props.compact,
-  'node-disabled': props.disabled,
-  'node-locked': isLockedByOther.value
+  'node-disabled': props.disabled
 }))
 </script>
 
@@ -642,56 +601,4 @@ const nodeClasses = computed(() => ({
   opacity: 0.5;
 }
 
-/* ========== Lock Badge Position ========== */
-.lock-badge {
-  position: absolute;
-  top: -10px;
-  right: 40px;
-  z-index: 15;
-}
-
-/* ========== Locked by Other State (behavior only - border in hierarchy) ========== */
-.default-node.node-locked {
-  cursor: not-allowed;
-}
-
-.default-node.node-locked:hover {
-  transform: none;
-}
-
-.default-node.node-locked:hover :deep(.node-card) {
-  /* Keep amber border on hover - don't override to purple */
-  border-color: #f59e0b !important;
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
-}
-
-.default-node.node-locked .delete-btn {
-  display: none;
-}
-
-.default-node.node-locked .add-btn {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.default-node.node-locked .handle {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-/* ========== Collaboration Selection Ring ========== */
-.collab-selection-ring {
-  position: absolute;
-  inset: -4px;
-  border: 2px solid var(--ring-color);
-  border-radius: 18px;
-  pointer-events: none;
-  z-index: 1;
-  animation: collab-pulse 2s ease-in-out infinite;
-}
-
-@keyframes collab-pulse {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
-}
 </style>

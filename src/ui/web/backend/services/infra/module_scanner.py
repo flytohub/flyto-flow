@@ -1,11 +1,4 @@
-"""
-Module Scanner - Get modules from pip-installed flyto-core
-
-This module provides a compatibility wrapper for code that previously
-scanned local files. Now it simply loads from pip-installed package.
-
-All modules are imported from: core.modules (pip package)
-"""
+"""Read modules from CE's active local flyto-core installation."""
 import logging
 from typing import Dict, Any, Optional
 
@@ -17,10 +10,7 @@ logger = logging.getLogger(__name__)
 
 class ModuleScanner:
     """
-    Load modules from pip-installed flyto-core.
-
-    This is a compatibility wrapper - all modules are now loaded
-    from the pip-installed package, not scanned from local files.
+    Load modules bundled in the image or imported from an offline wheel.
     """
 
     def __init__(self, core_path: Optional[str] = None):
@@ -33,12 +23,12 @@ class ModuleScanner:
         if core_path:
             logger.warning(
                 "core_path argument is deprecated. "
-                "Modules are loaded from pip package."
+                "Modules are loaded from the active local core runtime."
             )
 
     def scan_modules(self) -> Dict[str, Any]:
         """
-        Get all registered modules from pip-installed flyto-core.
+        Get all registered modules from the active local flyto-core.
 
         Returns:
             {
@@ -58,7 +48,7 @@ class ModuleScanner:
                     "count": 0,
                     "categories": {},
                     "status": "error",
-                    "message": "flyto-core not installed. Run: pip install flyto-core"
+                    "message": "Bundled flyto-core runtime is unavailable"
                 }
 
             all_metadata = registry.get_all_metadata()
@@ -78,7 +68,7 @@ class ModuleScanner:
                 "count": len(all_metadata),
                 "categories": categories,
                 "status": "success",
-                "message": f"Loaded {len(all_metadata)} modules from pip package"
+                "message": f"Loaded {len(all_metadata)} modules from local core runtime"
             }
 
         except ImportError as e:
@@ -88,7 +78,7 @@ class ModuleScanner:
                 "count": 0,
                 "categories": {},
                 "status": "error",
-                "message": "flyto-core not installed. Run: pip install flyto-core"
+                "message": "Bundled flyto-core runtime is unavailable"
             }
         except Exception as e:
             logger.error(f"Error loading modules: {e}")

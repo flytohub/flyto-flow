@@ -5,9 +5,6 @@ from typing import Optional, List, Dict, Any
 from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field
 
-from gateway.providers.data.models.common import DataSource
-
-
 ResourceRef = str | List[str]
 
 
@@ -66,7 +63,7 @@ class WorkflowDTO(BaseModel):
     """
     # Identity
     id: str
-    user_id: str
+    workspace_id: str
 
     # Basic info
     name: str
@@ -94,17 +91,7 @@ class WorkflowDTO(BaseModel):
     edges: Optional[List[WorkflowEdge]] = None
 
     # Metadata
-    source: DataSource = DataSource.USER
     tags: List[str] = Field(default_factory=list)
-
-    # Capabilities (what can user do with this workflow)
-    capabilities: Dict[str, bool] = Field(default_factory=lambda: {
-        "execute": True,
-        "edit": True,
-        "delete": True,
-        "share": False,
-        "publish": False,
-    })
 
     # Error handling: workflow to trigger on failure
     error_workflow_id: Optional[str] = None

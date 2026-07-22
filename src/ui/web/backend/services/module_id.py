@@ -11,7 +11,6 @@ Format: [source:]category.action[:resourceId]
 | Composite | category.action | browser.scrape_to_json |
 | Plugin | category.action | database.query |
 | Template | template.invoke:uuid | template.invoke:abc123 |
-| HuggingFace | huggingface.task:model | huggingface.text-gen:gpt2 |
 """
 
 import re
@@ -52,7 +51,6 @@ def parse_module_id(module_id: str) -> ModuleIdParts:
     Examples:
         "browser.goto" → ModuleIdParts(category="browser", action="goto")
         "template.invoke:abc123" → ModuleIdParts(category="template", action="invoke", resource_id="abc123")
-        "huggingface.text-gen:gpt2" → ModuleIdParts(category="huggingface", action="text-gen", resource_id="gpt2")
         "api.openai.chat" → ModuleIdParts(category="api", action="openai.chat")
 
     Args:
@@ -200,48 +198,6 @@ def normalize_template_module_id(module_id: str, template_id: Optional[str] = No
     return "template.invoke"
 
 
-def is_huggingface_module(module_id: str) -> bool:
-    """
-    Check if a module ID represents a HuggingFace module.
-
-    Args:
-        module_id: The module identifier
-
-    Returns:
-        True if this is a HuggingFace module
-    """
-    if not module_id:
-        return False
-
-    return (
-        module_id.startswith("huggingface.") or
-        module_id.startswith("huggingface:")
-    )
-
-
-def extract_huggingface_model_id(module_id: str) -> Optional[str]:
-    """
-    Extract HuggingFace model ID from a module ID.
-
-    Examples:
-        "huggingface.text-gen:gpt2" → "gpt2"
-        "huggingface:meta/llama" → "meta/llama"
-
-    Args:
-        module_id: The module identifier
-
-    Returns:
-        Model ID or None if not a HuggingFace module
-    """
-    if not module_id or not is_huggingface_module(module_id):
-        return None
-
-    if ":" in module_id:
-        return module_id.split(":", 1)[1]
-
-    return None
-
-
 def is_plugin_module(module_id: str, source: Optional[str] = None) -> bool:
     """
     Check if a module ID represents a plugin module.
@@ -301,7 +257,7 @@ def validate_module_id(module_id: str) -> tuple[bool, Optional[str]]:
         return False, "Module ID must be a string"
 
     # Check for valid characters
-    # Allow: letters, numbers, dots, underscores, hyphens, colons, slashes (for HuggingFace)
+    # Allow resource IDs after a colon; slashes support namespaced local plugins.
     pattern = r'^[a-zA-Z0-9._\-:/]+$'
     if not re.match(pattern, module_id):
         return False, f"Module ID contains invalid characters: {module_id}"

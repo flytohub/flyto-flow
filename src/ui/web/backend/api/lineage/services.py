@@ -6,32 +6,17 @@ Business logic and helper functions for lineage API.
 
 import json
 import logging
-import os
-from pathlib import Path
 from typing import Any, Dict, List
 
 from api.lineage.models import LineageNode
+from local.storage_paths import evidence_path
 
 logger = logging.getLogger(__name__)
 
 
-def get_evidence_path() -> Path:
-    """Get evidence base path, configurable via environment"""
-    custom_path = os.getenv("FLYTO_EVIDENCE_PATH")
-    if custom_path:
-        return Path(custom_path)
-
-    # Find project root by looking for flyto-cloud directory name
-    current = Path(__file__).resolve()
-    for _ in range(10):
-        current = current.parent
-        if current.name == "flyto-cloud":
-            evidence_dir = current / "evidence"
-            if evidence_dir.exists():
-                return evidence_dir
-            break
-
-    return Path("./evidence")
+def get_evidence_path():
+    """Get the local evidence directory."""
+    return evidence_path()
 
 
 def load_execution_evidence(execution_id: str) -> List[Dict[str, Any]]:

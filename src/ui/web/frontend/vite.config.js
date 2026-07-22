@@ -81,12 +81,14 @@ const obfuscatorOptions = {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const isProduction = mode === 'production'
-  const sentryEnabled = false
 
   // Use 127.0.0.1 instead of localhost to ensure IPv4 (backend only listens on IPv4)
   const apiHost = env.VITE_API_HOST || '127.0.0.1'
   const apiPort = env.VITE_API_PORT || DEFAULT_API_PORT
   const apiTarget = env.VITE_API_URL || `http://${apiHost}:${apiPort}`
+  const editionEntry = env.FLYTO_UI_EDITION_ENTRY
+    ? path.resolve(__dirname, env.FLYTO_UI_EDITION_ENTRY)
+    : path.resolve(__dirname, './src/edition/ce.js')
 
   // 基本插件
   const plugins = [
@@ -114,7 +116,8 @@ export default defineConfig(({ mode }) => {
     plugins,
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src')
+        '@': path.resolve(__dirname, './src'),
+        '@edition': editionEntry
       }
     },
     server: {
@@ -127,9 +130,8 @@ export default defineConfig(({ mode }) => {
         cert: fs.readFileSync('./local.flyto2.com+2.pem'),
         key: fs.readFileSync('./local.flyto2.com+2-key.pem'),
       } : undefined,
-      // Relax COOP for Google OAuth popup compatibility
       headers: {
-        'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+        'Cross-Origin-Opener-Policy': 'same-origin',
       },
       // HMR 穩定性優化
       hmr: {
@@ -155,7 +157,7 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: apiTarget,
           changeOrigin: true,
-          ws: true,  // Enable WebSocket for /api/v1/collaboration/ws/*
+          ws: true,
           // 增加 timeout 避免後端重載時卡住
           timeout: 30000,  // 30 seconds
           proxyTimeout: 30000,
@@ -184,9 +186,7 @@ export default defineConfig(({ mode }) => {
       esbuild: isProduction ? {
         drop: ['console', 'debugger'],
       } : {},
-      // Source maps - enable 'hidden' when Sentry is configured (uploaded to Sentry, not served)
-      // 'hidden' generates maps but doesn't add sourceMappingURL comments
-      sourcemap: sentryEnabled ? 'hidden' : false,
+      sourcemap: false,
       // 程式碼分割
       // Monaco editor core is a deliberately lazy-loaded editor dependency.
       // release:bundle-budget enforces a tighter gzip budget and verifies it is
@@ -202,7 +202,7 @@ export default defineConfig(({ mode }) => {
       },
       rollupOptions: {
         // Suppress "dynamically imported by X but also statically imported" warning
-        // This happens with telemetry.js due to circular dependency breaking via dynamic import
+        // Preserve manual chunks when a module is imported both statically and dynamically.
         onwarn(warning, warn) {
           if (warning.code === 'PLUGIN_WARNING' &&
               warning.plugin === 'vite:reporter' &&
@@ -242,7 +242,7 @@ export default defineConfig(({ mode }) => {
               return 'vendor-highlight'
             }
             // Icons must be checked before generic "vue" for lucide-vue-next.
-            if (id.includes('lucide') || id.includes('@iconify')) {
+            if (id.includes('lucide')) {
               return 'vendor-icons'
             }
             // Vue ecosystem

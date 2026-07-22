@@ -16,7 +16,6 @@ import { getEdgeColorForSourceHandle } from './workflowConstants/edgeConstants'
 import { CASE_COLORS } from '../../config/nodeTypes/SwitchNode'
 import { isSwitchNode } from '@/services/nodeService'
 import { useToast } from '../useToast'
-import { trackBuilder } from '@/utils/telemetry/builderTracker'
 
 export function useCanvasConnections({ nodes, edges, saveHistoryState, syncToParent, HISTORY_ACTIONS }) {
   const { t } = useI18n()
@@ -141,10 +140,6 @@ export function useCanvasConnections({ nodes, edges, saveHistoryState, syncToPar
       data: params.data || undefined
     })
     edges.value = [...edges.value, edge]
-
-    const sourceType = sourceNode?.data?.module || 'unknown'
-    const targetType = targetNode?.data?.module || 'unknown'
-    trackBuilder.edgeCreate(sourceType, targetType)
 
     syncToParent()
   }

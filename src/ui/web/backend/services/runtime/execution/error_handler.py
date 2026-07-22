@@ -41,7 +41,7 @@ async def trigger_error_workflow(
     try:
         # Get error workflow ID from workflow metadata
         error_workflow_id = await get_error_workflow_id(
-            info.workflow_id, info.user_id
+            info.workflow_id, info.workspace_id
         )
 
         if not error_workflow_id:
@@ -69,14 +69,14 @@ async def trigger_error_workflow(
             'error_code': extract_error_code(error_message),
             'error_traceback': traceback_str,
             'failed_at': utc_now(),
-            'user_id': info.user_id or '',
+            'workspace_id': info.workspace_id or '',
             'input_params': info.input_params,
             'node_states': dict(info.node_states) if info.node_states else {},
         }
 
         # Fetch error workflow YAML
         error_workflow_yaml = await fetch_workflow_yaml(
-            error_workflow_id, info.user_id
+            error_workflow_id, info.workspace_id
         )
 
         if not error_workflow_yaml:
@@ -88,7 +88,7 @@ async def trigger_error_workflow(
             workflow_yaml=error_workflow_yaml,
             variables={'error_context': error_context},
             workflow_id=error_workflow_id,
-            user_id=info.user_id,
+            workspace_id=info.workspace_id,
             workflow_name=f"Error Handler for {info.workflow_name}",
         )
 
@@ -110,7 +110,7 @@ async def trigger_error_workflow(
 
 async def get_error_workflow_id(
     workflow_id: str,
-    user_id: Optional[str],
+    workspace_id: Optional[str],
 ) -> Optional[str]:
     """
     Get error workflow ID from workflow metadata.
@@ -118,13 +118,18 @@ async def get_error_workflow_id(
     Looks up the workflow in the data provider and returns the
     configured error_workflow_id if set.
     """
-    if not user_id:
+    if not workspace_id:
         return None
 
     try:
-        from services.cloud_client import cloud_get
+        from gateway.providers.hub import get_data_provider
 
-        wf_data = await cloud_get(f"workflows/{workflow_id}")
+        workflow = await get_data_provider().workflows.get_workflow(
+            workspace_id=workspace_id,
+            workflow_id=workflow_id,
+            include_graph=False,
+        )
+        wf_data = workflow.model_dump() if hasattr(workflow, "model_dump") else workflow
         if wf_data:
             return wf_data.get('error_workflow_id')
 

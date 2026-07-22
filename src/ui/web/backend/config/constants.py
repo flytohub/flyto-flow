@@ -172,11 +172,6 @@ CATEGORY_DEFAULTS = {
         'color': '#1DA1F2',
         'nodeType': 'composite'
     },
-    'huggingface': {
-        'icon': 'Brain',
-        'color': '#FFD21E',
-        'nodeType': 'ai'
-    },
 }
 
 # Default category metadata when category is unknown

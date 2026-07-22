@@ -1,5 +1,5 @@
 services:
-  flyto-cloud:
+  flyto-flow:
     build:
       context: ..
       dockerfile: install/Dockerfile.ce
@@ -7,12 +7,11 @@ services:
       - ./.env.ce
     environment:
       FLYTO_OFFLINE_DB_PATH: /data/flyto/offline.db
-      FLYTO_WARROOM_IMPORT_DIR: /data/warroom-inbox
+      HEADLESS: "1"
     ports:
-      - "9000:9000"
+      - "127.0.0.1:9000:9000"
     volumes:
-      - flyto-cloud-data:/data/flyto
-      - ./warroom-inbox:/data/warroom-inbox
+      - flyto-flow-data:/data/flyto
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9000/api/health')"]
       interval: 30s
@@ -21,4 +20,4 @@ services:
       start_period: 20s
 
 volumes:
-  flyto-cloud-data:
+  flyto-flow-data:

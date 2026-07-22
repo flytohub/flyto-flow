@@ -60,7 +60,7 @@ async def replay_execution(
             workflow_yaml=workflow_yaml,
             variables=inputs,
             workflow_id=execution.workflow_id,
-            user_id=execution.user_id,
+            workspace_id=execution.workspace_id,
             workflow_name=execution.workflow_name,
         )
 
@@ -182,7 +182,7 @@ async def rerun_from_node(
             variables=inputs,
             workflow_id=execution.workflow_id,
             start_step=start_step,
-            user_id=execution.user_id,
+            workspace_id=execution.workspace_id,
             workflow_name=execution.workflow_name,
         )
 

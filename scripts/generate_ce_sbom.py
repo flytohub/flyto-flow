@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a deterministic CycloneDX SBOM for a Flyto2 Cloud CE release tree."""
+"""Generate a deterministic CycloneDX SBOM for a Flyto2 Flow release tree."""
 
 from __future__ import annotations
 
@@ -119,8 +119,8 @@ def main() -> int:
         "metadata": {
             "component": {
                 "type": "application",
-                "bom-ref": "pkg:github/flytohub/flyto-cloud-ce",
-                "name": "flyto-cloud-ce",
+                "bom-ref": "pkg:github/flytohub/flyto-flow",
+                "name": "flyto-flow",
                 "version": release["source_commit"][:12],
             },
             "properties": [

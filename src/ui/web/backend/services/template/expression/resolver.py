@@ -44,7 +44,7 @@ def resolve_variable_path(
     Resolve a dot-notation variable path.
 
     Args:
-        path: Variable path (e.g., "user.profile.name")
+        path: Variable path (e.g., "order.customer.name")
         context: Variable context
 
     Returns:

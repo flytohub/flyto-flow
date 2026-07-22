@@ -3,9 +3,7 @@ Debug API
 
 REST endpoints for debugging workflow executions.
 
-SECURITY: Debug endpoints require:
-1. EXECUTION_DEBUG feature capability (Pro/Enterprise only)
-2. Authentication (via get_current_user)
+Debug endpoints are scoped to the fixed local workspace.
 """
 
 import logging
@@ -15,19 +13,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from capabilities import Feature, require_feature
-from gateway.auth import get_current_user
+from gateway.local_context import get_local_actor
 
 logger = logging.getLogger(__name__)
 
-# All debug endpoints require:
-# 1. EXECUTION_DEBUG feature (Pro/Enterprise feature)
-# 2. Authenticated user
 router = APIRouter(
     prefix="/debug",
     tags=["debug"],
     dependencies=[
         Depends(require_feature(Feature.EXECUTION_DEBUG)),
-        Depends(get_current_user),
+        Depends(get_local_actor),
     ],
 )
 

@@ -69,10 +69,6 @@ class LogEvent:
     resource_id: Optional[str] = None
     resource_name: Optional[str] = None
 
-    # Organization context
-    org_id: Optional[str] = None
-    org_name: Optional[str] = None
-
     # Execution context
     execution_id: Optional[str] = None
     workflow_id: Optional[str] = None
@@ -120,10 +116,6 @@ class LogEvent:
                 "id": self.resource_id,
                 "name": self.resource_name,
             } if self.resource_type else None,
-            "organization": {
-                "id": self.org_id,
-                "name": self.org_name,
-            } if self.org_id else None,
             "execution": {
                 "id": self.execution_id,
                 "workflow_id": self.workflow_id,
@@ -159,9 +151,6 @@ class LogEvent:
             "user_agent": {
                 "original": self.actor_user_agent,
             } if self.actor_user_agent else None,
-            "organization": {
-                "id": self.org_id,
-            } if self.org_id else None,
             "labels": self.metadata,
             "tags": self.tags,
         }
@@ -176,12 +165,10 @@ class LogEvent:
         msgid = self.event_type or "-"
 
         structured_data = ""
-        if self.actor_id or self.org_id:
+        if self.actor_id:
             sd_parts = []
             if self.actor_id:
                 sd_parts.append(f'actor="{self.actor_id}"')
-            if self.org_id:
-                sd_parts.append(f'org="{self.org_id}"')
             structured_data = f'[flyto {" ".join(sd_parts)}]'
         else:
             structured_data = "-"

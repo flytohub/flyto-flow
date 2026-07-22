@@ -93,7 +93,6 @@
       v-if="isInteractBreakpoint"
       :is-open="selectedBreakpoint !== null"
       :breakpoint="selectedBreakpoint"
-      :user-id="userId"
       @close="selectedBreakpoint = null"
       @approve="handleApprove"
       @reject="handleReject"
@@ -104,7 +103,6 @@
       v-else
       :is-open="selectedBreakpoint !== null"
       :breakpoint="selectedBreakpoint"
-      :user-id="userId"
       @close="selectedBreakpoint = null"
       @approve="handleApprove"
       @reject="handleReject"
@@ -128,10 +126,6 @@ import { get, post } from '@/api/client'
 import BrowserInteractDialog from './BrowserInteractDialog.vue'
 
 const props = defineProps({
-  userId: {
-    type: String,
-    default: 'current_user'
-  },
   pollInterval: {
     type: Number,
     default: 3000 // 3 seconds (fast enough for interact dialogs)

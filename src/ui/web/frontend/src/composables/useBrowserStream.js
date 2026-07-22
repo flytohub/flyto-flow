@@ -1,439 +1,227 @@
-/**
- * Browser Screencast WebSocket Composable
- *
- * Connects to /ws/browser/{executionId} for real-time browser viewing.
- * Handles binary JPEG frames → canvas rendering, and input capture → JSON messages.
- */
-
-import { ref, onUnmounted, watch } from 'vue'
+/** Same-origin browser screencast for the single local workspace. */
+import { onUnmounted, ref } from 'vue'
 import { getWsUrl } from '@/config/api'
 import { DEFAULTS } from '@/config/defaults'
-import { authAPI } from '@/api/auth'
 
-export function useBrowserStream(executionId, { wsUrlOverride, cloudMode } = {}) {
+export function useBrowserStream(executionId) {
   const isConnected = ref(false)
   const isStreaming = ref(false)
-  const viewerCount = ref(0)
-  const hasControl = ref(false)
-  const driverUserId = ref(null)
-  const viewers = ref([])
-  const controlRequest = ref(null) // { user_id, user_name }
   const viewport = ref({ width: 1280, height: 720 })
   const canvasRef = ref(null)
-  const serverStopped = ref(false) // true only when server sends screencast.stopped
-  const idleTimeout = ref(0) // total idle timeout in seconds (0 = not idle)
-  const idleRemaining = ref(0) // seconds remaining before browser closes
-  let _idleInterval = null
+  const serverStopped = ref(false)
+  const idleTimeout = ref(0)
+  const idleRemaining = ref(0)
 
   let ws = null
   let reconnectTimeout = null
   let reconnectAttempts = 0
-  const MAX_RECONNECT = DEFAULTS.WEBSOCKET.MAX_RECONNECT_ATTEMPTS
+  let idleInterval = null
+  let latestBitmap = null
+  let rafId = null
+  let decoding = false
+  let nextBuffer = null
+  let context = null
 
-  // Current user info (passed from parent)
-  let _userId = ''
-  let _userName = 'Anonymous'
-
-  function connect(userId = '', userName = 'Anonymous') {
-    _userId = userId
-    _userName = userName
-    serverStopped.value = false
-    _connect()
-  }
-
-  function _connect() {
-    if (ws) {
-      disconnect()
-    }
-
-    const eid = typeof executionId === 'object' && executionId.value !== undefined
+  function resolveExecutionId() {
+    return typeof executionId === 'object' && executionId.value !== undefined
       ? executionId.value
       : executionId
-    if (!eid) return
+  }
 
-    const wsBase = getWsUrl()
-    // Validated token — avoids opening a WebSocket that will instantly 1008
-    // on an expired Bearer and puts us into reconnect-storm territory.
-    const token = authAPI.getAccessToken()
-    let url
-    if (cloudMode || wsUrlOverride) {
-      // Cloud mode: connect to relay endpoint (view-only, binary frames only)
-      const relayPath = wsUrlOverride || `/ws/browser-relay/${eid}`
-      url = `${wsBase}${relayPath}${token ? '?token=' + token : ''}`
-    } else {
-      // Desktop mode: connect to Worker's /ws/browser/{executionId}
-      const params = new URLSearchParams()
-      if (_userId) params.set('user_id', _userId)
-      if (_userName) params.set('user_name', _userName)
-      if (token) params.set('token', token)
-      const paramStr = params.toString()
-      url = `${wsBase}/ws/browser/${eid}${paramStr ? '?' + paramStr : ''}`
-    }
+  function connect() {
+    serverStopped.value = false
+    reconnectAttempts = 0
+    openSocket()
+  }
 
-    ws = new WebSocket(url)
+  function openSocket() {
+    disconnect(false)
+    const id = resolveExecutionId()
+    if (!id) return
+
+    ws = new WebSocket(`${getWsUrl()}/ws/browser/${id}`)
     ws.binaryType = 'arraybuffer'
-
     ws.onopen = () => {
       isConnected.value = true
       reconnectAttempts = 0
     }
-
-    ws.onmessage = (event) => {
+    ws.onmessage = event => {
       if (event.data instanceof ArrayBuffer) {
-        // Binary JPEG frame — mark streaming on first frame
-        // (relay mode has no screencast.started JSON message)
-        if (!isStreaming.value) isStreaming.value = true
-        _renderFrame(event.data)
-      } else {
-        // JSON control message
-        try {
-          const msg = JSON.parse(event.data)
-          _handleMessage(msg)
-        } catch {
-          // ignore
-        }
+        isStreaming.value = true
+        renderFrame(event.data)
+        return
+      }
+      try {
+        handleMessage(JSON.parse(event.data))
+      } catch {
+        // Ignore malformed local runtime events.
       }
     }
-
     ws.onclose = () => {
       isConnected.value = false
       isStreaming.value = false
-      _scheduleReconnect()
-    }
-
-    ws.onerror = () => {
-      // onclose will fire after this
+      scheduleReconnect()
     }
   }
 
-  function disconnect() {
-    if (reconnectTimeout) {
-      clearTimeout(reconnectTimeout)
-      reconnectTimeout = null
-    }
-    reconnectAttempts = MAX_RECONNECT // prevent reconnect
+  function disconnect(stopReconnect = true) {
+    if (reconnectTimeout) clearTimeout(reconnectTimeout)
+    reconnectTimeout = null
+    if (stopReconnect) reconnectAttempts = DEFAULTS.WEBSOCKET.MAX_RECONNECT_ATTEMPTS
     if (ws) {
-      ws.onclose = null // prevent reconnect trigger
+      ws.onclose = null
       ws.close()
       ws = null
     }
     isConnected.value = false
     isStreaming.value = false
-    // Clean up rendering resources
-    if (_rafId) { cancelAnimationFrame(_rafId); _rafId = null }
-    if (_latestBitmap) { _latestBitmap.close(); _latestBitmap = null }
-    _nextBuffer = null
-    _decoding = false
-    _ctx = null
-    _firstFrame = true
+    if (rafId) cancelAnimationFrame(rafId)
+    if (latestBitmap) latestBitmap.close()
+    rafId = null
+    latestBitmap = null
+    nextBuffer = null
+    decoding = false
+    context = null
   }
 
-  function _scheduleReconnect() {
-    if (reconnectAttempts >= MAX_RECONNECT) return
-    reconnectAttempts++
-    const delay = DEFAULTS.WEBSOCKET.RECONNECT_INTERVAL * reconnectAttempts
-    reconnectTimeout = setTimeout(_connect, delay)
+  function scheduleReconnect() {
+    const maximum = DEFAULTS.WEBSOCKET.MAX_RECONNECT_ATTEMPTS
+    if (reconnectAttempts >= maximum) return
+    reconnectAttempts += 1
+    reconnectTimeout = setTimeout(
+      openSocket,
+      DEFAULTS.WEBSOCKET.RECONNECT_INTERVAL * reconnectAttempts
+    )
   }
 
-  function _handleMessage(msg) {
-    switch (msg.type) {
-      case 'welcome':
-        // Server assigns user_id (e.g. anon_xxx when none provided)
-        if (msg.user_id) {
-          _userId = msg.user_id
-        }
-        break
-
-      case 'screencast.started':
-        isStreaming.value = true
-        serverStopped.value = false
-        if (msg.viewport) {
-          viewport.value = msg.viewport
-        }
-        break
-
-      case 'screencast.stopped':
-        isStreaming.value = false
-        serverStopped.value = true // server-initiated stop (browser.close)
-        _stopIdleCountdown()
-        break
-
-      case 'browser_idle':
-        // Server signals browser is idle after workflow completion
-        _startIdleCountdown(msg.timeout_seconds || 300)
-        break
-
-      case 'control.state':
-        driverUserId.value = msg.driver_user_id
-        viewers.value = msg.viewers || []
-        hasControl.value = msg.driver_user_id === _userId
-        break
-
-      case 'control.granted':
-        driverUserId.value = msg.user_id
-        hasControl.value = msg.user_id === _userId
-        break
-
-      case 'control.released':
-        if (msg.user_id === _userId) {
-          hasControl.value = false
-        }
-        break
-
-      case 'control.requested':
-        controlRequest.value = {
-          user_id: msg.user_id,
-          user_name: msg.user_name || 'Anonymous',
-        }
-        break
-
-      case 'viewer.count':
-        viewerCount.value = msg.count
-        break
+  function handleMessage(message) {
+    if (message.type === 'screencast.started') {
+      isStreaming.value = true
+      serverStopped.value = false
+      if (message.viewport) viewport.value = message.viewport
+    } else if (message.type === 'screencast.stopped') {
+      isStreaming.value = false
+      serverStopped.value = true
+      stopIdleCountdown()
+    } else if (message.type === 'browser_idle') {
+      startIdleCountdown(message.timeout_seconds || 300)
     }
   }
 
-  // --- Frame Rendering ---
-  // Pipeline: WS binary → createImageBitmap (async decode) → requestAnimationFrame → drawImage
-  // Always keeps the latest decoded bitmap; rAF ensures we paint at display refresh rate.
-
-  let _latestBitmap = null  // most recently decoded ImageBitmap
-  let _rafId = null         // requestAnimationFrame handle
-  let _decoding = false     // guard concurrent createImageBitmap calls
-  let _nextBuffer = null    // buffer waiting for decode
-  let _firstFrame = true    // paint first frame immediately (skip rAF)
-
-  function _renderFrame(buffer) {
-    _nextBuffer = buffer
-    if (!_decoding) _decodeNext()
+  function renderFrame(buffer) {
+    nextBuffer = buffer
+    if (!decoding) decodeNext()
   }
 
-  function _decodeNext() {
-    if (!_nextBuffer) return
-    const buf = _nextBuffer
-    _nextBuffer = null
-    _decoding = true
-
-    const blob = new Blob([buf], { type: 'image/jpeg' })
-    createImageBitmap(blob).then((bitmap) => {
-      if (_latestBitmap) _latestBitmap.close()
-      _latestBitmap = bitmap
-      // First frame: paint immediately for instant display
-      if (_firstFrame) {
-        _firstFrame = false
-        _paint()
-      } else {
-        _scheduleRaf()
-      }
-      _decoding = false
-      _decodeNext()
-    }).catch(() => {
-      _decoding = false
-      _decodeNext()
-    })
+  function decodeNext() {
+    if (!nextBuffer) return
+    const buffer = nextBuffer
+    nextBuffer = null
+    decoding = true
+    createImageBitmap(new Blob([buffer], { type: 'image/jpeg' }))
+      .then(bitmap => {
+        if (latestBitmap) latestBitmap.close()
+        latestBitmap = bitmap
+        if (!rafId) rafId = requestAnimationFrame(paint)
+      })
+      .finally(() => {
+        decoding = false
+        decodeNext()
+      })
   }
 
-  function _scheduleRaf() {
-    if (_rafId) return
-    _rafId = requestAnimationFrame(_paint)
-  }
-
-  let _ctx = null
-
-  function _paint() {
-    _rafId = null
-    const bitmap = _latestBitmap
-    if (!bitmap) return
-
+  function paint() {
+    rafId = null
     const canvas = canvasRef.value
-    if (!canvas) return
-
+    if (!canvas || !latestBitmap) return
     if (canvas.width !== viewport.value.width || canvas.height !== viewport.value.height) {
       canvas.width = viewport.value.width
       canvas.height = viewport.value.height
-      _ctx = null
+      context = null
     }
-
-    if (!_ctx) {
-      _ctx = canvas.getContext('2d', { alpha: false, desynchronized: true })
-    }
-
-    _ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+    context ||= canvas.getContext('2d', { alpha: false, desynchronized: true })
+    context.drawImage(latestBitmap, 0, 0, canvas.width, canvas.height)
   }
 
-  // --- Input Sending ---
-
-  function _sendJSON(msg) {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(msg))
-    }
+  function send(message) {
+    if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(message))
   }
 
-  function _getScaledCoords(event) {
+  function coordinates(event) {
     const canvas = canvasRef.value
     if (!canvas) return { x: 0, y: 0 }
-    const scaleX = viewport.value.width / canvas.clientWidth
-    const scaleY = viewport.value.height / canvas.clientHeight
     return {
-      x: Math.round(event.offsetX * scaleX),
-      y: Math.round(event.offsetY * scaleY),
+      x: Math.round(event.offsetX * viewport.value.width / canvas.clientWidth),
+      y: Math.round(event.offsetY * viewport.value.height / canvas.clientHeight)
     }
   }
 
-  function _getModifiers(event) {
-    let modifiers = 0
-    if (event.altKey) modifiers |= 1
-    if (event.ctrlKey) modifiers |= 2
-    if (event.metaKey) modifiers |= 4
-    if (event.shiftKey) modifiers |= 8
-    return modifiers
+  function buttonName(button) {
+    return button === 1 ? 'middle' : button === 2 ? 'right' : 'left'
   }
 
-  function _getButtonName(button) {
-    switch (button) {
-      case 0: return 'left'
-      case 1: return 'middle'
-      case 2: return 'right'
-      default: return 'left'
-    }
+  function modifiers(event) {
+    return (event.altKey ? 1 : 0) |
+      (event.ctrlKey ? 2 : 0) |
+      (event.metaKey ? 4 : 0) |
+      (event.shiftKey ? 8 : 0)
   }
 
-  function _resetIdleOnInput() {
-    // When user interacts, server resets idle timer and sends new browser_idle event
-    // Frontend countdown will restart when new browser_idle arrives
-    if (idleRemaining.value > 0) {
-      _stopIdleCountdown()
-    }
-  }
-
-  function sendMouseClick(event) {
-    const { x, y } = _getScaledCoords(event)
-    _sendJSON({ type: 'mouse.click', x, y, button: _getButtonName(event.button) })
-    _resetIdleOnInput()
+  function resetIdleOnInput() {
+    if (idleRemaining.value > 0) stopIdleCountdown()
   }
 
   function sendMouseDown(event) {
-    const { x, y } = _getScaledCoords(event)
-    _sendJSON({ type: 'mouse.down', x, y, button: _getButtonName(event.button) })
-    _resetIdleOnInput()
+    send({ type: 'mouse.down', ...coordinates(event), button: buttonName(event.button) })
+    resetIdleOnInput()
   }
-
   function sendMouseUp(event) {
-    const { x, y } = _getScaledCoords(event)
-    _sendJSON({ type: 'mouse.up', x, y, button: _getButtonName(event.button) })
+    send({ type: 'mouse.up', ...coordinates(event), button: buttonName(event.button) })
   }
-
-  function sendMouseMove(event) {
-    const { x, y } = _getScaledCoords(event)
-    _sendJSON({ type: 'mouse.move', x, y })
-  }
-
+  function sendMouseMove(event) { send({ type: 'mouse.move', ...coordinates(event) }) }
   function sendWheel(event) {
-    const { x, y } = _getScaledCoords(event)
-    _sendJSON({ type: 'mouse.wheel', x, y, deltaX: event.deltaX, deltaY: event.deltaY })
+    send({ type: 'mouse.wheel', ...coordinates(event), deltaX: event.deltaX, deltaY: event.deltaY })
+    resetIdleOnInput()
   }
-
   function sendKeyDown(event) {
     event.preventDefault()
-    _sendJSON({
-      type: 'key.down',
-      key: event.key,
-      code: event.code,
-      modifiers: _getModifiers(event),
-      text: event.key.length === 1 ? event.key : '',
+    send({
+      type: 'key.down', key: event.key, code: event.code,
+      modifiers: modifiers(event), text: event.key.length === 1 ? event.key : ''
     })
-    _resetIdleOnInput()
+    resetIdleOnInput()
   }
-
   function sendKeyUp(event) {
     event.preventDefault()
-    _sendJSON({
-      type: 'key.up',
-      key: event.key,
-      code: event.code,
-      modifiers: _getModifiers(event),
-    })
+    send({ type: 'key.up', key: event.key, code: event.code, modifiers: modifiers(event) })
   }
+  function closeBrowser() { send({ type: 'browser.close' }) }
 
-  // --- Idle Countdown ---
-
-  function _startIdleCountdown(totalSeconds) {
-    _stopIdleCountdown()
-    idleTimeout.value = totalSeconds
-    idleRemaining.value = totalSeconds
-    _idleInterval = setInterval(() => {
-      idleRemaining.value--
-      if (idleRemaining.value <= 0) {
-        _stopIdleCountdown()
-      }
+  function startIdleCountdown(seconds) {
+    stopIdleCountdown()
+    idleTimeout.value = seconds
+    idleRemaining.value = seconds
+    idleInterval = setInterval(() => {
+      idleRemaining.value -= 1
+      if (idleRemaining.value <= 0) stopIdleCountdown()
     }, 1000)
   }
 
-  function _stopIdleCountdown() {
-    if (_idleInterval) {
-      clearInterval(_idleInterval)
-      _idleInterval = null
-    }
+  function stopIdleCountdown() {
+    if (idleInterval) clearInterval(idleInterval)
+    idleInterval = null
     idleTimeout.value = 0
     idleRemaining.value = 0
   }
 
-  // --- Control ---
-
-  function requestControl() {
-    _sendJSON({ type: 'control.request', user_name: _userName })
-  }
-
-  function releaseControl() {
-    _sendJSON({ type: 'control.release' })
-  }
-
-  function transferControl(toUserId) {
-    _sendJSON({ type: 'control.transfer', to_user_id: toUserId })
-  }
-
-  function closeBrowser() {
-    _sendJSON({ type: 'browser.close' })
-  }
-
-  // Cleanup on unmount
   onUnmounted(() => {
-    _stopIdleCountdown()
+    stopIdleCountdown()
     disconnect()
   })
 
   return {
-    // State
-    isConnected,
-    isStreaming,
-    viewerCount,
-    hasControl,
-    driverUserId,
-    viewers,
-    controlRequest,
-    viewport,
-    canvasRef,
-    serverStopped,
-    idleTimeout,
-    idleRemaining,
-
-    // Connection
-    connect,
-    disconnect,
-
-    // Input handlers (attach to canvas events)
-    sendMouseClick,
-    sendMouseDown,
-    sendMouseUp,
-    sendMouseMove,
-    sendWheel,
-    sendKeyDown,
-    sendKeyUp,
-
-    // Control
-    requestControl,
-    releaseControl,
-    transferControl,
-    closeBrowser,
+    isConnected, isStreaming, viewport, canvasRef, serverStopped,
+    idleTimeout, idleRemaining, connect, disconnect, sendMouseDown,
+    sendMouseUp, sendMouseMove, sendWheel, sendKeyDown, sendKeyUp, closeBrowser
   }
 }

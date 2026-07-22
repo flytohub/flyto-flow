@@ -5,7 +5,6 @@
 
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { telemetry } from '@/services/telemetry'
 
 export const useBuilderExecutionStore = defineStore('builder-execution', () => {
   // ========== Debug State ==========
@@ -24,11 +23,6 @@ export const useBuilderExecutionStore = defineStore('builder-execution', () => {
   // ========== Debug Actions ==========
   function toggleDebugMode() {
     debugMode.value = !debugMode.value
-
-    // Track debug mode toggle
-    telemetry.track('debug.toggle', {
-      enabled: debugMode.value
-    })
 
     return debugMode.value
   }

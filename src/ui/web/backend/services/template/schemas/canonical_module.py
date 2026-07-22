@@ -2,7 +2,7 @@
 Canonical Module Schema v2.0
 
 Defines the unified module format that all sources (atomic, composite, template,
-plugin, huggingface) must convert to before being sent to the frontend.
+and plugin modules must convert to before being sent to the frontend.
 
 This is the single source of truth for module data structure.
 Frontend receives this format and renders it directly without transformation.
@@ -29,7 +29,7 @@ INCLUDE_SNAKE_CASE_ALIASES = False
 
 
 # Source types for module origin tracking
-SourceType = Literal["atomic", "composite", "plugin", "template", "huggingface"]
+SourceType = Literal["atomic", "composite", "plugin", "template"]
 
 # Node types for special rendering
 NodeType = Literal[
@@ -142,12 +142,6 @@ class DynamicHandlesConfig(TypedDict, total=False):
     stableKeyField: Optional[str]
 
 
-class CostInfo(TypedDict, total=False):
-    """Cost information for execution billing."""
-    points: int
-    costClass: str  # free, standard, premium
-
-
 class EntrypointConfig(TypedDict, total=False):
     """Entrypoint configuration for module execution."""
     type: str  # template, plugin, composite
@@ -164,7 +158,6 @@ class SourceData(TypedDict, total=False):
     steps: Optional[List[Dict[str, Any]]]
     stepsCount: Optional[int]
     canStartWorkflow: Optional[bool]
-    cost: Optional[CostInfo]
     sideEffects: Optional[List[str]]
     provides: Optional[List[str]]
     consumes: Optional[List[str]]
@@ -178,8 +171,6 @@ class SourceData(TypedDict, total=False):
     # Composite-specific
     stepCount: Optional[int]
 
-    # HuggingFace-specific
-    modelId: Optional[str]
 
 
 class CanonicalModule(TypedDict, total=False):
@@ -206,7 +197,7 @@ class CanonicalModule(TypedDict, total=False):
     moduleId: str        # Unique module identifier (e.g., "string.uppercase", "template.invoke:abc123")
     label: str           # Human-readable name
     category: str        # Module category (e.g., "string", "browser", "my-templates")
-    source: SourceType   # Where this module came from: atomic|composite|plugin|template|huggingface
+    source: SourceType   # Where this module came from: atomic|composite|plugin|template
 
     # === DISPLAY (Visual) - Most required ===
     description: str                     # Description text
@@ -285,7 +276,7 @@ def create_canonical_module(
         module_id: Unique module identifier
         label: Human-readable name
         category: Module category
-        source: Source type (atomic, composite, plugin, template, huggingface)
+        source: Source type (atomic, composite, plugin, template)
         **kwargs: Additional fields to override defaults
 
     Returns:
@@ -418,7 +409,6 @@ SNAKE_TO_CAMEL_MAPPING = {
     "edge_type": "edgeType",
     "handle_id": "handleId",
     "max_connections": "maxConnections",
-    "cost_class": "costClass",
 }
 
 

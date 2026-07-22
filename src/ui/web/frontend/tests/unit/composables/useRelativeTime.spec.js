@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const mockT = vi.fn((key, params) => {
-  if (key === 'dashboardPage.recentActivity.justNow') return 'just now'
-  if (key === 'dashboardPage.recentActivity.minutesAgo') return `${params.count} minutes ago`
-  if (key === 'dashboardPage.recentActivity.hoursAgo') return `${params.count} hours ago`
-  if (key === 'dashboardPage.recentActivity.yesterday') return 'yesterday'
-  if (key === 'dashboardPage.recentActivity.daysAgo') return `${params.count} days ago`
+  if (key === 'time.justNow') return 'just now'
+  if (key === 'time.minutesAgo') return `${params.n} minutes ago`
+  if (key === 'time.hoursAgo') return `${params.n} hours ago`
+  if (key === 'time.yesterday') return 'yesterday'
+  if (key === 'time.daysAgo') return `${params.n} days ago`
   return key
 })
 

@@ -76,7 +76,7 @@ class ExecutionManager:
         workflow_id: Optional[str] = None,
         start_step: Optional[int] = None,
         end_step: Optional[int] = None,
-        user_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         workflow_name: Optional[str] = None,
         breakpoints: Optional[List[str]] = None,
         screenshot_mode: Optional[str] = None,
@@ -91,7 +91,7 @@ class ExecutionManager:
             workflow_id: Optional workflow identifier
             start_step: Optional start step index (0-based) for partial execution
             end_step: Optional end step index (0-based) for partial execution
-            user_id: Optional user ID for ownership tracking
+            workspace_id: Optional workspace ID for ownership tracking
             workflow_name: Optional workflow name (parsed from YAML if not provided)
             breakpoints: Optional list of node IDs where execution should pause
             screenshot_mode: Screenshot capture mode ("off", "on_error", "all")
@@ -110,7 +110,7 @@ class ExecutionManager:
         workflow_id = workflow_id or f"workflow_{execution_id[:8]}"
 
         # Check concurrency limits
-        await self._check_concurrency_limits(execution_id, user_id, workflow_id)
+        await self._check_concurrency_limits(execution_id)
 
         # Parse workflow data
         workflow_data, workflow_name = self._parse_workflow(workflow_yaml, workflow_name)
@@ -123,17 +123,17 @@ class ExecutionManager:
 
         # Create execution snapshot
         snapshot, snapshot_dicts = await self._create_snapshot(
-            execution_id, workflow_id, workflow_name, workflow_data, safe_variables, user_id
+            execution_id, workflow_id, workflow_name, workflow_data, safe_variables, workspace_id
         )
 
         # Create SQLite record
         execution_id = await self._create_sqlite_record(
-            execution_id, workflow_id, workflow_name, user_id, safe_variables, snapshot_dicts
+            execution_id, workflow_id, workflow_name, workspace_id, safe_variables, snapshot_dicts
         )
 
-        # Create provider record (Firebase)
+        # Create the local execution record.
         provider_execution_id = await self._create_provider_record(
-            user_id, workflow_id, safe_variables
+            workspace_id, workflow_id, safe_variables
         )
 
         # Create ExecutionInfo
@@ -141,7 +141,7 @@ class ExecutionManager:
             execution_id=execution_id,
             workflow_id=workflow_id,
             workflow_name=workflow_name,
-            user_id=user_id,
+            workspace_id=workspace_id,
             provider_execution_id=provider_execution_id,
             input_params=safe_variables,
         )
@@ -164,7 +164,7 @@ class ExecutionManager:
         # Create credential tokens for secretRef parameters
         try:
             credential_tokens = await create_credential_tokens(
-                execution_id, workflow_data, workflow_id, user_id
+                execution_id, workflow_data, workflow_id, workspace_id
             )
             if credential_tokens:
                 info.metadata['credential_tokens'] = credential_tokens
@@ -195,7 +195,7 @@ class ExecutionManager:
         initial_context: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
-        Start a lightweight execution — skips snapshot, SQLite, Firebase,
+        Start a lightweight execution that skips snapshots and durable SQLite writes,
         credentials, and runs directory.
 
         Used by device job executor for single-step streaming execution
@@ -268,19 +268,11 @@ class ExecutionManager:
     async def _check_concurrency_limits(
         self,
         execution_id: str,
-        user_id: Optional[str],
-        workflow_id: str,
     ) -> None:
         """Check and acquire concurrency slot."""
-        org_id = user_id or "default"
         try:
             from services.concurrency_manager import acquire_execution_slot
-            result = await acquire_execution_slot(
-                execution_id=execution_id,
-                user_id=user_id or "anonymous",
-                org_id=org_id,
-                workflow_id=workflow_id,
-            )
+            result = await acquire_execution_slot(execution_id)
             if not result.success:
                 logger.warning(f"Execution {execution_id} rejected: {result.error_code}")
                 raise Exception(
@@ -325,7 +317,7 @@ class ExecutionManager:
         workflow_name: str,
         workflow_data: Dict[str, Any],
         variables: Optional[Dict[str, Any]],
-        user_id: Optional[str],
+        workspace_id: Optional[str],
     ) -> tuple[Optional[Any], Optional[tuple]]:
         """Create execution snapshot for reproducibility."""
         try:
@@ -336,7 +328,7 @@ class ExecutionManager:
                 workflow_name=workflow_name,
                 workflow_data=workflow_data,
                 input_params=variables or {},
-                trigger={"type": "manual", "user_id": user_id},
+                trigger={"type": "manual", "workspace_id": workspace_id},
             )
             snapshot_dicts = (
                 asdict(snapshot.workflow),
@@ -354,7 +346,7 @@ class ExecutionManager:
         execution_id: str,
         workflow_id: str,
         workflow_name: str,
-        user_id: Optional[str],
+        workspace_id: Optional[str],
         variables: Optional[Dict[str, Any]],
         snapshot_dicts: Optional[tuple],
     ) -> str:
@@ -365,7 +357,7 @@ class ExecutionManager:
             sqlite_exec = ExecutionRepository.create_execution(
                 workflow_id=workflow_id,
                 workflow_name=workflow_name,
-                user_id=user_id,
+                workspace_id=workspace_id,
                 input_params=variables or {},
                 workflow_snapshot=workflow_snapshot,
                 modules_snapshot=modules_snapshot,
@@ -379,27 +371,13 @@ class ExecutionManager:
 
     async def _create_provider_record(
         self,
-        user_id: Optional[str],
+        workspace_id: Optional[str],
         workflow_id: str,
         variables: Optional[Dict[str, Any]],
     ) -> Optional[str]:
-        """Create execution record in data provider (Firebase)."""
-        if not user_id or workflow_id == "local":
-            return None
-
-        try:
-            from services.cloud_client import cloud_post
-            result = await cloud_post(
-                f"workflows/{workflow_id}/execute",
-                json={"params": variables or {}},
-            )
-            if result and result.get("id"):
-                logger.info(f"Created execution record in cloud: {result['id']}")
-                return result["id"]
-            return None
-        except Exception as e:
-            logger.warning(f"Failed to create execution in cloud: {e}")
-            return None
+        """CE has no secondary execution provider."""
+        del workspace_id, workflow_id, variables
+        return None
 
     async def _create_runs_directory(
         self,
@@ -433,7 +411,7 @@ class ExecutionManager:
             success = await enqueue_execution(
                 execution_id=info.execution_id,
                 workflow_id=info.workflow_id,
-                user_id=info.user_id,
+                workspace_id=info.workspace_id,
                 priority=0,
             )
             if not success:
@@ -467,11 +445,11 @@ class ExecutionManager:
     def get_execution_history(
         self,
         workflow_id: str = None,
-        user_id: str = None,
+        workspace_id: str = None,
         limit: int = 50,
     ) -> List[Dict[str, Any]]:
         """Get execution history from SQLite."""
-        return get_execution_history(workflow_id, user_id, limit)
+        return get_execution_history(workflow_id, workspace_id, limit)
 
     def cancel(self, execution_id: str) -> bool:
         """Cancel a running execution (sync wrapper)."""
@@ -519,9 +497,9 @@ class ExecutionManager:
         logger.info(f"Execution {execution_id} cancelled")
         return True
 
-    def cleanup(self, max_age_seconds: int = 3600, user_id: Optional[str] = None) -> int:
+    def cleanup(self, max_age_seconds: int = 3600, workspace_id: Optional[str] = None) -> int:
         """Remove old completed/failed/cancelled executions."""
-        return cleanup_old_executions(self._executions, max_age_seconds, user_id)
+        return cleanup_old_executions(self._executions, max_age_seconds, workspace_id)
 
 
 def get_execution_manager() -> ExecutionManager:

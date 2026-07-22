@@ -61,7 +61,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
             CREATE TABLE IF NOT EXISTS {cls._AUDIT_TABLE} (
                 id TEXT PRIMARY KEY,
                 credential_name TEXT NOT NULL,
-                user_id TEXT NOT NULL,
+                workspace_id TEXT NOT NULL,
                 action TEXT NOT NULL,
                 timestamp TEXT NOT NULL,
                 ip_address TEXT,
@@ -94,7 +94,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
         scope: CredentialScope,
         scope_id: str,
         description: Optional[str] = None,
-        user_id: str = "system",
+        workspace_id: str = "system",
         credential_type: CredentialType = CredentialType.GENERIC,
     ) -> Credential:
         """
@@ -106,7 +106,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
             scope: Credential scope
             scope_id: Scope identifier
             description: Optional description
-            user_id: Creating user
+            workspace_id: Creating user
             credential_type: Type of credential
 
         Returns:
@@ -129,7 +129,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
             encrypted_value=encrypted,
             key_version=key_version,
             description=description,
-            created_by=user_id,
+            created_by=workspace_id,
             created_at=now,
             updated_at=now,
         )
@@ -156,7 +156,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
             ),
         )
 
-        cls._audit_log(name, user_id, "create", True)
+        cls._audit_log(name, workspace_id, "create", True)
         logger.info(f"Created credential: {name}")
 
         return credential
@@ -167,7 +167,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
         name: str,
         scope: CredentialScope,
         scope_id: str,
-        user_id: str,
+        workspace_id: str,
         ip_address: Optional[str] = None,
     ) -> Optional[str]:
         """
@@ -177,7 +177,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
             name: Credential name
             scope: Credential scope
             scope_id: Scope identifier
-            user_id: Requesting user (for audit)
+            workspace_id: Requesting user (for audit)
             ip_address: Client IP (for audit)
 
         Returns:
@@ -195,14 +195,14 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
         )
 
         if not row:
-            cls._audit_log(name, user_id, "access", False, "not_found", ip_address)
+            cls._audit_log(name, workspace_id, "access", False, "not_found", ip_address)
             return None
 
         # Decrypt
         try:
             value = cls._decrypt(row["encrypted_value"], row["key_version"])
         except Exception as e:
-            cls._audit_log(name, user_id, "access", False, str(e), ip_address)
+            cls._audit_log(name, workspace_id, "access", False, str(e), ip_address)
             logger.error(f"Failed to decrypt credential {name}: {e}")
             return None
 
@@ -217,7 +217,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
             (now, row["id"]),
         )
 
-        cls._audit_log(name, user_id, "access", True, None, ip_address)
+        cls._audit_log(name, workspace_id, "access", True, None, ip_address)
         return value
 
     @classmethod
@@ -235,7 +235,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
         name: str,
         scope: CredentialScope,
         scope_id: str,
-        user_id: str,
+        workspace_id: str,
         reason: str,
         ip_address: Optional[str] = None,
     ) -> Optional[str]:
@@ -248,18 +248,18 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
             name: Credential name
             scope: Credential scope
             scope_id: Scope identifier
-            user_id: Requesting user
+            workspace_id: Requesting user
             reason: Reason for revealing
             ip_address: Client IP
 
         Returns:
             Decrypted value or None
         """
-        value = cls.get(name, scope, scope_id, user_id, ip_address)
+        value = cls.get(name, scope, scope_id, workspace_id, ip_address)
 
         if value:
             cls._audit_log(
-                name, user_id, "reveal",
+                name, workspace_id, "reveal",
                 True, f"Reason: {reason}", ip_address
             )
 
@@ -272,7 +272,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
         scope: CredentialScope,
         scope_id: str,
         new_value: str,
-        user_id: str,
+        workspace_id: str,
     ) -> bool:
         """
         Update credential value.
@@ -282,7 +282,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
             scope: Credential scope
             scope_id: Scope identifier
             new_value: New secret value
-            user_id: Updating user
+            workspace_id: Updating user
 
         Returns:
             True if updated
@@ -304,7 +304,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
         )
 
         success = result.rowcount > 0
-        cls._audit_log(name, user_id, "update", success)
+        cls._audit_log(name, workspace_id, "update", success)
 
         if success:
             logger.info(f"Updated credential: {name}")
@@ -317,7 +317,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
         name: str,
         scope: CredentialScope,
         scope_id: str,
-        user_id: str,
+        workspace_id: str,
     ) -> bool:
         """
         Delete a credential.
@@ -326,7 +326,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
             name: Credential name
             scope: Credential scope
             scope_id: Scope identifier
-            user_id: Deleting user
+            workspace_id: Deleting user
 
         Returns:
             True if deleted
@@ -342,7 +342,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
         )
 
         success = result.rowcount > 0
-        cls._audit_log(name, user_id, "delete", success)
+        cls._audit_log(name, workspace_id, "delete", success)
 
         if success:
             logger.info(f"Deleted credential: {name}")
@@ -444,7 +444,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
     def _audit_log(
         cls,
         credential_name: str,
-        user_id: str,
+        workspace_id: str,
         action: str,
         success: bool,
         reason: Optional[str] = None,
@@ -455,13 +455,13 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
             DatabaseManager.execute(
                 f"""
                 INSERT INTO {cls._AUDIT_TABLE}
-                (id, credential_name, user_id, action, timestamp, ip_address, success, reason)
+                (id, credential_name, workspace_id, action, timestamp, ip_address, success, reason)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     str(uuid4()),
                     credential_name,
-                    user_id,
+                    workspace_id,
                     action,
                     datetime.now(timezone.utc).isoformat(),
                     ip_address,
@@ -476,7 +476,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
     def get_access_log(
         cls,
         credential_name: Optional[str] = None,
-        user_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         limit: int = 100,
     ) -> List[CredentialAccess]:
         """
@@ -484,7 +484,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
 
         Args:
             credential_name: Filter by credential name
-            user_id: Filter by user
+            workspace_id: Filter by workspace
             limit: Maximum records
 
         Returns:
@@ -499,9 +499,9 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
             conditions.append("credential_name = ?")
             params.append(credential_name)
 
-        if user_id:
-            conditions.append("user_id = ?")
-            params.append(user_id)
+        if workspace_id:
+            conditions.append("workspace_id = ?")
+            params.append(workspace_id)
 
         where_clause = " AND ".join(conditions) if conditions else "1=1"
         params.append(limit)
@@ -520,7 +520,7 @@ class CredentialService(CredentialCryptoMixin, CredentialTokenMixin):
             CredentialAccess(
                 id=row["id"],
                 credential_name=row["credential_name"],
-                user_id=row["user_id"],
+                workspace_id=row["workspace_id"],
                 action=row["action"],
                 timestamp=row["timestamp"],
                 ip_address=row.get("ip_address"),

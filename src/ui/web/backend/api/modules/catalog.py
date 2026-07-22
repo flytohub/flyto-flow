@@ -2,7 +2,7 @@
 Module Catalog Endpoints
 
 Core catalog: tiered catalog, atomic catalog, module environment.
-Shared helpers: plugin manager singleton, user templates loader, plugin modules loader.
+Shared helpers: plugin manager singleton and local template modules loader.
 
 Internal loader/builder functions are in catalog_loaders.py.
 """
@@ -13,7 +13,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Query, Depends, Request
+from fastapi import APIRouter, Query, Depends
 
 from config.constants import (
     get_category_defaults,
@@ -23,8 +23,8 @@ from services.registry_loader import (
 )
 from services.module_normalizer_service import ModuleNormalizerService
 from services.normalizers import normalize_atomic
-from gateway.auth import get_optional_user
-from gateway.providers.base import UserInfo
+from gateway.local_context import get_local_principal
+from gateway.providers.base import WorkspaceContext
 
 # Loader functions (extracted to catalog_loaders.py)
 from api.modules.catalog_loaders import (
@@ -63,23 +63,22 @@ def _invalidate_core_cache():
     _core_catalog_cache.clear()
 
 
-# User templates cache: keyed by user_id, value is (timestamp, modules_list)
-# Bounded to prevent OOM with many users
-_user_templates_cache: Dict[str, tuple] = {}
-_USER_TEMPLATES_CACHE_TTL = 300  # 5 minutes
-_USER_TEMPLATES_CACHE_MAX = 500
+# Local template cache: keyed by workspace_id, value is (timestamp, modules_list).
+_workspace_templates_cache: Dict[str, tuple] = {}
+_WORKSPACE_TEMPLATES_CACHE_TTL = 300  # 5 minutes
+_WORKSPACE_TEMPLATES_CACHE_MAX = 500
 
 
-def invalidate_user_templates_cache(user_id: Optional[str] = None):
-    """Invalidate user templates cache after CRUD operations.
+def invalidate_workspace_templates_cache(workspace_id: Optional[str] = None):
+    """Invalidate local template cache after CRUD operations.
 
     Args:
-        user_id: Specific user to invalidate. If None, clears all.
+        workspace_id: Workspace to invalidate. If None, clears all.
     """
-    if user_id:
-        _user_templates_cache.pop(user_id, None)
+    if workspace_id:
+        _workspace_templates_cache.pop(workspace_id, None)
     else:
-        _user_templates_cache.clear()
+        _workspace_templates_cache.clear()
 
 # Plugin manager singleton
 _plugin_manager: Optional["PluginManager"] = None
@@ -112,42 +111,39 @@ def get_plugin_manager() -> Optional["PluginManager"]:
     return _plugin_manager
 
 
-async def get_user_templates_as_modules(
-    user_id: Optional[str],
-    auth_header: Optional[str] = None,
+async def get_workspace_templates_as_modules(
+    workspace_id: Optional[str],
 ) -> List[Dict[str, Any]]:
     """
-    Get user's templates (my-templates) transformed as modules.
+    Load local workflow templates as reusable workflow modules.
 
-    Always fetches from cloud API via proxy — single path for all deployment modes.
+    Templates are read from the local CE data provider.
     """
-    if not user_id:
+    if not workspace_id:
         return []
 
-    # Check user templates cache
-    cache_key = user_id
+    # Check the local-workspace template cache.
+    cache_key = workspace_id
     now = time.time()
-    cached = _user_templates_cache.get(cache_key)
-    if cached and (now - cached[0]) < _USER_TEMPLATES_CACHE_TTL:
+    cached = _workspace_templates_cache.get(cache_key)
+    if cached and (now - cached[0]) < _WORKSPACE_TEMPLATES_CACHE_TTL:
         return cached[1]
 
     try:
-        from services.cloud_client import cloud_get
+        from gateway.providers.hub import get_data_provider
 
-        data = await cloud_get(
-            "templates/me/templates",
-            params={"page_size": 100, "sort_by": "updated"},
-            auth_header=auth_header,
+        result = await get_data_provider().templates.list_workspace_templates(
+            workspace_id=workspace_id,
+            page=1,
+            page_size=500,
         )
-        if not data:
-            return []
-
-        templates = data.get("items") or data.get("templates") or []
+        templates = result.items or []
 
         # Transform to module format
         modules = []
         from services.helpers import resolve_library_id
-        for t in templates:
+        for item in templates:
+            t = item.model_dump() if hasattr(item, "model_dump") else dict(item)
             library_id, _ = resolve_library_id(t)
             template_id = t.get("id") or t.get("template_id")
             if not template_id:
@@ -164,15 +160,15 @@ async def get_user_templates_as_modules(
                 logger.warning(f"Failed to normalize template {template_id}: {e}")
 
         # Cache successful result (evict oldest if over limit)
-        if len(_user_templates_cache) >= _USER_TEMPLATES_CACHE_MAX:
-            oldest_key = min(_user_templates_cache, key=lambda k: _user_templates_cache[k][0])
-            del _user_templates_cache[oldest_key]
-        _user_templates_cache[cache_key] = (now, modules)
+        if len(_workspace_templates_cache) >= _WORKSPACE_TEMPLATES_CACHE_MAX:
+            oldest_key = min(_workspace_templates_cache, key=lambda k: _workspace_templates_cache[k][0])
+            del _workspace_templates_cache[oldest_key]
+        _workspace_templates_cache[cache_key] = (now, modules)
 
         return modules
 
     except Exception as e:
-        logger.warning(f"Error loading user templates: {e}")
+        logger.warning(f"Error loading local workflow templates: {e}")
         return []
 
 
@@ -269,26 +265,25 @@ async def get_module_environment() -> Dict[str, Any]:
 
 @router.get("/tiered")
 async def get_tiered_catalog(
-    request: Request,
     lang: str = Query(default="en", description="Language code (en, zh, ja)"),
     include_expert: bool = Query(default=True, description="Include expert/atomic modules"),
     include_plugins: bool = Query(default=True, description="Include plugin modules"),
-    include_templates: bool = Query(default=True, description="Include user's my-templates"),
+    include_templates: bool = Query(default=True, description="Include local workflow templates"),
     skip_access_control: bool = Query(default=True, description="Skip access control (show all modules)"),
     exclude_template_id: Optional[str] = Query(default=None, description="Template ID to exclude (prevent self-reference)"),
-    current_user: Optional[UserInfo] = Depends(get_optional_user)
+    workspace_context: Optional[WorkspaceContext] = Depends(get_local_principal)
 ) -> Dict[str, Any]:
     """
     Get tiered module catalog for frontend (ADR-001)
 
     Returns modules organized by visibility tier:
-    - default: Composite modules visible to all users
+    - default: Composite modules visible in the local builder
     - expert: Atomic modules in collapsed section
-    - my-templates: User's saved and created templates (when authenticated)
+    - my-templates: Workflows saved in this local workspace
 
-    Modules are filtered based on user access level (subscription, purchased, org-shared).
+    Modules are loaded from the bundled core, local plugins, and local templates.
     Plugin modules are merged seamlessly with core modules.
-    User templates appear as a special "my-templates" category.
+    Local workflows appear as a special "my-templates" category.
 
     This is the primary endpoint for the new tiered UI.
     """
@@ -300,11 +295,10 @@ async def get_tiered_catalog(
             include_templates=include_templates,
             skip_access_control=skip_access_control,
             exclude_template_id=exclude_template_id,
-            current_user=current_user,
-            auth_header=request.headers.get("authorization"),
+            workspace_context=workspace_context,
             plugin_runtime_available=PLUGIN_RUNTIME_AVAILABLE,
             get_plugin_modules_fn=get_plugin_modules,
-            get_user_templates_as_modules_fn=get_user_templates_as_modules,
+            get_workspace_templates_as_modules_fn=get_workspace_templates_as_modules,
             core_catalog_cache=_core_catalog_cache,
             backend_startup_ts=_BACKEND_STARTUP_TS,
         )

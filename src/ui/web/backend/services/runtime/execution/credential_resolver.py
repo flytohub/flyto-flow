@@ -17,7 +17,7 @@ async def create_credential_tokens(
     execution_id: str,
     workflow_data: Dict[str, Any],
     workflow_id: str,
-    user_id: Optional[str],
+    workspace_id: Optional[str],
 ) -> Dict[str, str]:
     """
     Create temporary tokens for all secretRef parameters in workflow.
@@ -29,7 +29,7 @@ async def create_credential_tokens(
         execution_id: Execution ID
         workflow_data: Parsed workflow data
         workflow_id: Workflow ID (used as scope_id for workflow-scoped credentials)
-        user_id: User ID for audit
+        workspace_id: Workspace ID for audit
 
     Returns:
         Dict mapping credential name to token
@@ -62,7 +62,7 @@ async def create_credential_tokens(
     tokens = CredentialService.create_tokens_for_execution(
         execution_id=execution_id,
         credential_refs=unique_refs,
-        user_id=user_id or "system",
+        workspace_id=workspace_id or "system",
     )
 
     return tokens

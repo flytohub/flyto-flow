@@ -4,32 +4,40 @@ WORKDIR /frontend
 COPY src/ui/web/frontend/package*.json ./
 RUN npm ci
 COPY src/ui/web/frontend/ ./
-RUN npm run build
+RUN npm run check:i18n-static && npm run build
 
 FROM python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee568157882804b1124b4dd04266317710de AS backend
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DEPLOYMENT_MODE=offline \
-    FLYTO_EDITION_PROFILE=cloud_ce \
-    FLYTO_OFFLINE_LOGIN_MODE=jwt \
-    FLYTO_OFFLINE_ALLOW_REGISTRATION=false \
     FLYTO_OFFLINE_DB_PATH=/data/flyto/offline.db \
+    FLYTO_CORE_UPDATE_DIR=/data/flyto/core \
     API_HOST=0.0.0.0 \
     API_PORT=9000 \
-    PLAYWRIGHT_BROWSERS_PATH=/data/flyto/browsers \
+    HEADLESS=1 \
+    PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright \
+    FLYTO_REQUIRE_BUNDLED_RUNTIME=1 \
     HOME=/home/appuser
 
 WORKDIR /app/backend
 
 COPY src/ui/web/backend/requirements-ce.lock requirements.txt
+COPY install/check-bundled-browser.py /tmp/check-bundled-browser.py
 RUN pip install --no-cache-dir --require-hashes -r requirements.txt
+
+# Browser automation is part of the CE appliance, not a first-run download.
+# /data is a runtime volume, so browsers must live in the immutable image.
+RUN pip install --no-cache-dir --only-binary=:all: "playwright==1.57.0" \
+    && python -m playwright install --with-deps chromium \
+    && python -c "from importlib.metadata import version; assert version('flyto-core') == '2.26.9'" \
+    && python /tmp/check-bundled-browser.py
 
 COPY src/ui/web/backend/ /app/backend/
 COPY --from=frontend /frontend/dist /app/static
 
 RUN adduser --disabled-password --gecos "" appuser \
-    && mkdir -p /data/flyto /data/warroom-inbox \
+    && mkdir -p /data/flyto \
     && chown -R appuser:appuser /data /app
 
 USER appuser

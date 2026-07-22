@@ -7,7 +7,6 @@
 
 import variablesAPI from '@/api/variables'
 import i18n from '@/i18n'
-import { telemetry } from '@/services/telemetry'
 
 /**
  * Create variable API action handlers
@@ -93,10 +92,6 @@ export function createVariableApiActions(state) {
       if (result.ok) {
         variables.value.push(result.variable)
 
-        telemetry.track('variable.create', {
-          scope: data.scope,
-          environment: data.environment
-        })
       } else {
         error.value = result.error
       }
@@ -128,7 +123,6 @@ export function createVariableApiActions(state) {
           currentVariable.value = result.variable
         }
 
-        telemetry.track('variable.update', { variable_id: id })
       } else {
         error.value = result.error
       }
@@ -157,7 +151,6 @@ export function createVariableApiActions(state) {
           currentVariable.value = null
         }
 
-        telemetry.track('variable.delete', { variable_id: id })
       } else {
         error.value = result.error
       }

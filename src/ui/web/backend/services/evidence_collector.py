@@ -20,12 +20,13 @@ Screenshot Modes:
 import asyncio
 import json
 import logging
-import os
 import time
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
+
+from local.storage_paths import evidence_path
 
 logger = logging.getLogger(__name__)
 
@@ -39,23 +40,8 @@ class ScreenshotMode(str, Enum):
 
 def get_evidence_base_path() -> Path:
     """Get base path for evidence storage."""
-    custom_path = os.getenv("FLYTO_EVIDENCE_PATH")
-    if custom_path:
-        logger.info(f"[EvidenceCollector] Using custom evidence path: {custom_path}")
-        return Path(custom_path)
-
-    # Find project root by looking for flyto-cloud directory name
-    current = Path(__file__).resolve()
-    for _ in range(10):
-        current = current.parent
-        if current.name == "flyto-cloud":
-            path = current / "evidence"
-            logger.info(f"[EvidenceCollector] Using project evidence path: {path}")
-            return path
-
-    # Fallback to ./evidence in working directory
-    path = Path("./evidence").resolve()
-    logger.info(f"[EvidenceCollector] Using fallback evidence path: {path}")
+    path = evidence_path()
+    logger.info("[EvidenceCollector] Using local evidence path: %s", path)
     return path
 
 

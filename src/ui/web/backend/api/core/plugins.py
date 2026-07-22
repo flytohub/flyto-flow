@@ -1,22 +1,16 @@
 """
 Core Plugin System API (Open Core Architecture)
 
-Handles:
+Provides local registry inspection:
 - List loaded module plugins
 - Registry snapshot for version binding
-- Registry refresh after install/upgrade
-- Individual plugin update
+- Registry refresh after an operator imports a wheel
 """
-import sys
-import subprocess
 import logging
-from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from gateway.auth import get_admin_user
-from gateway.providers.base import UserInfo
 
 logger = logging.getLogger(__name__)
 
@@ -54,14 +48,6 @@ class RefreshResult(BaseModel):
     message: str
     plugins_loaded: int
     modules_count: int
-
-
-class UpdateResult(BaseModel):
-    """Update operation result"""
-    ok: bool
-    message: str
-    from_version: str | None
-    to_version: str | None
 
 
 def _get_module_registry():
@@ -120,7 +106,6 @@ async def get_plugins():
             status_code=503,
             detail="flyto-core not installed"
         )
-
     try:
         # Ensure plugins are discovered
         ModuleRegistry.discover_plugins()
@@ -152,8 +137,6 @@ async def get_plugins():
             status_code=500,
             detail=f"Error getting plugins: {str(e)}"
         )
-
-
 @router.get("/registry/snapshot", response_model=RegistrySnapshotResponse)
 async def get_registry_snapshot():
     """
@@ -190,17 +173,16 @@ async def get_registry_snapshot():
 
 @router.post("/registry/refresh", response_model=RefreshResult)
 async def refresh_registry(
-    admin: UserInfo = Depends(get_admin_user),
 ):
     """
     Refresh the module registry by re-discovering all plugins.
 
-    This is used after pip install/upgrade to reload modules.
+    This is used after a local wheel import to reload modules.
     Note: For true hot-reload, worker processes should be restarted.
 
-    REQUIRES ADMIN - Only administrators can refresh registry.
+    CE refreshes only the local plugin registry.
     """
-    logger.info(f"Registry refresh requested by admin: {admin.email}")
+    logger.info("Local registry refresh requested")
 
     ModuleRegistry = _get_module_registry()
     if not ModuleRegistry:
@@ -234,102 +216,4 @@ async def refresh_registry(
             message=f"Refresh error: {str(e)}",
             plugins_loaded=0,
             modules_count=0
-        )
-
-
-@router.post("/plugins/{plugin_name}/update", response_model=UpdateResult)
-def _get_pip_version(package_name: str) -> Optional[str]:
-    """Get installed version of a pip package. Returns None if not found."""
-    try:
-        result = subprocess.run(
-            [sys.executable, "-m", "pip", "show", package_name],
-            capture_output=True, text=True, timeout=30,
-        )
-        if result.returncode == 0:
-            for line in result.stdout.split('\n'):
-                if line.startswith('Version:'):
-                    return line.split(':', 1)[1].strip()
-    except Exception:
-        pass
-    return None
-
-
-# Map plugin names to PyPI packages
-_PLUGIN_PACKAGES = {
-    "community": "flyto-core",
-    "pro": "flyto-modules-pro",
-}
-
-
-async def update_plugin(
-    plugin_name: str,
-    admin: UserInfo = Depends(get_admin_user),
-):
-    """
-    Update a specific plugin package from PyPI.
-
-    Plugin names:
-    - community: flyto-core (open source modules)
-    - pro: flyto-modules-pro (commercial modules)
-
-    REQUIRES ADMIN - Only administrators can update packages.
-    """
-    logger.info(f"Plugin update requested by admin: {admin.email}, plugin: {plugin_name}")
-
-    package_name = _PLUGIN_PACKAGES.get(plugin_name)
-    if not package_name:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unknown plugin: {plugin_name}. Valid plugins: {list(_PLUGIN_PACKAGES.keys())}"
-        )
-
-    old_version = _get_pip_version(package_name)
-
-    try:
-        logger.info(f"Updating {package_name} from PyPI...")
-
-        result = subprocess.run(
-            [sys.executable, "-m", "pip", "install", "--upgrade", package_name],
-            capture_output=True, text=True, timeout=120,
-        )
-
-        if result.returncode != 0:
-            logger.error(f"pip upgrade failed: {result.stderr}")
-            return UpdateResult(
-                ok=False,
-                message=f"Update failed: {result.stderr[:200]}",
-                from_version=old_version, to_version=None,
-            )
-
-        new_version = _get_pip_version(package_name)
-
-        # Refresh registry to pick up new modules
-        ModuleRegistry = _get_module_registry()
-        if ModuleRegistry:
-            ModuleRegistry.refresh()
-
-        if old_version == new_version:
-            return UpdateResult(
-                ok=True,
-                message=f"{plugin_name} already on latest version: {new_version}",
-                from_version=old_version, to_version=new_version,
-            )
-
-        logger.info(f"Updated {plugin_name}: {old_version} -> {new_version}")
-        return UpdateResult(
-            ok=True,
-            message=f"Updated {plugin_name}: {old_version} -> {new_version}",
-            from_version=old_version, to_version=new_version,
-        )
-
-    except subprocess.TimeoutExpired:
-        return UpdateResult(
-            ok=False, message="Update timed out. Please try again.",
-            from_version=old_version, to_version=None,
-        )
-    except Exception as e:
-        logger.error(f"Update error: {e}")
-        return UpdateResult(
-            ok=False, message=f"Update error: {str(e)}",
-            from_version=old_version, to_version=None,
         )

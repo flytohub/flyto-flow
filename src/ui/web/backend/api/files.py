@@ -2,7 +2,7 @@
 Workflow output file download / open endpoints.
 
 Security:
-- Requires authentication
+- Scoped to the fixed local workspace
 - Path traversal: whitelist roots only, resolve symlinks, verify containment
 - Cloud mode: only /download (no subprocess)
 - Desktop mode: /open and /reveal via safe subprocess (no shell=True)
@@ -18,7 +18,9 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.responses import FileResponse
 
-from api.auth import get_current_user
+from gateway.local_context import get_local_actor
+
+get_workspace_context = get_local_actor
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/files", tags=["Files"])
@@ -114,7 +116,7 @@ def _is_desktop() -> bool:
 @router.get("/download")
 async def download_file(
     path: str = Query(..., description="File path from workflow output"),
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """Download a file produced by a workflow execution."""
     resolved = _safe_resolve(path)
@@ -138,7 +140,7 @@ async def download_file(
 @router.post("/open")
 async def open_file_locally(
     path: str = Query(..., description="File path to open"),
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """Open a file with OS default app. Desktop mode only."""
     if not _is_desktop():
@@ -170,7 +172,7 @@ async def open_file_locally(
 @router.post("/reveal")
 async def reveal_in_finder(
     path: str = Query(..., description="File path to reveal"),
-    current_user: dict = Depends(get_current_user),
+    workspace_context: dict = Depends(get_workspace_context),
 ):
     """Reveal file in Finder/Explorer. Desktop mode only."""
     if not _is_desktop():

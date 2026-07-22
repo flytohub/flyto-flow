@@ -25,11 +25,6 @@ export function useTemplateLoad({
   templateName,
   templateId,
   templateDescription,
-  templateCreatorId,
-  templateMutability,
-  templateVisibility,
-  templateListed,
-  isWorkflowVisible,  // Backend determines if workflow should be visible
   sections,
   elements,
   viewport,
@@ -72,24 +67,6 @@ export function useTemplateLoad({
       const name = template.templateName || template.template_name || template.name || t('templateBuilder.toolbar.templateNamePlaceholder')
       templateName.value = name
       templateId.value = template.templateId || template.template_id || template.id
-      templateCreatorId.value = template.creatorId || template.creator_id || null
-      templateMutability.value = template.mutability || 'fork_on_use'
-      templateVisibility.value = template.visibility || 'private'
-      templateListed.value = template.listed !== false
-
-      // SECURITY: Store workflow visibility from backend
-      // Backend determines visibility based on mutability and ownership
-      const workflowVisible = template.is_workflow_visible !== false
-      if (isWorkflowVisible) {
-        isWorkflowVisible.value = workflowVisible
-      }
-
-      if (!workflowVisible) {
-        showToast(t('templateBuilder.messages.workflowLocked', 'This workflow is protected. You can use this template but cannot view the internal logic.'), 'warning')
-        // Clear workflow elements - backend already returned empty steps
-        elements.value = []
-      }
-
       // Load UI sections
       if (template.ui?.sections && template.ui.sections.length > 0) {
         // Normalize: flatten params fields to component level for builder compatibility

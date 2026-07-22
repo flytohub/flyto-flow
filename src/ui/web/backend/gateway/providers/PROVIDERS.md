@@ -1,6 +1,6 @@
 # CE Providers
 
-Flyto2 Cloud CE assembles only local providers:
+Flyto2 Flow assembles only local providers:
 
 - Offline JWT authentication.
 - Simple local access control.

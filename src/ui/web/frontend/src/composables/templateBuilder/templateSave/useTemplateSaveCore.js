@@ -20,8 +20,6 @@ import { createNavigationActions } from './navigationActions'
  * @param {Ref} options.templateData - Template data computed
  * @param {Ref} options.templateName - Template name
  * @param {Ref} options.existingTemplateId - Existing template ID
- * @param {Ref} options.templateVisibility - Template visibility
- * @param {Ref} options.templateListed - Template listed status
  * @param {Ref} options.hasUnsavedChanges - Unsaved changes flag
  * @param {Ref} options.isSaving - Saving in progress flag
  * @param {Ref} options.showSaveDialog - Save dialog visibility
@@ -34,8 +32,6 @@ export function useTemplateSave(options) {
     templateData,
     templateName,
     existingTemplateId,
-    templateVisibility,
-    templateListed,
     viewport,
     errorHandling,
     checkpoints,
@@ -55,8 +51,6 @@ export function useTemplateSave(options) {
     templateData,
     templateName,
     existingTemplateId,
-    templateVisibility,
-    templateListed,
     viewport,
     errorHandling,
     checkpoints,
@@ -76,7 +70,7 @@ export function useTemplateSave(options) {
 
   // Prepare data helper
   function prepareData() {
-    return prepareSaveData({ elements, sections, templateData, templateVisibility, templateListed, viewport, errorHandling, checkpoints })
+    return prepareSaveData({ elements, sections, templateData, viewport, errorHandling, checkpoints })
   }
 
   // Validate helper

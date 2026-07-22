@@ -1,0 +1,33 @@
+{
+  "schema": "flyto.flow-boundary.v1",
+  "product": "Flyto2 Flow",
+  "repository": "flyto-flow",
+  "upstream": true,
+  "workspace_model": "single-local-workspace",
+  "implicit_outbound_network": false,
+  "bundled_runtime": [
+    "flyto-core",
+    "playwright",
+    "chromium"
+  ],
+  "frontend_edition_seam": {
+    "alias": "@edition",
+    "default": "src/edition/ce.js",
+    "override_environment": "FLYTO_UI_EDITION_ENTRY",
+    "mode": "additive_slots",
+    "shared_shells": [
+      "src/ui/web/frontend/src/components/layout/AppNavbar.vue",
+      "src/ui/web/frontend/src/components/layout/AppFooter.vue",
+      "src/ui/web/frontend/src/views/MyTemplates.vue"
+    ]
+  },
+  "forbidden_product_areas": [
+    "identity and membership",
+    "hosted messaging and collaboration",
+    "billing and entitlements",
+    "marketplaces and public publishing",
+    "managed runners and cloud bridges",
+    "analytics, telemetry, and phone-home",
+    "online dependency updates and CDN-loaded code"
+  ]
+}

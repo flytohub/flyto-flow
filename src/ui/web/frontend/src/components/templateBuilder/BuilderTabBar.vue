@@ -17,7 +17,6 @@
       </button>
 
       <button
-        v-if="!isWorkflowLocked"
         @click="$emit('update:activeTab', 'workflow')"
         :class="['tab', { active: activeTab === 'workflow' }]"
       >
@@ -31,16 +30,6 @@
         <div class="tab-active-bar"></div>
       </button>
 
-      <!-- Locked Workflow Indicator -->
-      <div v-else class="tab locked-tab">
-        <div class="tab-icon-wrap">
-          <Lock :size="18" />
-        </div>
-        <div class="tab-label">
-          <span class="label-main">{{ $t('templateBuilder.tabs.protectedWorkflow', 'Protected Workflow') }}</span>
-          <span class="label-sub">LOCKED</span>
-        </div>
-      </div>
     </div>
 
     <!-- AI Chat button removed — now global via FloatingChatButton in App.vue -->
@@ -48,16 +37,12 @@
 </template>
 
 <script setup>
-import { Palette, Code, Lock } from 'lucide-vue-next'
+import { Palette, Code } from 'lucide-vue-next'
 
 defineProps({
   activeTab: {
     type: String,
     required: true
-  },
-  isWorkflowLocked: {
-    type: Boolean,
-    default: false
   }
 })
 

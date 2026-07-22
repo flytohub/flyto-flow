@@ -1,5 +1,5 @@
 {
-  "name": "flytohub-frontend",
+  "name": "flyto2-flow-frontend",
   "version": "0.3.1",
   "type": "module",
   "scripts": {
@@ -12,14 +12,14 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "check:i18n-static": "node scripts/check-static-i18n.mjs",
     "validate:size": "node scripts/validateComponentSize.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "audit:security": "npm audit --audit-level=high",
     "release:bundle-budget": "node scripts/check-release-bundle-budget.mjs",
     "release:static-smoke": "node scripts/release-static-smoke.mjs",
-    "release:browser-smoke": "node scripts/release-browser-smoke.mjs",
-    "release:mcp-closed-loop": "python ../../../../scripts/smoke_warroom_mcp_closed_loop.py"
+    "release:browser-smoke": "node scripts/release-browser-smoke.mjs"
   },
   "dependencies": {
     "@vue-flow/background": "^1.3.2",
@@ -40,7 +40,6 @@
     "vue-router": "^4.2.0"
   },
   "devDependencies": {
-    "@iconify-json/lucide": "^1.2.76",
     "@playwright/test": "^1.57.0",
     "@unocss/reset": "^66.5.9",
     "@vitejs/plugin-vue": "^6.0.5",

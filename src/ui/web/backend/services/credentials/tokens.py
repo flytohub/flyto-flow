@@ -20,7 +20,7 @@ class CredentialTokenMixin:
         _TABLE_NAME: str
         _encrypt(value, key_version) -> str
         _decrypt(encrypted, key_version) -> str
-        _audit_log(name, user_id, action, success, reason=None, ip=None)
+        _audit_log(name, workspace_id, action, success, reason=None, ip=None)
         _ensure_tables()
     """
 
@@ -67,7 +67,7 @@ class CredentialTokenMixin:
         credential_name: str,
         scope: CredentialScope,
         scope_id: str,
-        user_id: str,
+        workspace_id: str,
         expiry_seconds: Optional[int] = None,
     ) -> Optional[str]:
         """
@@ -81,7 +81,7 @@ class CredentialTokenMixin:
             credential_name: Name of the credential
             scope: Credential scope
             scope_id: Scope identifier
-            user_id: User ID for audit
+            workspace_id: Workspace ID for audit
             expiry_seconds: Token lifetime (default: 1 hour)
 
         Returns:
@@ -128,7 +128,7 @@ class CredentialTokenMixin:
             ),
         )
 
-        cls._audit_log(credential_name, user_id, "create_token", True, f"execution:{execution_id}")
+        cls._audit_log(credential_name, workspace_id, "create_token", True, f"execution:{execution_id}")
         logger.debug(f"Created execution token for {credential_name} in {execution_id}")
 
         return token
@@ -260,7 +260,7 @@ class CredentialTokenMixin:
         cls,
         execution_id: str,
         credential_refs: List[dict],
-        user_id: str,
+        workspace_id: str,
     ) -> dict:
         """
         Create tokens for all credential references in a workflow execution.
@@ -271,7 +271,7 @@ class CredentialTokenMixin:
                 - name: Credential name
                 - scope: Scope string
                 - scope_id: Scope ID
-            user_id: User ID
+            workspace_id: Workspace ID
 
         Returns:
             Dict mapping credential name to token
@@ -286,7 +286,7 @@ class CredentialTokenMixin:
                     credential_name=ref["name"],
                     scope=scope,
                     scope_id=ref["scope_id"],
-                    user_id=user_id,
+                    workspace_id=workspace_id,
                 )
                 if token:
                     tokens[ref["name"]] = token

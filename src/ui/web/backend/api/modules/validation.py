@@ -8,11 +8,10 @@ Uses core.validation API as single source of truth.
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Query, Depends, Request
+from fastapi import APIRouter, Query, Depends
 
-from gateway.auth import get_optional_user
-from gateway.providers.base import UserInfo
-from services.normalizers import normalize_template
+from gateway.local_context import get_local_principal
+from gateway.providers.base import WorkspaceContext
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -276,17 +275,16 @@ async def get_compatible_modules(
 
 @router.get("/starters")
 async def get_starter_modules(
-    request: Request,
     include_composites: bool = Query(default=True, description="Include composite modules"),
-    include_templates: bool = Query(default=True, description="Include user's my-templates"),
+    include_templates: bool = Query(default=True, description="Include local workflow templates"),
     limit: int = Query(default=100, description="Maximum results"),
-    current_user: Optional[UserInfo] = Depends(get_optional_user),
+    workspace_context: Optional[WorkspaceContext] = Depends(get_local_principal),
 ) -> Dict[str, Any]:
     """
     Get modules that can start a workflow.
 
     Uses core.validation.get_startable_modules as single source of truth.
-    Also includes user's templates (my-templates) if authenticated.
+    Also includes local workflow templates.
     """
     api = _get_validation_api()
 
@@ -299,40 +297,23 @@ async def get_starter_modules(
         if not include_composites:
             modules = [m for m in modules if not m['module_id'].startswith('composite.')]
 
-    # Add user templates as starters (via cloud API)
+    # Add local workflow templates as starters.
     template_modules = []
-    if include_templates and current_user:
+    if include_templates and workspace_context:
         try:
-            from services.cloud_client import cloud_get
-            from services.helpers import resolve_library_id
+            from api.modules.catalog import get_workspace_templates_as_modules
 
-            user_id = current_user.id if hasattr(current_user, 'id') else current_user.get('id')
-            auth_header = request.headers.get("authorization")
-
-            if user_id:
-                data = await cloud_get(
-                    "templates/me/templates",
-                    params={"page_size": 100, "sort_by": "updated"},
-                    auth_header=auth_header,
-                )
-                if data:
-                    templates = data.get("items") or data.get("templates") or []
-                    for t in templates:
-                        library_id, _ = resolve_library_id(t)
-                        template_id = t.get("id") or t.get("template_id")
-                        if not template_id:
-                            continue
-                        module = normalize_template(t, template_id, library_id=library_id)
-                        module["can_start"] = True
-                        module["start_requires_params"] = list(
-                            module.get("params_schema", {}).get("required", [])
-                        )
-                        template_modules.append(module)
-
-                    logger.debug(f"Added {len(template_modules)} user templates to starters")
+            workspace_id = workspace_context.id if hasattr(workspace_context, 'id') else workspace_context.get('id')
+            if workspace_id:
+                template_modules = await get_workspace_templates_as_modules(workspace_id)
+                for module in template_modules:
+                    module["can_start"] = True
+                    module["start_requires_params"] = list(
+                        module.get("params_schema", {}).get("required", [])
+                    )
 
         except Exception as e:
-            logger.warning(f"Error loading user templates for starters: {e}")
+            logger.warning(f"Error loading local templates for starters: {e}")
 
     # Combine core modules and template modules
     all_modules = modules + template_modules

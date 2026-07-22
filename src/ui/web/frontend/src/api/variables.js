@@ -14,7 +14,7 @@ import { ENDPOINTS } from './config'
  * S-Grade: Use group_by parameter to get pre-computed groupings from backend.
  *
  * @param {Object} params - Query parameters
- * @param {string} params.scope - 'organization' | 'project' | 'workflow'
+ * @param {string} params.scope - 'workspace' | 'project' | 'workflow'
  * @param {string} params.scope_id - Scope ID
  * @param {string} params.environment - 'development' | 'staging' | 'production' | 'all'
  * @param {string} params.group_by - 'scope' | 'environment' | 'all' for pre-grouped results
@@ -45,7 +45,7 @@ export async function getVariable(id) {
  * @param {string} data.name - Variable name
  * @param {string} data.type - 'string' | 'number' | 'boolean' | 'json' | 'secret'
  * @param {any} data.value - Variable value
- * @param {string} data.scope - 'organization' | 'project' | 'workflow'
+ * @param {string} data.scope - 'workspace' | 'project' | 'workflow'
  * @param {string} data.scope_id - Scope ID
  * @param {string} data.environment - 'development' | 'staging' | 'production' | 'all'
  * @returns {Promise<{ok: boolean, variable: Object}>}

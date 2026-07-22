@@ -55,7 +55,7 @@ async def resolve_template_dependencies(
 
     Args:
         steps: Template steps to scan
-        publisher_id: User ID of the person publishing
+        publisher_id: Workspace ID of the person publishing
 
     Returns:
         (dependencies, errors) where:
@@ -151,34 +151,30 @@ async def build_embedded_definitions(
 
         tid = dep["template_id"]
         try:
-            template = (
-                await template_provider.get_template_internal(tid)
-                if template_provider
-                else None
-            )
+            from gateway.local_context import LOCAL_WORKSPACE
+
+            template = await template_provider.get_template(
+                tid,
+                workspace_id=LOCAL_WORKSPACE.id,
+            ) if template_provider else None
             if not template:
                 continue
 
-            # Use marketplace_snapshot if available (published state), else live
-            snap = _template_value(template, "marketplace_snapshot") or template
-
             embedded[tid] = {
-                "steps": _template_value(snap, "steps", []),
-                "name": _template_value(snap, "name", _template_value(template, "name")),
+                "steps": _template_value(template, "steps", []),
+                "name": _template_value(template, "name"),
                 "params_schema": _template_value(
-                    snap,
+                    template,
                     "params_schema",
-                ) or _template_value(template, "params_schema"),
+                ),
                 "output_schema": _template_value(
-                    snap,
+                    template,
                     "output_schema",
-                ) or _template_value(template, "output_schema"),
+                ),
                 "input_schema": _template_value(template, "input_schema"),
-                "ui": _template_value(snap, "ui") or _template_value(template, "ui"),
+                "ui": _template_value(template, "ui"),
                 "version": _template_value(
-                    snap,
-                    "version",
-                    _template_value(template, "version", "1.0.0"),
+                    template, "version", "1.0.0",
                 ),
             }
         except Exception as e:

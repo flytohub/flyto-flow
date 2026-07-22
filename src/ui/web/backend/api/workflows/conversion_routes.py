@@ -37,7 +37,7 @@ async def validate_workflow(
     Validate a workflow before save/execute.
 
     Uses core.validation.validate_workflow as single source of truth.
-    Public endpoint (no authentication required for validation).
+    Local validation endpoint.
     """
     workflow_dict = _build_workflow_dict(
         request.nodes,

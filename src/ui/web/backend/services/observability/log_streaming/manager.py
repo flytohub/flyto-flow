@@ -369,11 +369,7 @@ async def configure_streams_from_env() -> LogStreamManager:
     """
     Configure streams from environment variables.
 
-    Environment variables:
-    - LOG_STREAM_WEBHOOK_URL: Webhook endpoint
-    - LOG_STREAM_ELASTICSEARCH_URL: Elasticsearch URL
-    - LOG_STREAM_SYSLOG_HOST: Syslog server host
-    - LOG_STREAM_FILE_PATH: File output path
+    ``LOG_STREAM_FILE_PATH`` may select a local file output path.
 
     Returns:
         Configured manager
@@ -382,29 +378,6 @@ async def configure_streams_from_env() -> LogStreamManager:
 
     manager = get_log_stream_manager()
 
-    # Webhook stream
-    webhook_url = os.getenv("LOG_STREAM_WEBHOOK_URL")
-    if webhook_url:
-        from services.observability.log_streaming.webhook_stream import WebhookStream
-        stream = WebhookStream(url=webhook_url)
-        manager.register_stream("webhook", stream)
-
-    # Elasticsearch stream
-    es_url = os.getenv("LOG_STREAM_ELASTICSEARCH_URL")
-    if es_url:
-        from services.observability.log_streaming.elasticsearch_stream import ElasticsearchStream
-        stream = ElasticsearchStream(url=es_url)
-        manager.register_stream("elasticsearch", stream)
-
-    # Syslog stream
-    syslog_host = os.getenv("LOG_STREAM_SYSLOG_HOST")
-    if syslog_host:
-        from services.observability.log_streaming.syslog_stream import SyslogStream
-        port = int(os.getenv("LOG_STREAM_SYSLOG_PORT", "514"))
-        stream = SyslogStream(host=syslog_host, port=port)
-        manager.register_stream("syslog", stream)
-
-    # File stream
     file_path = os.getenv("LOG_STREAM_FILE_PATH")
     if file_path:
         from services.observability.log_streaming.file_stream import FileStream

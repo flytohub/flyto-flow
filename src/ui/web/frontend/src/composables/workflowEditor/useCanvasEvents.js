@@ -1,7 +1,6 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { generateNodeId, createNode } from './useCanvasOperations'
 import { HISTORY_ACTIONS } from './useCanvasHistory'
-import { moatTelemetry } from '@/services/moatTelemetry'
 
 export function useCanvasEvents({
   nodes,
@@ -11,7 +10,6 @@ export function useCanvasEvents({
   controlStore,
   toast,
   t,
-  collaborationStore,
   updateNodeInternals,
   saveHistoryState,
   syncToParent,
@@ -62,9 +60,6 @@ export function useCanvasEvents({
     if (props.debugMode) { handleDebugNodeClick(event.node.id); return }
     actionBarNode.value = event.node
     emit('node-click', event)
-    if (collaborationStore.isConnected) {
-      collaborationStore.sendMessage({ type: 'node.select', node_id: event.node.id })
-    }
   }
 
   function handleNodeContextMenuEvent({ event, node }) {
@@ -112,7 +107,6 @@ export function useCanvasEvents({
       node.data.isPinned = false
       node.data.pinnedOutput = null
       node.data.pinnedAt = null
-      moatTelemetry.trackUnpinOutput(props.workflowId, nodeId)
       syncToParent()
     } else {
       const output = controlStore.getNodeOutput(nodeId)
@@ -124,7 +118,6 @@ export function useCanvasEvents({
       node.data.isPinned = true
       node.data.pinnedOutput = output
       node.data.pinnedAt = Date.now()
-      moatTelemetry.trackPinOutput(props.workflowId, nodeId, false)
       syncToParent()
     }
   }
@@ -172,9 +165,6 @@ export function useCanvasEvents({
   function handlePaneClick() {
     selectedEdgeId.value = null
     actionBarNode.value = null
-    if (collaborationStore.isConnected) {
-      collaborationStore.sendMessage({ type: 'node.select', node_id: null })
-    }
   }
 
   function handleAddNodeRequest(params) { openAddNodeMenu(params) }

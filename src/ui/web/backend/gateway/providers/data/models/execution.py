@@ -19,7 +19,7 @@ class ExecutionDTO(BaseModel):
     """Workflow execution record"""
     id: str
     workflow_id: str
-    user_id: str
+    workspace_id: str
 
     status: ExecutionStatus
 

@@ -2,7 +2,7 @@
 Variable Repository
 
 Storage layer for workflow variables with scope-based inheritance.
-Supports organization, project, and workflow level variables.
+Supports workspace, project, and workflow level variables.
 """
 
 import base64
@@ -24,7 +24,7 @@ _table_ensured = False
 class VariableScope(str, Enum):
     """Variable scope levels."""
 
-    ORGANIZATION = "organization"
+    WORKSPACE = "workspace"
     PROJECT = "project"
     WORKFLOW = "workflow"
 
@@ -53,7 +53,7 @@ class Variable:
     """
     Variable definition.
 
-    Variables are scoped to organization/project/workflow and can be
+    Variables are scoped to workspace/project/workflow and can be
     environment-specific. Secrets are stored encrypted.
     """
 
@@ -410,14 +410,14 @@ class VariableRepository:
     def resolve_variables(
         workflow_id: str,
         project_id: Optional[str] = None,
-        organization_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         environment: Environment = Environment.DEVELOPMENT,
     ) -> Dict[str, Any]:
         """
         Resolve all variables for a workflow execution.
 
         Inheritance order (lower overrides higher):
-        1. Organization variables
+        1. Workspace variables
         2. Project variables
         3. Workflow variables
         """
@@ -425,14 +425,14 @@ class VariableRepository:
 
         resolved: Dict[str, Any] = {}
 
-        if organization_id:
-            org_vars = VariableRepository.list_variables(
-                scope=VariableScope.ORGANIZATION,
-                scope_id=organization_id,
+        if workspace_id:
+            workspace_vars = VariableRepository.list_variables(
+                scope=VariableScope.WORKSPACE,
+                scope_id=workspace_id,
                 environment=environment,
                 include_secrets=True,
             )
-            for var in org_vars:
+            for var in workspace_vars:
                 resolved[var.name] = _parse_value(var)
 
         if project_id:

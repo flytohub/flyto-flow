@@ -15,8 +15,7 @@
  * @property {number} depth - Nesting depth (0 = root)
  * @property {boolean} isDirty - Has unsaved changes
  * @property {Object|null} flowData - Optional flow data
- * @property {string|null} templateId - If set, this subflow is a remote template (save via API, not parent sync)
- * @property {string|null} templateMutability - 'editable' | 'locked' | 'fork_on_use'
+ * @property {string|null} templateId - If set, this subflow references another local template
  */
 
 /**
@@ -63,7 +62,6 @@ export function createSubflowTab(flowId, label, parentNodeId, depth, flowData = 
     depth,
     isDirty: false,
     flowData,
-    templateId: templateMeta?.templateId || null,
-    templateMutability: templateMeta?.mutability || null
+    templateId: templateMeta?.templateId || null
   }
 }
