@@ -14,7 +14,7 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict
 
-from jose import JWTError, jwt
+import jwt
 
 from gateway.providers.base import AuthProvider, AuthResult, UserInfo
 from gateway.storage.offline_db import get_offline_cursor, init_offline_db
@@ -236,7 +236,7 @@ class OfflineAuthProvider(AuthProvider):
         """
         try:
             payload = jwt.decode(token, _get_jwt_secret(), algorithms=[_ALGORITHM])
-        except JWTError as e:
+        except jwt.InvalidTokenError as e:
             return AuthResult(ok=False, error=f"Invalid token: {e}")
 
         if payload.get("type") != "access":
@@ -310,7 +310,7 @@ class OfflineAuthProvider(AuthProvider):
         """
         try:
             payload = jwt.decode(refresh_token, _get_jwt_secret(), algorithms=[_ALGORITHM])
-        except JWTError as e:
+        except jwt.InvalidTokenError as e:
             return AuthResult(ok=False, error=f"Invalid refresh token: {e}")
 
         if payload.get("type") != "refresh":

@@ -1,0 +1,8 @@
+[
+  "test_release.py::test_authenticated_template_crud_uses_local_storage",
+  "test_release.py::test_ce_capabilities_and_quota_are_hosted_service_free",
+  "test_release.py::test_local_jwt_auth_round_trip_and_registration_lock",
+  "test_release.py::test_offline_application_exposes_only_ce_route_families",
+  "test_release.py::test_offline_provider_hub_is_fail_closed",
+  "test_release.py::test_private_provider_implementations_are_absent"
+]

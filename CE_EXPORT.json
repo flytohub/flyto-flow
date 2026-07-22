@@ -236,7 +236,7 @@
     "src/ui/web/backend/gateway/providers/audit/noop.py": "83f1ff7b5cb84fa210406733ffd23f8487e91c9796606876376ec5e28d2f7941",
     "src/ui/web/backend/gateway/providers/auth/__init__.py": "563b58ce8cbd6d33d288558656a4e44580a1314746fca8eac92efdfde93974fc",
     "src/ui/web/backend/gateway/providers/auth/local.py": "a46532d7e7e7fe9288e3036fe56680e5c07f8b439e96d8d4d2347b7fa7534ec2",
-    "src/ui/web/backend/gateway/providers/auth/offline.py": "80528a7ec2b4cef2cb453525a3135998c8dc2365870d670b363a15b220980bc3",
+    "src/ui/web/backend/gateway/providers/auth/offline.py": "0b49fa0048f5a0cadace869c0e69770d7e7c254598e76b5939da85ccc83e407f",
     "src/ui/web/backend/gateway/providers/base.py": "afbd9ec00cbd4f68cbff81ebe285a06df16d2558dfc68a9bcb802222039212e0",
     "src/ui/web/backend/gateway/providers/data/__init__.py": "78b0a3c54c9ab50e6d2f9d417a621a1c0c0bf3c1991c7343c83444f6d6d5c987",
     "src/ui/web/backend/gateway/providers/data/base.py": "7f73f7252378d8650f917967cea5a22a8c09affb5e51056d46165f12e059a6e9",
@@ -1733,7 +1733,7 @@
   },
   "package_name": "flyto-cloud-ce",
   "schema": "flyto.ce-release.v1",
-  "source_commit": "e19c37f30053bde8370597e78a051857de769941",
+  "source_commit": "b297dfb82f3330aeae6ec0b00a4ee09e0d97f11b",
   "source_repository": "https://github.com/flytohub/flyto-cloud.git",
-  "tree_sha256": "49857d8fcc9e63ebbfcaa6954fc8152a682ee89898b92de5a7bfa5d4e4f389e9"
+  "tree_sha256": "1d82c29fb350fcaf2c0ed4ca456611d1675d6fdeb0dd08f588e29ebef5311fa1"
 }
