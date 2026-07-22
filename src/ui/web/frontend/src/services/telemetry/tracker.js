@@ -16,18 +16,38 @@ import { isCircuitOpen, recordSuccess, recordFailure } from './circuitBreaker'
 // UUID Generator (lightweight, no external dependency)
 // =============================================================================
 
+let fallbackUuidCounter = 0
+
 function generateUUID() {
-  // Use crypto.randomUUID if available (modern browsers)
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID()
+  const cryptoApi = typeof globalThis !== 'undefined' ? globalThis.crypto : undefined
+  if (typeof cryptoApi?.randomUUID === 'function') {
+    return cryptoApi.randomUUID()
   }
 
-  // Fallback to manual generation
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0
-    const v = c === 'x' ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
+  if (typeof cryptoApi?.getRandomValues === 'function') {
+    const bytes = new Uint8Array(16)
+    cryptoApi.getRandomValues(bytes)
+    bytes[6] = (bytes[6] & 0x0f) | 0x40
+    bytes[8] = (bytes[8] & 0x3f) | 0x80
+    const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+  }
+
+  // This last-resort ID is only a correlation key, never an authorization
+  // token. Keep it deterministic when Web Crypto is unavailable.
+  fallbackUuidCounter += 1
+  return `fallback-${Date.now().toString(36)}-${fallbackUuidCounter.toString(36)}`
+}
+
+function secureSampleValue() {
+  const cryptoApi = typeof globalThis !== 'undefined' ? globalThis.crypto : undefined
+  if (typeof cryptoApi?.getRandomValues === 'function') {
+    const value = new Uint32Array(1)
+    cryptoApi.getRandomValues(value)
+    return value[0] / 0x100000000
+  }
+  fallbackUuidCounter += 1
+  return (fallbackUuidCounter % 1000) / 1000
 }
 
 // =============================================================================
@@ -288,7 +308,7 @@ export const telemetry = {
     }
 
     // Apply sampling
-    if (Math.random() > CONFIG.sampleRate) {
+    if (secureSampleValue() > CONFIG.sampleRate) {
       return
     }
 

@@ -106,9 +106,9 @@ async def submit_translation(
 
     except HTTPException:
         raise
-    except Exception as e:
-        logger.error(f"Failed to submit translation: {e}")
-        return {"ok": False, "error": str(e)}
+    except Exception:
+        logger.exception("Failed to submit translation")
+        return {"ok": False, "error": "Failed to submit translation"}
 
 
 @router.get("/my")
@@ -281,9 +281,9 @@ async def review_translation(
 
     except HTTPException:
         raise
-    except Exception as e:
-        logger.error(f"Failed to review translation: {e}")
-        return {"ok": False, "error": str(e)}
+    except Exception:
+        logger.exception("Failed to review translation")
+        return {"ok": False, "error": "Failed to review translation"}
 
 
 @router.delete("/{review_id}")

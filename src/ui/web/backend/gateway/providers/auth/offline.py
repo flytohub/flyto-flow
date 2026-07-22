@@ -14,7 +14,7 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict
 
-import jwt
+from jose import JWTError, jwt
 
 from gateway.providers.base import AuthProvider, AuthResult, UserInfo
 from gateway.storage.offline_db import get_offline_cursor, init_offline_db
@@ -35,11 +35,12 @@ _SALT_LENGTH = 32
 
 def _get_jwt_secret() -> str:
     """Get JWT secret from environment or generate a persistent one."""
-    secret = os.environ.get("FLYTO_OFFLINE_AUTH_SECRET") or os.environ.get("OFFLINE_JWT_SECRET")
-    if secret:
-        if len(secret) < 32:
-            raise RuntimeError("FLYTO_OFFLINE_AUTH_SECRET must contain at least 32 characters")
-        return secret
+    for env_name in ("FLYTO_OFFLINE_AUTH_SECRET", "OFFLINE_JWT_SECRET"):
+        secret = os.environ.get(env_name, "").strip()
+        if secret:
+            if len(secret) < 32:
+                raise RuntimeError("FLYTO_OFFLINE_AUTH_SECRET must contain at least 32 characters")
+            return secret
 
     auth_mode = os.environ.get(
         "FLYTO_OFFLINE_LOGIN_MODE",
@@ -52,8 +53,8 @@ def _get_jwt_secret() -> str:
         )
 
     # Fall back to a file-based secret so tokens survive restarts
-    from pathlib import Path
-    secret_path = Path.home() / ".flyto" / ".offline_jwt_secret"
+    from gateway.storage.offline_db import get_offline_db_path
+    secret_path = get_offline_db_path().with_name(".offline_jwt_secret")
     if secret_path.exists():
         return secret_path.read_text().strip()
 
@@ -235,7 +236,7 @@ class OfflineAuthProvider(AuthProvider):
         """
         try:
             payload = jwt.decode(token, _get_jwt_secret(), algorithms=[_ALGORITHM])
-        except jwt.PyJWTError as e:
+        except JWTError as e:
             return AuthResult(ok=False, error=f"Invalid token: {e}")
 
         if payload.get("type") != "access":
@@ -309,7 +310,7 @@ class OfflineAuthProvider(AuthProvider):
         """
         try:
             payload = jwt.decode(refresh_token, _get_jwt_secret(), algorithms=[_ALGORITHM])
-        except jwt.PyJWTError as e:
+        except JWTError as e:
             return AuthResult(ok=False, error=f"Invalid refresh token: {e}")
 
         if payload.get("type") != "refresh":

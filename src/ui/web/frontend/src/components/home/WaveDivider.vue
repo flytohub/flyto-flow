@@ -75,7 +75,9 @@
 </template>
 
 <script setup>
-const uid = Math.random().toString(36).slice(2, 8)
+import { getCurrentInstance } from 'vue'
+
+const uid = `wave-${getCurrentInstance()?.uid ?? 0}`
 const grad1 = `wg1-${uid}`
 const grad2 = `wg2-${uid}`
 const glowId = `glow-${uid}`

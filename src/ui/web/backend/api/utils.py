@@ -23,11 +23,11 @@ async def browse_path(mode: str = Query(default="directory", pattern="^(file|dir
         if path:
             return {"ok": True, "path": path}
         return {"ok": False, "error": "No path selected"}
-    except Exception as e:
-        logger.warning(f"browse-path failed: {e}")
+    except Exception:
+        logger.exception("browse-path failed")
         return JSONResponse(
             status_code=500,
-            content={"ok": False, "error": str(e)},
+            content={"ok": False, "error": "Unable to open path chooser"},
         )
 
 

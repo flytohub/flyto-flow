@@ -695,18 +695,41 @@ function formatPrice(cents) {
 }
 
 // Video helpers
+const YOUTUBE_HOSTS = new Set([
+  'youtube.com',
+  'www.youtube.com',
+  'm.youtube.com',
+  'youtu.be',
+  'www.youtu.be',
+])
+const YOUTUBE_VIDEO_ID = /^[A-Za-z0-9_-]{11}$/
+
+function getYouTubeVideoId(url) {
+  if (!url) return ''
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== 'https:' || !YOUTUBE_HOSTS.has(parsed.hostname.toLowerCase())) {
+      return ''
+    }
+
+    const videoId = parsed.hostname.endsWith('youtu.be')
+      ? parsed.pathname.split('/').filter(Boolean)[0]
+      : parsed.pathname === '/watch'
+        ? parsed.searchParams.get('v')
+        : ''
+    return YOUTUBE_VIDEO_ID.test(videoId || '') ? videoId : ''
+  } catch {
+    return ''
+  }
+}
+
 function isYouTubeUrl(url) {
-  if (!url) return false
-  return url.includes('youtube.com') || url.includes('youtu.be')
+  return Boolean(getYouTubeVideoId(url))
 }
 
 function getYouTubeEmbedUrl(url) {
-  if (!url) return ''
-  const watchMatch = url.match(/youtube\.com\/watch\?v=([^&]+)/)
-  if (watchMatch) return `${EXTERNAL_URLS.YOUTUBE_EMBED}${watchMatch[1]}`
-  const shortMatch = url.match(/youtu\.be\/([^?]+)/)
-  if (shortMatch) return `${EXTERNAL_URLS.YOUTUBE_EMBED}${shortMatch[1]}`
-  return url
+  const videoId = getYouTubeVideoId(url)
+  return videoId ? `${EXTERNAL_URLS.YOUTUBE_EMBED}${encodeURIComponent(videoId)}` : ''
 }
 
 // Markdown helpers

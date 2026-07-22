@@ -3,7 +3,7 @@ Offline Runner Entry Point
 
 Fully self-contained FastAPI server for offline operation.
 - No cloud dependency — all data and execution handled locally
-- Local JWT auth for self-hosted CE; explicit loopback bypass for desktop mode
+- Local JWT auth with first-run owner setup
 - Uses SQLite for workflows, templates, and execution history
 - Does NOT proxy to any external service
 
@@ -19,6 +19,18 @@ from pathlib import Path
 # === Deployment mode ===
 os.environ["DEPLOYMENT_MODE"] = "offline"
 
+# === Persistent offline data directory ===
+# CE containers mount this directory as a writable volume. Desktop builds
+# continue to use ~/.flyto when no explicit database path is configured.
+_configured_db_path = os.environ.get("FLYTO_OFFLINE_DB_PATH", "").strip()
+if _configured_db_path:
+    _offline_data_dir = Path(_configured_db_path).expanduser().parent
+else:
+    _offline_data_dir = Path.home() / ".flyto"
+_offline_data_dir.mkdir(parents=True, exist_ok=True)
+
+# === Persistent browser path for Playwright ===
+os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", str(_offline_data_dir / "browsers"))
 # === SSL certificates for packaged mode ===
 if getattr(sys, "frozen", False):
     try:
@@ -31,7 +43,7 @@ if getattr(sys, "frozen", False):
 # === Path Setup ===
 if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
     _backend_dir = Path(sys._MEIPASS)
-    os.chdir(Path.home() / ".flyto")
+    os.chdir(_offline_data_dir)
 else:
     _backend_dir = Path(__file__).resolve().parent
     os.chdir(_backend_dir)
@@ -91,7 +103,7 @@ logger = logging.getLogger(__name__)
 
 # File logging for offline debugging
 try:
-    _log_dir = Path.home() / ".flyto"
+    _log_dir = _offline_data_dir
     _log_dir.mkdir(parents=True, exist_ok=True)
     _file_handler = logging.FileHandler(_log_dir / "offline.log", encoding="utf-8")
     _file_handler.setLevel(logging.INFO)

@@ -5,6 +5,7 @@ Auth config endpoint.
 from fastapi import APIRouter
 
 from gateway.providers.hub import get_auth_provider
+from gateway.config import get_gateway_config
 
 router = APIRouter()
 
@@ -14,8 +15,24 @@ async def get_auth_config():
     """
     Return auth provider configuration for the frontend.
 
-    Cloud-only endpoint (local desktop app proxies to cloud).
-    Frontend uses this to decide which OAuth buttons to show
-    and to get the client IDs needed for OAuth popups.
+    Return provider capabilities for the frontend.
+
+    Provider implementations own their auth configuration. The gateway mode
+    is an additional fail-closed boundary for offline and enterprise editions.
     """
-    return get_auth_provider().get_frontend_config()
+    config = get_auth_provider().get_frontend_config()
+    deployment_mode = get_gateway_config()
+
+    if not deployment_mode.is_cloud:
+        for provider in ("google", "github"):
+            config.setdefault(provider, {})["enabled"] = False
+            if provider == "google":
+                config[provider]["clientId"] = None
+                config[provider]["desktopClientId"] = None
+            else:
+                config[provider]["clientId"] = None
+
+    if deployment_mode.is_enterprise:
+        config["allowSelfSignup"] = False
+
+    return config

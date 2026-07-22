@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Default database path
 DEFAULT_OFFLINE_DB_PATH = Path.home() / ".flyto" / "offline.db"
+OFFLINE_DB_PATH_ENV = "FLYTO_OFFLINE_DB_PATH"
 
 # Global connection + lock for thread-safe access from async tasks
 _connection: Optional[sqlite3.Connection] = None
@@ -26,12 +27,26 @@ _db_path: Optional[Path] = None
 _db_lock = threading.Lock()
 
 
+def get_default_offline_db_path() -> Path:
+    """Resolve the configured offline database path for the current process."""
+    configured = os.environ.get(OFFLINE_DB_PATH_ENV, "").strip()
+    if configured:
+        return Path(configured).expanduser()
+    return DEFAULT_OFFLINE_DB_PATH
+
+
+def get_offline_db_path() -> Path:
+    """Return the active database path, or the path that will be used on init."""
+    return _db_path or get_default_offline_db_path()
+
+
 def init_offline_db(db_path: Path = None) -> None:
     """
     Initialize offline SQLite database and create tables.
 
     Args:
-        db_path: Path to database file. Defaults to ~/.flyto/offline.db
+        db_path: Path to database file. Defaults to FLYTO_OFFLINE_DB_PATH or
+            ~/.flyto/offline.db.
     """
     global _connection, _db_path
 
@@ -205,12 +220,13 @@ def get_offline_db() -> sqlite3.Connection:
 
 def close_offline_db() -> None:
     """Close offline database connection."""
-    global _connection
+    global _connection, _db_path
 
     if _connection:
         _connection.close()
         _connection = None
         logger.info("Offline SQLite database connection closed")
+    _db_path = None
 
 
 @contextmanager

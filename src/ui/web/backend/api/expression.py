@@ -33,7 +33,7 @@ class ExpressionEvaluateRequest(BaseModel):
 
 class ExpressionValidateRequest(BaseModel):
     """Request to validate expression syntax"""
-    expression: str = Field(..., description="Expression to validate")
+    expression: str = Field(..., max_length=10000, description="Expression to validate")
 
 
 class ExpressionBatchRequest(BaseModel):
@@ -121,16 +121,25 @@ async def validate_expression(
     - variables: list of variables found in expression
     - warnings: any potential issues detected
     """
-    import re
-
     expr = request.expression.strip()
     warnings = []
     variables = []
 
-    # Extract ${variable} references
-    var_pattern = r'\$\{([^}]+)\}'
-    matches = re.findall(var_pattern, expr)
-    variables = list(set(matches))
+    # Extract references with bounded linear scans instead of a backtracking
+    # regex over request-controlled input.
+    cursor = 0
+    while True:
+        start = expr.find("${", cursor)
+        if start < 0:
+            break
+        end = expr.find("}", start + 2)
+        if end < 0:
+            break
+        variable = expr[start + 2:end]
+        if variable:
+            variables.append(variable)
+        cursor = end + 1
+    variables = list(dict.fromkeys(variables))
 
     # Basic syntax checks
     valid = True

@@ -74,13 +74,13 @@ async def get_plugins_catalog() -> Dict[str, Any]:
             "plugins": plugins,
         }
 
-    except Exception as e:
-        logger.error(f"Error getting plugins: {e}")
+    except Exception:
+        logger.exception("Error getting plugins")
         return {
             "ok": False,
             "enabled": True,
             "plugins": [],
-            "error": str(e)
+            "error": "Unable to load plugins"
         }
 
 
@@ -171,11 +171,11 @@ async def get_plugin_registry(
             "plugins": [],
             "message": "Plugin registry not available (flyto-core < 2.17)",
         }
-    except Exception as e:
-        logger.error(f"Plugin registry error: {e}")
+    except Exception:
+        logger.exception("Plugin registry error")
         return {
             "ok": False,
             "total": 0,
             "plugins": [],
-            "error": str(e),
+            "error": "Unable to load plugin registry",
         }

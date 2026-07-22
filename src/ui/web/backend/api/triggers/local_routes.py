@@ -50,11 +50,12 @@ async def validate_cron_expression(request: CronValidateRequest) -> Dict[str, An
             "expression": request.expression,
             "next_run_at": next_run.isoformat(),
         }
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to calculate next cron run")
         return {
             "ok": False,
             "valid": False,
-            "error": str(e),
+            "error": "Unable to calculate next cron run",
         }
 
 
@@ -84,10 +85,11 @@ async def get_cron_next_run(
             # Also include single next_run_at for backwards compatibility
             "next_run_at": next_runs[0] if next_runs else None,
         }
-    except Exception as e:
+    except Exception:
+        logger.exception("Invalid cron expression")
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid cron expression: {e}",
+            detail="Invalid cron expression",
         )
 
 

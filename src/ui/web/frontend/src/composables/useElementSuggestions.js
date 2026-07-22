@@ -10,6 +10,10 @@ import {
 } from 'lucide-vue-next'
 import { useNodeOutputStore } from '@/stores/execution'
 
+function escapeSelectorText(value) {
+  return String(value ?? '').replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+}
+
 export function useElementSuggestions(props, emit) {
   const nodeOutputStore = useNodeOutputStore()
 
@@ -64,7 +68,7 @@ export function useElementSuggestions(props, emit) {
           if (vk === 'id' && !link.id) continue
           if (vk === 'text' && !link.text) continue
           // Use the hint-provided selector if available; fallback to safe text selector
-          const linkSelector = link.selector || `a:has-text("${(link.text || '').replace(/"/g, '\\"')}")`
+          const linkSelector = link.selector || `a:has-text("${escapeSelectorText(link.text)}")`
           items.push({
             type: 'link',
             displayText: link.text,

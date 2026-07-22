@@ -44,31 +44,57 @@ def _safe_resolve(filepath: str) -> Path:
     if not filepath or not filepath.strip():
         raise HTTPException(400, "Empty file path")
 
+    if "\x00" in filepath:
+        raise HTTPException(400, "Invalid file path")
+
+    # Reject traversal before parsing the native path. The final path is built
+    # by walking entries discovered below an allowed root, so user input never
+    # becomes a filesystem path passed directly to an operating-system sink.
+    normalized = filepath.replace("\\", "/")
+    if any(part in {".", ".."} for part in normalized.split("/")):
+        raise HTTPException(403, "Access denied — invalid file path")
+
     path = Path(filepath)
 
-    # Resolve to absolute, following symlinks
-    if path.is_absolute():
-        resolved = path.resolve()
-    else:
-        # Try each workspace root for relative paths
-        resolved = None
-        for root in _WORKSPACE_ROOTS:
-            candidate = (root / path).resolve()
-            if candidate.exists():
-                resolved = candidate
-                break
-        if resolved is None:
-            raise HTTPException(404, "File not found")
+    def walk_existing(root: Path, parts: tuple[str, ...]) -> Path | None:
+        current = root.resolve()
+        try:
+            for part in parts:
+                if part in {"", ".", ".."}:
+                    return None
+                current = next(
+                    (entry for entry in current.iterdir() if entry.name == part),
+                    None,
+                )
+                if current is None:
+                    return None
+        except OSError:
+            return None
 
-    # CRITICAL: verify resolved path is under an allowed root
-    for root in _WORKSPACE_ROOTS:
+        resolved = current.resolve()
         try:
             resolved.relative_to(root.resolve())
-            return resolved
         except ValueError:
-            continue
+            return None
+        return resolved
 
-    raise HTTPException(403, "Access denied — file outside workspace")
+    for root in _WORKSPACE_ROOTS:
+        root_resolved = root.resolve()
+        if path.is_absolute():
+            root_parts = root_resolved.parts
+            if path.parts[:len(root_parts)] != root_parts:
+                continue
+            relative_parts = path.parts[len(root_parts):]
+        else:
+            relative_parts = path.parts
+
+        resolved = walk_existing(root_resolved, relative_parts)
+        if resolved is not None and resolved.is_file():
+            return resolved
+
+    if path.is_absolute():
+        raise HTTPException(403, "Access denied — file outside workspace")
+    raise HTTPException(404, "File not found")
 
 
 def _sanitize_filename(name: str) -> str:
@@ -134,8 +160,8 @@ async def open_file_locally(
             os.startfile(str(resolved))
         else:
             subprocess.Popen(["xdg-open", str(resolved)])
-    except Exception as e:
-        logger.warning(f"Failed to open file: {e}")
+    except Exception:
+        logger.exception("Failed to open file")
         raise HTTPException(500, "Failed to open file")
 
     return {"ok": True, "path": str(resolved)}
@@ -165,8 +191,8 @@ async def reveal_in_finder(
             subprocess.Popen(["explorer", "/select,", str(resolved)])
         else:
             subprocess.Popen(["xdg-open", str(resolved.parent)])
-    except Exception as e:
-        logger.warning(f"Failed to reveal file: {e}")
+    except Exception:
+        logger.exception("Failed to reveal file")
         raise HTTPException(500, "Failed to reveal file")
 
     return {"ok": True, "path": str(resolved)}

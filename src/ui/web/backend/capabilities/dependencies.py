@@ -22,6 +22,9 @@ logger = logging.getLogger(__name__)
 
 
 def _billing_mode() -> str:
+    # Billing preview is a deliberate, explicit demo mode.  Treat an unset
+    # value as live so a fresh self-hosted or enterprise install never grants
+    # paid capabilities because of a missing environment variable.
     return "preview" if os.getenv("FLYTO_BILLING_MODE", "").strip().lower() == "preview" else "live"
 
 

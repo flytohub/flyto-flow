@@ -397,7 +397,15 @@ async def list_available_tools():
     try:
         from core.modules.registry import ModuleRegistry
         registry = ModuleRegistry()
-        registered_modules = registry.get_all_modules()
+        # flyto-core exposes the executable registry through ``list_all``.
+        # Keep this endpoint compatible with older registry builds that still
+        # expose ``get_all_modules`` so cloud and self-hosted bundles can be
+        # upgraded independently.
+        list_modules = getattr(registry, "list_all", None)
+        if callable(list_modules):
+            registered_modules = list_modules()
+        else:
+            registered_modules = registry.get_all_modules()
         for module_id, module_class in registered_modules.items():
             category = module_id.split(".")[0] if "." in module_id else "other"
             tools.append(ToolInfo(

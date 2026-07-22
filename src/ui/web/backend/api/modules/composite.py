@@ -95,15 +95,15 @@ async def get_composite_catalog(
             "description": "Composite modules - pre-combined atomic modules"
         }
 
-    except Exception as e:
-        logger.error(f"Error getting composite catalog: {e}")
+    except Exception:
+        logger.exception("Error getting composite catalog")
         return {
             "ok": False,
             "version": "1.0.0",
             "total": 0,
             "categories": [],
             "modules": [],
-            "error": str(e)
+            "error": "Unable to load composite catalog"
         }
 
 
@@ -154,13 +154,14 @@ async def execute_composite_module(
             "result": result
         }
 
-    except ImportError as e:
+    except ImportError:
         raise HTTPException(
             status_code=503,
-            detail=f"Composite executor not available: {str(e)}"
+            detail="Composite executor not available"
         )
-    except Exception as e:
+    except Exception:
+        logger.exception("Composite execution failed")
         raise HTTPException(
             status_code=500,
-            detail=f"Execution failed: {str(e)}"
+            detail="Composite execution failed"
         )

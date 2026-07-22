@@ -163,8 +163,11 @@ LOCAL_CAPABILITIES: Set[Capability] = {
 }
 
 OFFLINE_CAPABILITIES: Set[Capability] = {
-    # Auth (auto-admin, no login needed)
+    # Auth (local JWT with first-run owner setup)
     Capability.AUTH_LOCAL,
+
+    # User
+    Capability.USER_SELF_SIGNUP,
 
     # Access
     Capability.ACCESS_SIMPLE,
@@ -185,9 +188,9 @@ OFFLINE_PAGES = {
     "/settings": True,
     "/settings/*": True,
 
-    # Auth pages (not needed — offline mode auto-authenticates)
-    "/login": False,
-    "/register": False,
+    # Auth pages (local JWT first-run setup and login)
+    "/login": True,
+    "/register": True,
 
     # Cloud-only pages (hidden in Offline)
     "/marketplace": False,
@@ -368,4 +371,3 @@ ENTERPRISE_PAGES = {
     "/admin/versions": True,
     "/admin/audit-immutable": True,
 }
-

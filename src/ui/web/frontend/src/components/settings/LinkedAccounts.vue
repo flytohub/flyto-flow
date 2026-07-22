@@ -96,7 +96,7 @@ const errorMsg = ref('')
 const successMsg = ref('')
 
 const googleAuthEnabled = ref(isGoogleAuthEnabled())
-const isGoogleLinked = computed(() => providers.value.includes('google.com'))
+const isGoogleLinked = computed(() => providers.value.some((provider) => provider === 'google.com'))
 const hasPassword = computed(() => providers.value.includes('password'))
 const canUnlinkGoogle = computed(() => hasPassword.value)
 

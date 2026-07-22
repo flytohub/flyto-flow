@@ -408,7 +408,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             self._add_headers(response, limit, result)
             return response
         else:
-            logger.warning(f"Rate limited: {client_id} on {path}")
+            logger.warning("Rate limit exceeded")
             return self._rate_limit_response(limit, result)
 
     def _should_skip(self, path: str) -> bool:

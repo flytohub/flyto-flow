@@ -308,12 +308,12 @@ async def get_tiered_catalog(
             core_catalog_cache=_core_catalog_cache,
             backend_startup_ts=_BACKEND_STARTUP_TS,
         )
-    except Exception as e:
-        logger.error(f"Error in tiered catalog: {e}", exc_info=True)
+    except Exception:
+        logger.exception("Error in tiered catalog")
         # Return empty catalog instead of 500 error
         return {
             "ok": False,
-            "error": str(e),
+            "error": "Unable to load module catalog",
             "version": f"error-{_BACKEND_STARTUP_TS}",
             "architecture": "ADR-001",
             "default": {"total": 0, "modules": [], "groups": []},

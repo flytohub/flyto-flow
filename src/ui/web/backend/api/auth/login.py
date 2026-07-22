@@ -32,7 +32,8 @@ async def login(data: LoginRequest, request: Request):
 
     Routes to appropriate auth provider based on deployment mode:
     - Cloud: Firebase Auth
-    - Enterprise: Local JWT auth
+    - Offline: Local JWT auth with first-run owner setup
+    - Enterprise: Local JWT auth with administrator-managed users
 
     SECURITY: Rate limited to prevent brute force attacks.
     """
@@ -104,9 +105,10 @@ async def login(data: LoginRequest, request: Request):
 @router.post("/register", response_model=AuthResponse)
 async def register(data: RegisterRequest):
     """
-    Register new user (Cloud mode only).
+    Register a user for providers that support self-registration.
 
-    Enterprise mode should return 403 - users are created by admin.
+    Offline mode uses the local JWT provider for first-run owner setup.
+    Enterprise mode returns 403 because users are created by an administrator.
     """
     from gateway.providers.hub import get_provider_hub
 
@@ -118,7 +120,7 @@ async def register(data: RegisterRequest):
             detail="Self-registration is disabled. Contact your administrator."
         )
 
-    # For Cloud mode, use Firebase to create user
+    # Use the active provider so cloud and offline registration stay decoupled.
     auth_provider = get_auth_provider()
 
     # Check if provider supports registration

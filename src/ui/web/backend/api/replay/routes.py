@@ -278,11 +278,11 @@ async def get_replay_status(
             "from_step": replay_metadata.get('from_step') if replay_metadata else None,
         }
 
-    except Exception as e:
-        logger.error(f"Failed to get replay status: {e}")
+    except Exception:
+        logger.exception("Failed to get replay status")
         return {
             "ok": False,
-            "error": str(e),
+            "error": "Failed to get replay status",
             "replay_id": replay_id
         }
 
@@ -382,11 +382,11 @@ async def replay_single_step(
             "original_execution_id": request.execution_id,
         }
 
-    except Exception as e:
-        logger.error(f"Failed to execute single step replay: {e}")
+    except Exception:
+        logger.exception("Failed to execute single step replay")
         return {
             "ok": False,
-            "error": f"Failed to execute single step replay: {str(e)}",
+            "error": "Failed to execute single step replay",
             "step_id": request.step_id,
         }
 

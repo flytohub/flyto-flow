@@ -11,6 +11,7 @@ This is a capability n8n lacks - full execution evidence with visual debugging.
 """
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -21,6 +22,8 @@ from pydantic import BaseModel
 from capabilities import Feature, require_feature
 
 logger = logging.getLogger(__name__)
+
+_SAFE_EVIDENCE_COMPONENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 # DEPRECATED: Not used by frontend. Retained for potential future use.
 router = APIRouter(
@@ -50,6 +53,25 @@ def get_evidence_path() -> Path:
 
     # Fallback to relative path (original behavior)
     return Path("./evidence")
+
+
+def _validate_evidence_component(value: object, label: str) -> str:
+    """Allow only one opaque evidence directory/file component."""
+    if not isinstance(value, str) or not _SAFE_EVIDENCE_COMPONENT.fullmatch(value):
+        raise HTTPException(status_code=400, detail=f"Invalid {label}")
+    return value
+
+
+def _get_execution_dir(evidence_path: Path, execution_id: str) -> tuple[Path, str]:
+    """Resolve an execution directory without allowing traversal or symlink escape."""
+    safe_execution_id = _validate_evidence_component(execution_id, "execution id")
+    evidence_root = evidence_path.resolve()
+    execution_dir = (evidence_root / safe_execution_id).resolve()
+    try:
+        execution_dir.relative_to(evidence_root)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid execution id") from exc
+    return execution_dir, safe_execution_id
 
 
 # =============================================================================
@@ -194,7 +216,7 @@ async def get_execution_evidence(
         Full evidence for the execution
     """
     evidence_path = get_evidence_path()
-    exec_dir = evidence_path / execution_id
+    exec_dir, safe_execution_id = _get_execution_dir(evidence_path, execution_id)
 
     if not exec_dir.exists():
         raise HTTPException(status_code=404, detail="Execution not found")
@@ -218,7 +240,9 @@ async def get_execution_evidence(
                 try:
                     data = json.loads(line)
 
-                    step_id = data.get('step_id', 'unknown')
+                    step_id = _validate_evidence_component(
+                        data.get('step_id', 'unknown'), "step id"
+                    )
 
                     # Check for screenshot/DOM files
                     has_screenshot = (exec_dir / f"{step_id}.png").exists()
@@ -226,7 +250,7 @@ async def get_execution_evidence(
 
                     step = StepEvidenceResponse(
                         step_id=step_id,
-                        execution_id=execution_id,
+                        execution_id=safe_execution_id,
                         timestamp=data.get('timestamp', ''),
                         duration_ms=data.get('duration_ms', 0),
                         status=data.get('status', 'unknown'),
@@ -235,8 +259,8 @@ async def get_execution_evidence(
                         error_message=data.get('error_message'),
                         has_screenshot=has_screenshot,
                         has_dom_snapshot=has_dom,
-                        screenshot_url=f"/api/evidence/{execution_id}/steps/{step_id}/screenshot" if has_screenshot else None,
-                        dom_url=f"/api/evidence/{execution_id}/steps/{step_id}/dom" if has_dom else None,
+                        screenshot_url=f"/api/evidence/{safe_execution_id}/steps/{step_id}/screenshot" if has_screenshot else None,
+                        dom_url=f"/api/evidence/{safe_execution_id}/steps/{step_id}/dom" if has_dom else None,
                     )
 
                     steps.append(step)
@@ -247,16 +271,16 @@ async def get_execution_evidence(
                     else:
                         success_count += 1
 
-                except json.JSONDecodeError as e:
-                    logger.warning(f"Failed to parse evidence line: {e}")
+                except (HTTPException, json.JSONDecodeError):
+                    logger.warning("Skipping malformed evidence record")
                     continue
 
     except Exception as e:
-        logger.error(f"Failed to read evidence for {execution_id}: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to read evidence: {e}")
+        logger.exception("Failed to read evidence")
+        raise HTTPException(status_code=500, detail="Failed to read evidence") from e
 
     return ExecutionEvidenceResponse(
-        execution_id=execution_id,
+        execution_id=safe_execution_id,
         step_count=len(steps),
         steps=steps,
         total_duration_ms=total_duration,
@@ -277,7 +301,8 @@ async def get_step_evidence(
     Includes full context before/after if requested.
     """
     evidence_path = get_evidence_path()
-    exec_dir = evidence_path / execution_id
+    exec_dir, safe_execution_id = _get_execution_dir(evidence_path, execution_id)
+    safe_step_id = _validate_evidence_component(step_id, "step id")
     jsonl_path = exec_dir / "evidence.jsonl"
 
     if not jsonl_path.exists():
@@ -293,15 +318,15 @@ async def get_step_evidence(
 
                 try:
                     data = json.loads(line)
-                    if data.get('step_id') == step_id:
+                    if data.get('step_id') == safe_step_id:
                         # Remove context if not requested
                         if not include_context:
                             data.pop('context_before', None)
                             data.pop('context_after', None)
 
                         # Add file availability info
-                        data['has_screenshot'] = (exec_dir / f"{step_id}.png").exists()
-                        data['has_dom_snapshot'] = (exec_dir / f"{step_id}.html").exists()
+                        data['has_screenshot'] = (exec_dir / f"{safe_step_id}.png").exists()
+                        data['has_dom_snapshot'] = (exec_dir / f"{safe_step_id}.html").exists()
 
                         return data
 
@@ -309,7 +334,8 @@ async def get_step_evidence(
                     continue
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to read evidence: {e}")
+        logger.exception("Failed to read step evidence")
+        raise HTTPException(status_code=500, detail="Failed to read evidence") from e
 
     raise HTTPException(status_code=404, detail="Step not found")
 
@@ -325,7 +351,9 @@ async def get_step_screenshot(
     Returns PNG image.
     """
     evidence_path = get_evidence_path()
-    screenshot_path = evidence_path / execution_id / f"{step_id}.png"
+    exec_dir, safe_execution_id = _get_execution_dir(evidence_path, execution_id)
+    safe_step_id = _validate_evidence_component(step_id, "step id")
+    screenshot_path = exec_dir / f"{safe_step_id}.png"
 
     if not screenshot_path.exists():
         raise HTTPException(status_code=404, detail="Screenshot not found")
@@ -333,7 +361,7 @@ async def get_step_screenshot(
     return FileResponse(
         path=screenshot_path,
         media_type="image/png",
-        filename=f"{execution_id}_{step_id}.png",
+        filename=f"{safe_execution_id}_{safe_step_id}.png",
     )
 
 
@@ -348,7 +376,9 @@ async def get_step_dom(
     Returns HTML content.
     """
     evidence_path = get_evidence_path()
-    dom_path = evidence_path / execution_id / f"{step_id}.html"
+    exec_dir, _ = _get_execution_dir(evidence_path, execution_id)
+    safe_step_id = _validate_evidence_component(step_id, "step id")
+    dom_path = exec_dir / f"{safe_step_id}.html"
 
     if not dom_path.exists():
         raise HTTPException(status_code=404, detail="DOM snapshot not found")
@@ -358,7 +388,8 @@ async def get_step_dom(
             content = f.read()
         return HTMLResponse(content=content)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to read DOM: {e}")
+        logger.exception("Failed to read DOM evidence")
+        raise HTTPException(status_code=500, detail="Failed to read DOM evidence") from e
 
 
 @router.delete("/{execution_id}")
@@ -373,7 +404,7 @@ async def delete_execution_evidence(
     import shutil
 
     evidence_path = get_evidence_path()
-    exec_dir = evidence_path / execution_id
+    exec_dir, safe_execution_id = _get_execution_dir(evidence_path, execution_id)
 
     if not exec_dir.exists():
         raise HTTPException(status_code=404, detail="Execution not found")
@@ -382,10 +413,11 @@ async def delete_execution_evidence(
         shutil.rmtree(exec_dir)
         return {
             "ok": True,
-            "message": f"Evidence for {execution_id} deleted",
+            "message": "Evidence deleted",
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to delete evidence: {e}")
+        logger.exception("Failed to delete evidence")
+        raise HTTPException(status_code=500, detail="Failed to delete evidence") from e
 
 
 @router.get("/{execution_id}/context-diff")
@@ -400,7 +432,8 @@ async def get_context_diff(
     Useful for debugging data flow issues.
     """
     evidence_path = get_evidence_path()
-    exec_dir = evidence_path / execution_id
+    exec_dir, _ = _get_execution_dir(evidence_path, execution_id)
+    safe_step_id = _validate_evidence_component(step_id, "step id")
     jsonl_path = exec_dir / "evidence.jsonl"
 
     if not jsonl_path.exists():
@@ -415,7 +448,7 @@ async def get_context_diff(
 
                 try:
                     data = json.loads(line)
-                    if data.get('step_id') == step_id:
+                    if data.get('step_id') == safe_step_id:
                         before = data.get('context_before', {})
                         after = data.get('context_after', {})
 
@@ -437,7 +470,7 @@ async def get_context_diff(
                                 }
 
                         return {
-                            "step_id": step_id,
+                            "step_id": safe_step_id,
                             "added": added,
                             "removed": removed,
                             "modified": modified,
@@ -448,6 +481,7 @@ async def get_context_diff(
                     continue
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to read evidence: {e}")
+        logger.exception("Failed to read context diff")
+        raise HTTPException(status_code=500, detail="Failed to read evidence") from e
 
     raise HTTPException(status_code=404, detail="Step not found")

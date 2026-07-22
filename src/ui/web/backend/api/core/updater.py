@@ -284,9 +284,10 @@ async def install_base_package(
             "version": version
         }
 
-    except Exception as e:
+    except Exception:
+        logger.exception("Updater installation failed")
         return {
             "ok": False,
-            "message": str(e),
+            "message": "Installation failed. Please try again.",
             "version": None
         }

@@ -316,10 +316,10 @@ async def desktop_oauth_callback(
             "user": build_user_response(user_dict),
         })
 
-        return HTMLResponse(_DESKTOP_OAUTH_SUCCESS_HTML.format(state=state))
+        return HTMLResponse(_DESKTOP_OAUTH_SUCCESS_HTML)
 
-    except Exception as e:
-        logger.error(f"Desktop OAuth callback error ({provider}): {e}", exc_info=True)
+    except Exception:
+        logger.exception("Desktop OAuth callback failed")
         _complete_desktop_oauth(state, {
             "status": "complete", "ok": False, "error": "Authentication failed",
         })

@@ -9,6 +9,7 @@ This avoids the backend needing its own CDN fetch for module labels.
 
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Dict
 
@@ -19,6 +20,8 @@ from pydantic import BaseModel, Field
 from services.i18n_service import sync_translations
 
 logger = logging.getLogger(__name__)
+
+_SAFE_LOCALE = re.compile(r"^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})?$")
 
 router = APIRouter(prefix="/i18n", tags=["i18n"])
 
@@ -52,10 +55,15 @@ async def get_app_translations(locale: str):
     Looks for flyto-i18n dist/app/{locale}.json in the monorepo,
     or falls back to a pre-built copy deployed alongside the backend.
     """
+    if not _SAFE_LOCALE.fullmatch(locale):
+        raise HTTPException(status_code=400, detail="Invalid locale")
+
+    # The locale is constrained to a single filename-safe component above.
+    safe_locale = locale
     # Try monorepo path (dev) then deployed path (production)
     candidates = [
-        Path(__file__).parent.parent.parent.parent.parent.parent / "flyto-i18n" / "dist" / "app" / f"{locale}.json",
-        Path(__file__).parent.parent / "i18n" / "app" / f"{locale}.json",
+        Path(__file__).parent.parent.parent.parent.parent.parent / "flyto-i18n" / "dist" / "app" / f"{safe_locale}.json",
+        Path(__file__).parent.parent / "i18n" / "app" / f"{safe_locale}.json",
     ]
 
     for path in candidates:
@@ -67,4 +75,4 @@ async def get_app_translations(locale: str):
                 headers={"Cache-Control": "public, max-age=300"},
             )
 
-    raise HTTPException(status_code=404, detail=f"Locale '{locale}' not found")
+    raise HTTPException(status_code=404, detail="Locale not found")

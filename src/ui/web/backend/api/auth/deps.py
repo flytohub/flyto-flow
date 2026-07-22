@@ -133,7 +133,7 @@ class LoginRequest(BaseModel):
 
 
 class RegisterRequest(BaseModel):
-    """Register request (Cloud mode only)."""
+    """Register request for providers that support self-registration."""
     email: EmailStr
     password: str = Field(..., min_length=PASSWORD_MIN_LENGTH)
     username: Optional[str] = None
