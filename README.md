@@ -6,11 +6,7 @@ Flyto2 Flow is an open-source, self-hosted visual workflow and MCP builder power
 
 ## Demo
 
-[▶ Watch the Flyto2 Flow demo (MP4)](docs/assets/flyto2-flow-demo.mp4)
-
-<video controls preload="metadata" width="100%" src="docs/assets/flyto2-flow-demo.mp4">
-  Your Markdown viewer does not support embedded video. Use the link above to watch the demo.
-</video>
+https://github.com/user-attachments/assets/4357d9a7-0c20-4252-8f72-695da275a3ec
 
 ## What Flyto2 Flow Is
 
