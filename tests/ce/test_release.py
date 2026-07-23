@@ -212,12 +212,24 @@ async def test_first_run_starter_template_seed_is_idempotent():
         page=1,
         page_size=20,
     )
-    assert templates.total == 1
-    starter = templates.items[0]
-    assert starter.name == "HTTP GET Request Tool"
-    assert starter.steps[0]["module"] == "flow.trigger"
-    assert starter.steps[0]["params"]["trigger_type"] == "mcp"
-    assert starter.steps[1]["module"] == "core.api.http_get"
+    assert templates.total == 2
+    starters = {template.name: template for template in templates.items}
+    assert set(starters) == {"HTTP GET Request Tool", "Browser Screenshot Tool"}
+
+    http_starter = starters["HTTP GET Request Tool"]
+    assert http_starter.steps[0]["module"] == "flow.trigger"
+    assert http_starter.steps[0]["params"]["trigger_type"] == "mcp"
+    assert http_starter.steps[1]["module"] == "core.api.http_get"
+
+    browser_starter = starters["Browser Screenshot Tool"]
+    assert browser_starter.steps[0]["module"] == "flow.trigger"
+    assert browser_starter.steps[0]["params"]["trigger_type"] == "mcp"
+    assert [step["module"] for step in browser_starter.steps[1:]] == [
+        "browser.ensure",
+        "browser.goto",
+        "browser.screenshot",
+        "browser.close",
+    ]
 
 
 @pytest.mark.asyncio
