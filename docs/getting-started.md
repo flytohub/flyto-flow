@@ -16,7 +16,7 @@ or developing from source.
 Pull the reviewed release:
 
 ```bash
-docker pull docker.io/flyto2/flow:0.1.0
+docker pull docker.io/flyto2/flow:0.1.1
 ```
 
 Start Flow on the loopback interface with persistent local storage:
@@ -29,7 +29,7 @@ docker run --detach \
   --shm-size=1g \
   --publish 127.0.0.1:9000:9000 \
   --volume flyto-flow-data:/data/flyto \
-  docker.io/flyto2/flow:0.1.0
+  docker.io/flyto2/flow:0.1.1
 ```
 
 Open <http://127.0.0.1:9000>. The default configuration publishes the service

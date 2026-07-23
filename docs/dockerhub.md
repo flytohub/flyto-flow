@@ -20,7 +20,7 @@ hidden Flyto2 cloud runtime.
 ## Start Locally
 
 ```bash
-docker pull docker.io/flyto2/flow:0.1.0
+docker pull docker.io/flyto2/flow:0.1.1
 docker run --detach \
   --name flyto-flow \
   --init \
@@ -28,7 +28,7 @@ docker run --detach \
   --shm-size=1g \
   --publish 127.0.0.1:9000:9000 \
   --volume flyto-flow-data:/data/flyto \
-  docker.io/flyto2/flow:0.1.0
+  docker.io/flyto2/flow:0.1.1
 ```
 
 Open [http://127.0.0.1:9000](http://127.0.0.1:9000). The service is bound to
@@ -94,7 +94,7 @@ with an SBOM and provenance attestations.
 Use the exact version for normal deployments:
 
 ```text
-docker.io/flyto2/flow:0.1.0
+docker.io/flyto2/flow:0.1.1
 ```
 
 Use the digest reported by the GitHub release workflow when an environment

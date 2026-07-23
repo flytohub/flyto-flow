@@ -155,7 +155,11 @@ jobs:
           test "${ready}" = "1"
           curl --fail --silent http://127.0.0.1:19000/api/runtime-config >/tmp/runtime.json
           curl --fail --silent http://127.0.0.1:19000/api/connections/catalog >/tmp/catalog.json
-          jq -e '.status == "ok" and .version == "0.1.0" and .mode == "offline"' /tmp/health.json
+          expected_version="$(tr -d '\r\n' < VERSION)"
+          jq -e \
+            --arg version "${expected_version}" \
+            '.status == "ok" and .version == $version and .mode == "offline"' \
+            /tmp/health.json
           jq -e '
             .edition == "ce"
             and .capabilities.connections.builtInTransport == false

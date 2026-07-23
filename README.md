@@ -50,7 +50,7 @@ clients, and Streamable HTTP clients.
 Requirement: Docker Engine or Docker Desktop.
 
 ```bash
-docker pull docker.io/flyto2/flow:0.1.0
+docker pull docker.io/flyto2/flow:0.1.1
 docker run --detach \
   --name flyto-flow \
   --init \
@@ -58,7 +58,7 @@ docker run --detach \
   --shm-size=1g \
   --publish 127.0.0.1:9000:9000 \
   --volume flyto-flow-data:/data/flyto \
-  docker.io/flyto2/flow:0.1.0
+  docker.io/flyto2/flow:0.1.1
 ```
 
 Open <http://127.0.0.1:9000>. Data is stored in the

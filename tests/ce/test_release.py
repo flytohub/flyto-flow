@@ -567,9 +567,10 @@ def test_container_release_is_verified_before_docker_hub_publish():
 def test_published_image_is_the_documented_quick_start():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     guide = (ROOT / "docs/getting-started.md").read_text(encoding="utf-8")
+    version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 
     for document in (readme, guide):
-        assert "docker.io/flyto2/flow:0.1.0" in document
+        assert f"docker.io/flyto2/flow:{version}" in document
         assert "--publish 127.0.0.1:9000:9000" in document
         assert "--volume flyto-flow-data:/data/flyto" in document
 
@@ -578,12 +579,13 @@ def test_published_image_is_the_documented_quick_start():
 
 def test_docker_hub_overview_uses_absolute_product_assets():
     overview = (ROOT / "docs/dockerhub.md").read_text(encoding="utf-8")
+    version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
     asset_root = (
         "https://raw.githubusercontent.com/flytohub/flyto-flow/"
         "main/docs/assets/"
     )
 
-    assert "docker.io/flyto2/flow:0.1.0" in overview
+    assert f"docker.io/flyto2/flow:{version}" in overview
     assert f"{asset_root}workflow-builder.jpg" in overview
     assert f"{asset_root}mcp-studio.jpg" in overview
     assert "Codex" in overview
