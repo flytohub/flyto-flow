@@ -71,7 +71,9 @@ checked without `pip`, then atomically activated for the next process start.
 `@edition` is an additive seam, not a second application. It may fill the
 named navigation, header-action, footer, banner, route, and page-extension
 slots. It may not replace shared layout shells or copy a shared page into a
-Cloud-only variant. Visual fixes to shared surfaces always land in Flow first.
+Cloud-only variant. The editions keep separate navigation composition but use
+the same allowlisted Header interaction stylesheet. Visual fixes to shared
+surfaces always land in Flow first.
 
 See [Flow/Cloud Reciprocal Sync](flow-cloud-sync.md) for triggers, credentials,
 conflict handling, loop prevention, and recovery.

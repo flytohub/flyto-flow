@@ -30,6 +30,11 @@ editing, MCP Studio, workflow input forms, execution controls, evidence and
 debug views, variables, and observability screens. It renders backend state; it
 does not replace runtime validation or execution policy.
 
+Flow and Cloud compose separate `AppNavbar.vue` components because their routes,
+identity actions, notifications, and entitlements differ. Both consume the
+allowlisted `features/navigation/appNavbar.css` visual contract so navigation
+states, hover behavior, responsive links, and dropdown items remain identical.
+
 ### Local Gateway
 
 `src/ui/web/backend/main_offline.py` assembles the accountless local FastAPI
@@ -98,7 +103,8 @@ state in the `flyto-flow-data` volume.
   checked, package-name checked, digest verified, import tested, and activated
   atomically.
 - **Flow to Cloud:** only paths in `FLOW_CLOUD_SYNC.json` may synchronize. Flow
-  remains canonical for every allowlisted path.
+  remains canonical for every allowlisted path, including the Header visual
+  contract but not either edition's navigation component.
 
 ## Invariants
 

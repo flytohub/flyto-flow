@@ -204,9 +204,14 @@ def check(root: Path) -> list[str]:
 
     header = root / "src/ui/web/frontend/src/components/layout/AppNavbar.vue"
     footer = root / "src/ui/web/frontend/src/components/layout/AppFooter.vue"
-    for path in (header, footer):
-        if path.is_file() and "height: 3.5rem" not in path.read_text(encoding="utf-8"):
-            failures.append(f"brand logo height is not 3.5rem: {_relative(path, root)}")
+    if header.is_file():
+        header_body = header.read_text(encoding="utf-8")
+        if "h-8 sm:h-10 w-auto" not in header_body:
+            failures.append("Header brand logo does not match the Cloud responsive size contract")
+        if "@/features/navigation/appNavbar.css" not in header_body:
+            failures.append("Header does not import the shared Flow/Cloud visual contract")
+    if footer.is_file() and "height: 3.5rem" not in footer.read_text(encoding="utf-8"):
+        failures.append(f"brand logo height is not 3.5rem: {_relative(footer, root)}")
 
     return sorted(set(failures))
 

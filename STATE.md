@@ -17,6 +17,8 @@ issue tracker and commit history for work completed after this date.
 - Playwright and Chromium in the CE container image.
 - SHA-256-verified offline `flyto-core` wheel import.
 - Explicit Flow/Cloud ownership and synchronization contracts.
+- Byte-identical Header interaction styles shared with Cloud while each edition
+  retains its own routes and product actions.
 - PolyForm Shield current license with preserved Apache-2.0 history.
 
 ## Verified

@@ -1,46 +1,46 @@
 <template>
-  <nav class="sticky top-0 z-50 border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur-md transition-colors duration-200 dark:border-gray-700 dark:bg-gray-900/95">
+  <nav class="app-navbar sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-200">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="relative flex h-16 items-center justify-between gap-3 sm:h-20">
-        <router-link to="/" aria-label="Flyto2 Flow" class="group flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80 sm:gap-3">
-          <img src="/logo.png" alt="Flyto2" class="brand-logo w-auto transition-transform duration-300 group-hover:scale-105" />
+      <div class="flex items-center justify-between h-16 sm:h-20">
+        <router-link to="/" aria-label="Flyto2 Flow" class="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity group">
+          <img src="/logo.png" alt="Flyto2" class="h-8 sm:h-10 w-auto group-hover:scale-105 transition-transform duration-300" />
         </router-link>
-        <div class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 lg:flex" :aria-label="t('mcpStudio.primaryNavigation')">
+        <div class="app-navbar__desktop-navigation hidden md:flex items-center gap-1 lg:gap-2" :aria-label="t('mcpStudio.primaryNavigation')">
           <router-link v-for="item in navigation" :key="item.to" :to="item.to" class="nav-link">
-            <component :is="item.icon" :size="18" />
+            <component :is="item.icon" :size="20" />
             <span>{{ item.label }}</span>
           </router-link>
           <slot name="navigation" />
         </div>
-        <div class="flex shrink-0 items-center gap-2">
-          <div class="hidden sm:block"><LanguageSwitcher /></div>
+        <div class="hidden md:flex items-center gap-2">
+          <LanguageSwitcher />
           <slot name="actions" />
+        </div>
+        <div class="flex md:hidden items-center gap-1 flex-shrink-0">
+          <LanguageSwitcher />
           <button
-            class="menu-button lg:hidden"
+            class="app-navbar__mobile-menu-button p-2 text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             type="button"
             :aria-expanded="menuOpen"
             :aria-label="t('mcpStudio.toggleNavigation')"
             @click="menuOpen = !menuOpen"
           >
-            <X v-if="menuOpen" :size="21" />
-            <Menu v-else :size="21" />
+            <X v-if="menuOpen" :size="24" />
+            <Menu v-else :size="24" />
           </button>
         </div>
       </div>
-      <div v-if="menuOpen" class="mobile-menu lg:hidden">
+      <div v-if="menuOpen" class="app-navbar__mobile-menu md:hidden py-4 border-t border-gray-200 dark:border-gray-700 space-y-1 max-h-[calc(100vh-5rem)] overflow-y-auto">
         <router-link
           v-for="item in navigation"
           :key="item.to"
           :to="item.to"
-          class="mobile-link"
+          class="mobile-nav-link"
           @click="menuOpen = false"
         >
-          <component :is="item.icon" :size="19" />
+          <component :is="item.icon" :size="20" />
           <span>{{ item.label }}</span>
         </router-link>
-        <div class="border-t border-gray-200 pt-3 sm:hidden dark:border-gray-700">
-          <LanguageSwitcher />
-        </div>
       </div>
     </div>
   </nav>
@@ -51,6 +51,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Activity, Cable, GitBranch, KeyRound, Menu, X } from 'lucide-vue-next'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
+import '@/features/navigation/appNavbar.css'
 
 const { t } = useI18n()
 const menuOpen = ref(false)
@@ -61,42 +62,3 @@ const navigation = computed(() => [
   { to: '/observability', label: t('observability.title'), icon: Activity },
 ])
 </script>
-
-<style scoped>
-.brand-logo { height: 3.5rem; width: auto; }
-
-.nav-link,
-.mobile-link,
-.menu-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-radius: 8px;
-  color: #4b5563;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.nav-link { min-height: 2.5rem; padding: 0 0.75rem; }
-.nav-link:hover,
-.nav-link.router-link-active { background: #f3f0ff; color: #6d5dfc; }
-.menu-button { justify-content: center; width: 2.75rem; height: 2.75rem; border: 1px solid #d1d5db; }
-.mobile-menu { padding: 0.25rem 0 1rem; }
-.mobile-link { display: flex; min-height: 2.75rem; padding: 0 0.75rem; }
-.mobile-link.router-link-active { background: #f3f0ff; color: #6d5dfc; }
-
-@media (min-width: 1024px) {
-  .menu-button,
-  .mobile-menu { display: none; }
-}
-
-@media (prefers-color-scheme: dark) {
-  .nav-link,
-  .mobile-link,
-  .menu-button { color: #d1d5db; }
-  .nav-link:hover,
-  .nav-link.router-link-active,
-  .mobile-link.router-link-active { background: #302d52; color: #b0a5ff; }
-  .menu-button { border-color: #4b5563; }
-}
-</style>

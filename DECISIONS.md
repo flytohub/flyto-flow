@@ -103,3 +103,19 @@ source inspection, modification, and permitted self-hosted use.
 **Consequences:** current code must not be marketed as OSI-approved open
 source. Any future license change requires an explicit legal and product
 decision; documentation cannot make it implicitly.
+
+## D-008: Header Visuals Are Shared, Composition Is Edition-Owned
+
+**Status:** accepted
+
+Flow and Cloud keep separate `AppNavbar.vue` components for edition-specific
+routes and actions. The navigation interaction styles live in the byte-identical
+allowlisted `features/navigation/appNavbar.css` file, with Flow as canonical.
+
+**Why:** the products must look and behave like one family without copying
+hosted identity, billing, organization, notification, or entitlement logic into
+the offline baseline.
+
+**Consequences:** generic Header style changes land in Flow and synchronize
+through the guarded contract. Edition-specific menu entries remain local, and
+both components must use the shared class names and pass responsive review.

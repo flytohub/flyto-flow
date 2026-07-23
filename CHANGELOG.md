@@ -33,6 +33,10 @@ recorded here. Historical Apache-2.0 revisions remain governed by
 - Added the documentation integrity check to local and CI verification.
 - Documented the exact Flow-to-Cloud synchronization allowlist and ownership
   boundary for the shared MCP Studio.
+- Aligned the Flow Header with Cloud's existing logo sizing, navigation flow,
+  responsive menu, and class-based dark hover behavior. Header interaction
+  styles now synchronize as one byte-identical visual contract while routes and
+  product actions remain edition-owned.
 - Allowed browser clients on one loopback port to call the local API on another
   loopback port while continuing to reject non-loopback origins.
 - Preserved accountless MCP access through the loopback-only Compose port with

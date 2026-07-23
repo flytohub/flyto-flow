@@ -1,0 +1,39 @@
+.app-navbar .nav-link {
+  @apply flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-300 font-medium text-sm rounded-lg transition-all duration-200;
+}
+
+.app-navbar .nav-link:hover {
+  @apply text-primary-600 dark:text-primary-400 bg-gray-50 dark:bg-gray-700;
+}
+
+.app-navbar .nav-link.router-link-active {
+  @apply text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30;
+}
+
+.app-navbar .mobile-nav-link {
+  @apply flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-all duration-200;
+}
+
+.app-navbar .mobile-nav-link:hover {
+  @apply text-primary-600 dark:text-primary-400 bg-gray-50 dark:bg-gray-700;
+}
+
+.app-navbar .mobile-nav-link.router-link-active {
+  @apply text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30;
+}
+
+.app-navbar .menu-item {
+  @apply flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors;
+}
+
+.app-navbar .menu-item.router-link-active {
+  @apply text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30;
+}
+
+.app-navbar .dropdown-item {
+  @apply flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full;
+}
+
+.app-navbar .dropdown-item.router-link-active {
+  @apply text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30;
+}

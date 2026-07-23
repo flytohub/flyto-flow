@@ -33,6 +33,7 @@
     "src/ui/web/frontend/src/components/workflowCanvas/nodes/SwitchNode.vue",
     "src/ui/web/frontend/src/features/mcp/studio.css",
     "src/ui/web/frontend/src/features/mcp/studioModel.js",
+    "src/ui/web/frontend/src/features/navigation/appNavbar.css",
     "src/ui/web/frontend/src/styles/nodeDesignSystem.css",
     "src/ui/web/frontend/src/styles/nodeShapeEffects.css",
     "src/ui/web/frontend/src/styles/vueflow-overrides.css",

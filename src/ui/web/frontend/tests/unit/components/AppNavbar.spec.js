@@ -34,7 +34,7 @@ function mountNavbar() {
 }
 
 describe('AppNavbar.vue', () => {
-  it('keeps the original centered Flow navigation routes', () => {
+  it('keeps Flow routes inside the Cloud-aligned desktop navigation shell', () => {
     const wrapper = mountNavbar()
     const links = wrapper.findAllComponents(RouterLinkStub)
       .filter(link => link.props('to') !== '/')
@@ -49,13 +49,17 @@ describe('AppNavbar.vue', () => {
     expect(wrapper.text()).toContain('MCP')
     expect(wrapper.text()).toContain('Variables')
     expect(wrapper.text()).toContain('Observability')
+
+    const navigation = wrapper.get('.app-navbar__desktop-navigation')
+    expect(navigation.classes()).toContain('md:flex')
+    expect(navigation.classes()).not.toContain('absolute')
   })
 
-  it('opens the existing mobile navigation from its menu button', async () => {
+  it('opens the Cloud-aligned mobile navigation from its menu button', async () => {
     const wrapper = mountNavbar()
 
-    await wrapper.get('.menu-button').trigger('click')
+    await wrapper.get('.app-navbar__mobile-menu-button').trigger('click')
 
-    expect(wrapper.findAll('.mobile-link')).toHaveLength(4)
+    expect(wrapper.findAll('.mobile-nav-link')).toHaveLength(4)
   })
 })
