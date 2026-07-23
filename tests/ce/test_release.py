@@ -546,6 +546,10 @@ def test_container_release_is_verified_before_docker_hub_publish():
     assert workflow.index("Scan release candidate") < workflow.index(
         "Log in to Docker Hub"
     )
+    assert workflow.index("Verify published manifest") < workflow.index(
+        "Publish Docker Hub overview"
+    )
+    assert "readme-filepath: ./docs/dockerhub.md" in workflow
 
 
 def test_published_image_is_the_documented_quick_start():
@@ -558,6 +562,21 @@ def test_published_image_is_the_documented_quick_start():
         assert "--volume flyto-flow-data:/data/flyto" in document
 
     assert (ROOT / "docs/assets/workflow-builder.jpg").is_file()
+
+
+def test_docker_hub_overview_uses_absolute_product_assets():
+    overview = (ROOT / "docs/dockerhub.md").read_text(encoding="utf-8")
+    asset_root = (
+        "https://raw.githubusercontent.com/flytohub/flyto-flow/"
+        "main/docs/assets/"
+    )
+
+    assert "docker.io/flyto2/flow:0.1.0" in overview
+    assert f"{asset_root}workflow-builder.jpg" in overview
+    assert f"{asset_root}mcp-studio.jpg" in overview
+    assert "Codex" in overview
+    assert "Claude Code" in overview
+    assert "`flyto-core`" in overview
 
 
 def test_dark_mode_scoped_selectors_use_descendant_global_form():

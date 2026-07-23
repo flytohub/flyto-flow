@@ -186,6 +186,15 @@ jobs:
           DIGEST: ${{ steps.publish.outputs.digest }}
         run: docker buildx imagetools inspect "${IMAGE_NAME}@${DIGEST}"
 
+      - name: Publish Docker Hub overview
+        uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa # v5
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: flyto2/flow
+          short-description: Visual workflows, local execution, and MCP tools for AI agents.
+          readme-filepath: ./docs/dockerhub.md
+
       - name: Write release summary
         env:
           DIGEST: ${{ steps.publish.outputs.digest }}
