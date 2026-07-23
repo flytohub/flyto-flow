@@ -17,6 +17,14 @@ Choose the shortest path for the task at hand.
 
 - [Feature reference](FEATURES.md): implemented product surfaces, source
   ownership, limits, and verification.
+- [Python API and method reference](reference/python-api.md): generated
+  production classes, functions, methods, signatures, and source links.
+- [Frontend source inventory](reference/frontend-inventory.md): generated Vue,
+  JavaScript, and TypeScript modules with named callables.
+- [API route reference](reference/api-routes.md): generated FastAPI methods,
+  paths, handlers, and source links.
+- [Environment reference](reference/environment.md): generated configuration
+  names with sensitive-value handling guidance.
 - [Versioning and compatibility](versioning-and-compatibility.md): stored-data,
   API, and workflow compatibility.
 - [Flow and Cloud synchronization](flow-cloud-sync.md): complete shared-file

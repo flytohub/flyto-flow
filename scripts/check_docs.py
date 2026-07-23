@@ -32,12 +32,17 @@ REQUIRED_FILES = (
     "docs/starter-templates.md",
     "docs/mcp-studio.md",
     "docs/use-cases.md",
+    "docs/reference/python-api.md",
+    "docs/reference/frontend-inventory.md",
+    "docs/reference/api-routes.md",
+    "docs/reference/environment.md",
     "docs/ce-cloud-boundary.md",
     "docs/flow-cloud-sync.md",
     "docs/edition-matrix.md",
     "install/README.md",
     "src/README.md",
     "scripts/README.md",
+    "scripts/generate_documentation_reference.py",
     "tests/README.md",
     "workflows/idea-capture.md",
     "workflows/planning.md",
@@ -183,13 +188,13 @@ def check_email_domains(root: Path) -> list[str]:
 
 
 def check_brand_name(root: Path) -> list[str]:
-    """Report stale standalone Flyto branding in maintained text files."""
+    """Report stale standalone pre-Flyto2 branding in maintained text files."""
     errors: list[str] = []
     for source in public_text_files(root):
         for line_number, line in enumerate(source.read_text(encoding="utf-8").splitlines(), start=1):
             if STALE_BRAND.search(line):
                 relative_source = source.relative_to(root)
-                errors.append(f"stale standalone Flyto brand in {relative_source}:{line_number}")
+                errors.append(f"stale standalone pre-Flyto2 brand in {relative_source}:{line_number}")
     return errors
 
 

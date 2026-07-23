@@ -2,6 +2,7 @@
 
 docs:
 	python scripts/check_docs.py .
+	python scripts/generate_documentation_reference.py --check
 
 audit:
 	python scripts/check-ce-purity.py .

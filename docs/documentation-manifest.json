@@ -17,6 +17,26 @@
     "security": "SECURITY.md",
     "changelog": "CHANGELOG.md",
     "feature_reference": "docs/FEATURES.md",
+    "python_reference": "docs/reference/python-api.md",
+    "source_reference": [
+      "docs/reference/python-api.md",
+      "docs/reference/frontend-inventory.md"
+    ],
+    "source_reference_exclude": [
+      "tests/**",
+      "**/tests/**",
+      "**/test/**",
+      "**/__tests__/**",
+      "**/e2e/**",
+      "**/*.test.*",
+      "**/*.spec.*",
+      ".semgrep/**",
+      "scripts/test_*.py",
+      "scripts/templates/test_*.py"
+    ],
+    "frontend_reference": "docs/reference/frontend-inventory.md",
+    "route_reference": "docs/reference/api-routes.md",
+    "environment_reference": "docs/reference/environment.md",
     "module_roots": ["docs", "install", "scripts", "src", "tests"]
   },
   "source_areas": [

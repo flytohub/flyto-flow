@@ -244,6 +244,10 @@ flyto-index verify . --strict
 | [Use Cases](docs/use-cases.md) | Practical workflow patterns and guardrails |
 | [Documentation Index](docs/README.md) | Maintained operator, product, boundary, and release documentation |
 | [Feature Reference](docs/FEATURES.md) | Product surfaces mapped to source, limits, tests, and verification |
+| [Python API Reference](docs/reference/python-api.md) | Generated classes, functions, methods, signatures, and source links |
+| [Frontend Source Inventory](docs/reference/frontend-inventory.md) | Generated Vue, JavaScript, and TypeScript modules and callables |
+| [API Route Reference](docs/reference/api-routes.md) | Generated FastAPI methods, paths, handlers, and source links |
+| [Environment Reference](docs/reference/environment.md) | Generated runtime configuration names and handling guidance |
 | [Deployment Files](install/README.md) | Compose, image, environment, persistence, and release verification |
 | [Source Map](src/README.md) | Runtime ownership and source entry points |
 | [Script Guide](scripts/README.md) | Repository verification and release scripts |

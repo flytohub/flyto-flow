@@ -28,6 +28,8 @@ recorded here. Historical Apache-2.0 revisions remain governed by
 - Idempotent first-run HTTP GET, browser screenshot, and JSON-to-CSV MCP
   starter workflows for empty local workspaces, with maintained contracts and
   operator guidance.
+- Deterministic Python, frontend, API-route, and environment reference pages,
+  with a CI freshness gate that rejects undocumented source drift.
 
 ### Changed
 
