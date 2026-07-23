@@ -14,6 +14,9 @@ Start with the document that matches the task:
   the local baseline.
 - [Flow and Cloud synchronization](flow-cloud-sync.md): complete shared-file
   allowlist and ownership rules.
+- [Connection injection contract](architecture/connection-injection-contract.md):
+  shared external-connection ports, deployment adapters, security invariants,
+  and extension rules.
 - [Edition matrix](edition-matrix.md): source-available and hosted product
   responsibilities.
 - [Versioning and compatibility](versioning-and-compatibility.md): stored-data,

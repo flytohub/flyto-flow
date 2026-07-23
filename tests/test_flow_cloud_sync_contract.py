@@ -49,6 +49,14 @@ class FlowCloudContractTests(unittest.TestCase):
         self.assertEqual(result["contractVersion"], 2)
         self.assertEqual(len(result["manifestSha256"]), 64)
 
+    def test_connection_injection_contract_is_shared(self) -> None:
+        manifest = self._manifest(ROOT)
+
+        self.assertIn(
+            "docs/architecture/connection-injection-contract.md",
+            manifest["shared_paths"],
+        )
+
     def test_peer_manifest_must_be_byte_identical(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             parent = Path(temp)

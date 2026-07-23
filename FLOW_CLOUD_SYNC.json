@@ -25,6 +25,7 @@
   },
   "shared_paths": [
     "FLOW_CLOUD_SYNC.json",
+    "docs/architecture/connection-injection-contract.md",
     "scripts/validate_flow_cloud_contract.py",
     "src/ui/web/frontend/src/api/mcp.js",
     "src/ui/web/frontend/src/components/workflowCanvas/CanvasControls.vue",
