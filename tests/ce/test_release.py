@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import importlib.util
 import os
@@ -198,6 +199,180 @@ async def test_template_crud_needs_no_identity_or_headers():
         assert (await client.get(f"/api/templates/{template_id}")).status_code == 404
 
 
+async def _run_and_wait(client: httpx.AsyncClient, workflow_yaml: str, params: dict) -> dict:
+    """Start a workflow via /api/workflows/run and poll until it settles.
+
+    Exercises the real execution path end-to-end (not just module wiring in
+    isolation) — this is how the manual verification during development caught
+    bugs that unit tests on individual functions missed.
+    """
+    started = await client.post(
+        "/api/workflows/run",
+        json={"workflow_yaml": workflow_yaml, "params": params},
+    )
+    assert started.status_code == 200, started.text
+    execution_id = started.json()["execution_id"]
+
+    for _ in range(50):
+        status = await client.get(f"/api/executions/{execution_id}")
+        assert status.status_code == 200, status.text
+        execution = status.json()["execution"]
+        if execution["status"] in ("completed", "failed"):
+            return execution
+        await asyncio.sleep(0.1)
+
+    raise AssertionError(f"Execution {execution_id} did not settle in time")
+
+
+@pytest.mark.asyncio
+async def test_workflow_run_actually_executes_branch_node():
+    from main_offline import app
+
+    workflow_yaml = (
+        "name: Branch Test\n"
+        "steps:\n"
+        "  - id: branch\n"
+        "    module: flow.branch\n"
+        "    label: Branch\n"
+        "    params:\n"
+        "      condition: \"${count} > 5\"\n"
+        "    order_index: 0\n"
+    )
+
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        execution = await _run_and_wait(client, workflow_yaml, {"count": 10})
+
+    assert execution["status"] == "completed"
+    branch_output = execution["node_outputs"]["branch"]
+    assert branch_output["__event__"] == "true"
+    assert branch_output["result"] is True
+
+
+@pytest.mark.asyncio
+async def test_workflow_run_actually_executes_loop_node():
+    from main_offline import app
+
+    workflow_yaml = (
+        "name: Loop Test\n"
+        "steps:\n"
+        "  - id: loop\n"
+        "    module: flow.loop\n"
+        "    label: Loop\n"
+        "    params:\n"
+        "      times: 3\n"
+        "      index_var: idx\n"
+        "    order_index: 0\n"
+    )
+
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        execution = await _run_and_wait(client, workflow_yaml, {})
+
+    assert execution["status"] == "completed"
+    loop_output = execution["node_outputs"]["loop"]
+    assert loop_output["outputs"]["iterate"]["total"] == 3
+
+
+@pytest.mark.asyncio
+async def test_workflow_run_actually_copies_a_file():
+    """file.copy confines paths to the app's own working directory (rejects
+    anything that resolves outside it), so the fixtures must live there too —
+    not under pytest's tmp_path, which is deliberately out of bounds."""
+    from main_offline import app
+
+    source = Path("ce_release_test_source.txt")
+    destination = Path("ce_release_test_dest.txt")
+    source.write_text("hello file test", encoding="utf-8")
+    try:
+        workflow_yaml = (
+            "name: File Copy Test\n"
+            "steps:\n"
+            "  - id: copy\n"
+            "    module: file.copy\n"
+            "    label: Copy File\n"
+            "    params:\n"
+            f"      source: {source.name}\n"
+            f"      destination: {destination.name}\n"
+            "      overwrite: true\n"
+            "    order_index: 0\n"
+        )
+
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            execution = await _run_and_wait(client, workflow_yaml, {})
+
+        assert execution["status"] == "completed", execution.get("error")
+        assert destination.read_text(encoding="utf-8") == "hello file test"
+    finally:
+        source.unlink(missing_ok=True)
+        destination.unlink(missing_ok=True)
+
+
+@pytest.mark.asyncio
+async def test_nested_execution_modules_are_denied_by_default():
+    """flow.invoke / flow.subflow are real "run arbitrary nested workflow"
+    gadgets in flyto-core, but flyto-core's stub flow.subflow implementation
+    never actually executes anything it's pointed at — so this module must
+    stay behind the capability denylist by default, not just be inert."""
+    from main_offline import app
+
+    workflow_yaml = (
+        "name: Subflow Test\n"
+        "steps:\n"
+        "  - id: sub\n"
+        "    module: flow.subflow\n"
+        "    label: Subflow\n"
+        "    params:\n"
+        "      workflow_ref: this/does/not/exist.yaml\n"
+        "      execution_mode: inline\n"
+        "      input_mapping: {}\n"
+        "    order_index: 0\n"
+    )
+
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        execution = await _run_and_wait(client, workflow_yaml, {})
+
+    assert execution["status"] == "failed"
+    assert "capability policy" in execution["error"]
+
+
+@pytest.mark.asyncio
+async def test_template_update_can_explicitly_clear_a_field():
+    from main_offline import app
+
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        fallback = await client.post(
+            "/api/templates/",
+            json={"name": "Fallback", "steps": []},
+        )
+        source = await client.post(
+            "/api/templates/",
+            json={
+                "name": "Source",
+                "steps": [],
+                "error_workflow_id": fallback.json()["template"]["id"],
+            },
+        )
+        template_id = source.json()["template"]["id"]
+        assert source.json()["template"]["error_workflow_id"] is not None
+
+        # Explicitly clearing a field to null must not be treated as "no fields
+        # to update" (it was, before model_fields_set replaced `is not None`).
+        cleared = await client.put(
+            f"/api/templates/{template_id}",
+            json={"error_workflow_id": None},
+        )
+        assert cleared.status_code == 200, cleared.text
+        assert cleared.json()["template"]["error_workflow_id"] is None
+
+        # A request with no fields at all is still rejected.
+        empty = await client.put(f"/api/templates/{template_id}", json={})
+        assert empty.status_code == 400
+
+
 @pytest.mark.asyncio
 async def test_first_run_starter_template_seed_is_idempotent():
     from gateway.local_context import LOCAL_WORKSPACE
@@ -305,6 +480,7 @@ def test_docker_image_bundles_complete_runtime():
     assert "check-bundled-browser.py" in body
     assert "FLYTO_OFFLINE_DB_PATH=/data/flyto/offline.db" in env_example
     assert "FLYTO_EXECUTION_DB_PATH=/data/flyto/executions.db" in env_example
+    assert "chown -r appuser:appuser /data /app /home/appuser" in body
 
 
 def test_dark_mode_scoped_selectors_use_descendant_global_form():
