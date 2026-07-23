@@ -321,8 +321,8 @@ class QueueInterface(ABC):
                 "healthy": True,
                 "stats": stats.to_dict(),
             }
-        except Exception as e:
+        except Exception:
             return {
                 "healthy": False,
-                "error": str(e),
+                "error": "queue_health_check_failed",
             }

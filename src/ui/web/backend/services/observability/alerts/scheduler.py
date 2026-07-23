@@ -134,7 +134,7 @@ class AlertScheduler:
         # Add queue metrics if available
         try:
             from gateway.storage.queue_factory import get_queue
-            queue = await get_queue()
+            queue = get_queue()
             stats = await queue.get_stats()
             metrics["queue_pending"] = stats.pending
             metrics["queue_running"] = stats.running
@@ -179,7 +179,9 @@ def get_alert_scheduler() -> AlertScheduler:
     """Get or create the global alert scheduler."""
     global _scheduler
     if _scheduler is None:
-        _scheduler = AlertScheduler()
+        from services.observability.alerts.notifier import notifier_from_environment
+
+        _scheduler = AlertScheduler(manager=AlertManager(notifier_from_environment()))
     return _scheduler
 
 

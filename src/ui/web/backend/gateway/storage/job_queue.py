@@ -7,12 +7,13 @@ Implements atomic enqueue/dequeue/ack/nack operations.
 
 import json
 import logging
+import sqlite3
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
 
-from gateway.storage.database import get_cursor, get_db
+from gateway.storage.database import get_cursor, transaction
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,8 @@ class Job:
     visibility_timeout_ms: int = 30000
 
     error_message: Optional[str] = None
+    idempotency_key: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
     created_at: Optional[str] = None
     started_at: Optional[str] = None
@@ -77,6 +80,8 @@ class Job:
             "heartbeat_at": self.heartbeat_at,
             "visibility_timeout_ms": self.visibility_timeout_ms,
             "error_message": self.error_message,
+            "idempotency_key": self.idempotency_key,
+            "metadata": self.metadata,
             "created_at": self.created_at,
             "started_at": self.started_at,
             "finished_at": self.finished_at,
@@ -100,6 +105,8 @@ class Job:
             heartbeat_at=row["heartbeat_at"],
             visibility_timeout_ms=row["visibility_timeout_ms"] or 30000,
             error_message=row["error_message"],
+            idempotency_key=row.get("idempotency_key"),
+            metadata=json.loads(row.get("metadata") or "{}"),
             created_at=row["created_at"],
             started_at=row["started_at"],
             finished_at=row["finished_at"],
@@ -118,6 +125,8 @@ class JobQueueRepository:
         max_attempts: int = 3,
         timeout_ms: int = 0,
         visibility_timeout_ms: int = 30000,
+        metadata: Optional[Dict[str, Any]] = None,
+        idempotency_key: Optional[str] = None,
     ) -> Job:
         """
         Add a new job to the queue.
@@ -134,32 +143,49 @@ class JobQueueRepository:
         Returns:
             Created Job instance
         """
+        if idempotency_key:
+            existing = JobQueueRepository.get_by_idempotency_key(idempotency_key)
+            if existing:
+                return existing
+
         job_id = str(uuid.uuid4())
         now = _utc_now()
 
-        with get_cursor() as cursor:
-            cursor.execute(
-                """
-                INSERT INTO jobs (
-                    id, execution_id, workflow_id, workspace_id,
-                    priority, status, attempts, max_attempts,
-                    timeout_ms, visibility_timeout_ms, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    job_id,
-                    execution_id,
-                    workflow_id,
-                    workspace_id,
-                    priority,
-                    "pending",
-                    0,
-                    max_attempts,
-                    timeout_ms,
-                    visibility_timeout_ms,
-                    now,
-                ),
+        try:
+            with get_cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO jobs (
+                        id, execution_id, workflow_id, workspace_id,
+                        priority, status, attempts, max_attempts,
+                        timeout_ms, visibility_timeout_ms, idempotency_key, metadata, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        job_id,
+                        execution_id,
+                        workflow_id,
+                        workspace_id,
+                        priority,
+                        "pending",
+                        0,
+                        max_attempts,
+                        timeout_ms,
+                        visibility_timeout_ms,
+                        idempotency_key,
+                        json.dumps(metadata or {}, sort_keys=True, separators=(",", ":")),
+                        now,
+                    ),
+                )
+        except sqlite3.IntegrityError:
+            existing = (
+                JobQueueRepository.get_by_idempotency_key(idempotency_key)
+                if idempotency_key
+                else None
             )
+            if existing:
+                return existing
+            raise
 
         logger.info(f"Job enqueued: {job_id} for execution {execution_id}")
 
@@ -174,6 +200,8 @@ class JobQueueRepository:
             max_attempts=max_attempts,
             timeout_ms=timeout_ms,
             visibility_timeout_ms=visibility_timeout_ms,
+            idempotency_key=idempotency_key,
+            metadata=metadata or {},
             created_at=now,
         )
 
@@ -198,68 +226,51 @@ class JobQueueRepository:
         now_str = now.isoformat()
         lease_until = (now + timedelta(seconds=lease_duration_seconds)).isoformat()
 
-        db = get_db()
-
-        try:
-            # Use BEGIN IMMEDIATE for write lock
-            db.execute("BEGIN IMMEDIATE")
-
+        with transaction(immediate=True) as db:
             cursor = db.cursor()
+            try:
+                # Find pending jobs or jobs with expired leases.
+                cursor.execute(
+                    """
+                    SELECT * FROM jobs
+                    WHERE status = 'pending'
+                       OR (status = 'running' AND lease_until < ?)
+                    ORDER BY priority DESC, created_at ASC
+                    LIMIT 1
+                    """,
+                    (now_str,),
+                )
 
-            # Find pending jobs or jobs with expired leases
-            cursor.execute(
-                """
-                SELECT * FROM jobs
-                WHERE status = 'pending'
-                   OR (status = 'running' AND lease_until < ?)
-                ORDER BY priority DESC, created_at ASC
-                LIMIT 1
-                """,
-                (now_str,),
-            )
+                row = cursor.fetchone()
+                if not row:
+                    return None
 
-            row = cursor.fetchone()
-
-            if not row:
-                db.rollback()
+                job = Job.from_row(row)
+                cursor.execute(
+                    """
+                    UPDATE jobs
+                    SET status = 'running',
+                        locked_by = ?,
+                        lease_until = ?,
+                        heartbeat_at = ?,
+                        attempts = attempts + 1,
+                        started_at = COALESCE(started_at, ?)
+                    WHERE id = ?
+                    """,
+                    (worker_id, lease_until, now_str, now_str, job.id),
+                )
+            finally:
                 cursor.close()
-                return None
 
-            job = Job.from_row(row)
+        job.status = "running"
+        job.locked_by = worker_id
+        job.lease_until = lease_until
+        job.heartbeat_at = now_str
+        job.attempts += 1
+        job.started_at = job.started_at or now_str
 
-            # Lock the job
-            cursor.execute(
-                """
-                UPDATE jobs
-                SET status = 'running',
-                    locked_by = ?,
-                    lease_until = ?,
-                    heartbeat_at = ?,
-                    attempts = attempts + 1,
-                    started_at = COALESCE(started_at, ?)
-                WHERE id = ?
-                """,
-                (worker_id, lease_until, now_str, now_str, job.id),
-            )
-
-            db.commit()
-            cursor.close()
-
-            # Update local job object
-            job.status = "running"
-            job.locked_by = worker_id
-            job.lease_until = lease_until
-            job.heartbeat_at = now_str
-            job.attempts += 1
-            job.started_at = job.started_at or now_str
-
-            logger.info(f"Job dequeued: {job.id} by worker {worker_id}")
-            return job
-
-        except Exception as e:
-            db.rollback()
-            logger.error(f"Error dequeuing job: {e}")
-            raise
+        logger.info(f"Job dequeued: {job.id} by worker {worker_id}")
+        return job
 
     @staticmethod
     def ack(job_id: str, worker_id: str) -> bool:
@@ -484,6 +495,21 @@ class JobQueueRepository:
                 return None
 
             return Job.from_row(row)
+
+    @staticmethod
+    def get_by_idempotency_key(idempotency_key: str) -> Optional[Job]:
+        """Return an active job for an idempotency key."""
+        with get_cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT * FROM jobs
+                WHERE idempotency_key = ? AND status IN ('pending', 'running')
+                LIMIT 1
+                """,
+                (idempotency_key,),
+            )
+            row = cursor.fetchone()
+            return Job.from_row(row) if row else None
 
     @staticmethod
     def release_expired_leases() -> int:

@@ -8,7 +8,7 @@ Provides a clean interface for enqueueing executions and managing jobs.
 import logging
 from typing import Any, Dict, Optional
 
-from gateway.storage.job_queue import Job, JobQueueRepository
+from gateway.storage.queue_interface import QueueJob
 from services.runtime.worker_pool import get_worker_pool
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ class QueueService:
         max_attempts: int = 3,
         timeout_ms: int = 0,
         visibility_timeout_ms: int = 30000,
-    ) -> Job:
+    ) -> QueueJob:
         """
         Enqueue an execution for processing.
 
@@ -66,7 +66,9 @@ class QueueService:
         Raises:
             Exception: If enqueueing fails
         """
-        job = JobQueueRepository.enqueue(
+        from gateway.storage.queue_factory import get_queue
+
+        job = await get_queue().enqueue(
             execution_id=execution_id,
             workflow_id=workflow_id,
             workspace_id=workspace_id,
@@ -74,6 +76,7 @@ class QueueService:
             max_attempts=max_attempts,
             timeout_ms=timeout_ms,
             visibility_timeout_ms=visibility_timeout_ms,
+            idempotency_key=execution_id,
         )
 
         logger.info(
@@ -109,7 +112,9 @@ class QueueService:
                 return True
 
         # Fall back to direct queue cancellation (for pending jobs)
-        cancelled = JobQueueRepository.cancel_by_execution_id(execution_id)
+        from gateway.storage.queue_factory import get_queue
+
+        cancelled = await get_queue().cancel_by_execution_id(execution_id)
 
         if cancelled:
             logger.info(f"Execution {execution_id} cancelled in queue")
@@ -132,7 +137,9 @@ class QueueService:
         Returns:
             Job status dict or None if not found
         """
-        job = JobQueueRepository.get_by_execution_id(execution_id)
+        from gateway.storage.queue_factory import get_queue
+
+        job = await get_queue().get_by_execution_id(execution_id)
 
         if not job:
             return None
@@ -159,7 +166,9 @@ class QueueService:
         Returns:
             Dictionary with queue statistics
         """
-        stats = JobQueueRepository.get_queue_stats()
+        from gateway.storage.queue_factory import get_queue
+
+        stats = (await get_queue().get_stats()).to_dict()
 
         # Add worker pool stats if available
         pool = get_worker_pool()
@@ -170,7 +179,7 @@ class QueueService:
         return stats
 
     @staticmethod
-    async def retry_execution(execution_id: str) -> Optional[Job]:
+    async def retry_execution(execution_id: str) -> Optional[QueueJob]:
         """
         Retry a failed execution.
 
@@ -182,7 +191,10 @@ class QueueService:
         Returns:
             New Job if created, None if execution not found or not failed
         """
-        existing_job = JobQueueRepository.get_by_execution_id(execution_id)
+        from gateway.storage.queue_factory import get_queue
+
+        queue = get_queue()
+        existing_job = await queue.get_by_execution_id(execution_id)
 
         if not existing_job:
             logger.warning(f"Cannot retry - execution {execution_id} not found")
@@ -195,20 +207,11 @@ class QueueService:
             )
             return None
 
-        # Create new job with same parameters
-        job = JobQueueRepository.enqueue(
-            execution_id=execution_id,
-            workflow_id=existing_job.workflow_id,
-            workspace_id=existing_job.workspace_id,
-            priority=existing_job.priority,
-            max_attempts=existing_job.max_attempts,
-            timeout_ms=existing_job.timeout_ms,
-            visibility_timeout_ms=existing_job.visibility_timeout_ms,
+        logger.warning(
+            "Retry requires a new execution record; refusing to reuse execution %s",
+            execution_id,
         )
-
-        logger.info(f"Execution {execution_id} retry enqueued as job {job.id}")
-
-        return job
+        return None
 
     @staticmethod
     async def cleanup_old_jobs(days: int = 7) -> int:
@@ -221,7 +224,9 @@ class QueueService:
         Returns:
             Number of jobs deleted
         """
-        deleted = JobQueueRepository.cleanup_old_jobs(days=days)
+        from gateway.storage.queue_factory import get_queue
+
+        deleted = await get_queue().cleanup_old_jobs(days=days)
         logger.info(f"Cleaned up {deleted} old jobs")
         return deleted
 
@@ -235,7 +240,9 @@ class QueueService:
         Returns:
             Number of leases released
         """
-        released = JobQueueRepository.release_expired_leases()
+        from gateway.storage.queue_factory import get_queue
+
+        released = await get_queue().release_expired_leases()
         if released > 0:
             logger.info(f"Released {released} expired job leases")
         return released

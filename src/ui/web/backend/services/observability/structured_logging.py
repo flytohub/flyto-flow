@@ -83,6 +83,20 @@ def _redact_sensitive_dict(data: Dict[str, Any]) -> Dict[str, Any]:
     return redacted
 
 
+def redact_sensitive_data(value: Any) -> Any:
+    """Return a recursively redacted copy suitable for logs and events."""
+    return _redact_sensitive_value(value)
+
+
+def redact_error_message(value: Any, *, max_length: int = 2000) -> str:
+    """Sanitize an exception or traceback before persistence or delivery."""
+    redacted = _redact_sensitive_value(str(value))
+    text = str(redacted)
+    if len(text) > max_length:
+        return text[:max_length] + "...[TRUNCATED]"
+    return text
+
+
 # Context variables for log correlation
 _exec_context: ContextVar[Optional["ExecutionLogContext"]] = ContextVar(
     "exec_context", default=None

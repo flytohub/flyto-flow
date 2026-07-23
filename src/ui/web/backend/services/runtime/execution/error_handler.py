@@ -8,6 +8,10 @@ import logging
 import re
 from typing import Any, Dict, Optional
 
+from services.observability.structured_logging import (
+    redact_error_message,
+    redact_sensitive_data,
+)
 from services.runtime.execution.utils import utc_now
 from services.runtime.execution.template_loader import fetch_workflow_yaml
 
@@ -38,6 +42,8 @@ async def trigger_error_workflow(
         traceback_str: Full traceback
         workflow_data: Parsed workflow data
     """
+    error_message = redact_error_message(error_message)
+    traceback_str = redact_error_message(traceback_str, max_length=10000)
     try:
         # Get error workflow ID from workflow metadata
         error_workflow_id = await get_error_workflow_id(
@@ -70,7 +76,7 @@ async def trigger_error_workflow(
             'error_traceback': traceback_str,
             'failed_at': utc_now(),
             'workspace_id': info.workspace_id or '',
-            'input_params': info.input_params,
+            'input_params': redact_sensitive_data(info.input_params),
             'node_states': dict(info.node_states) if info.node_states else {},
         }
 
@@ -103,9 +109,9 @@ async def trigger_error_workflow(
             f"(execution: {error_exec_id}) for failed execution {info.execution_id}"
         )
 
-    except Exception as e:
+    except Exception:
         # Don't let error workflow failures propagate
-        logger.error(f"Failed to trigger error workflow: {e}")
+        logger.error("Failed to trigger the configured error workflow")
 
 
 async def get_error_workflow_id(
@@ -131,8 +137,8 @@ async def get_error_workflow_id(
             return template.error_workflow_id
 
         return None
-    except Exception as e:
-        logger.warning(f"Failed to get error workflow ID: {e}")
+    except Exception:
+        logger.warning("Failed to get error workflow ID")
         return None
 
 

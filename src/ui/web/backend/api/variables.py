@@ -322,6 +322,7 @@ async def resolve_variables(
         project_id=project_id,
         workspace_id=workspace_id,
         environment=env,
+        include_secrets=False,
     )
 
     return {"ok": True, "resolved": resolved, "count": len(resolved)}

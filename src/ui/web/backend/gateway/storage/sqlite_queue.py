@@ -37,6 +37,7 @@ class SQLiteQueue(QueueInterface):
         timeout_ms: int = 300000,
         visibility_timeout_ms: int = 30000,
         metadata: Optional[Dict[str, Any]] = None,
+        idempotency_key: Optional[str] = None,
     ) -> QueueJob:
         """Add a new job to the queue."""
         # SQLite repo is synchronous
@@ -48,6 +49,8 @@ class SQLiteQueue(QueueInterface):
             max_attempts=max_attempts,
             timeout_ms=timeout_ms,
             visibility_timeout_ms=visibility_timeout_ms,
+            metadata=metadata,
+            idempotency_key=idempotency_key,
         )
 
         return self._job_to_queue_job(job, metadata=metadata)
@@ -122,6 +125,12 @@ class SQLiteQueue(QueueInterface):
             return None
         return self._job_to_queue_job(job)
 
+    async def get_by_idempotency_key(self, idempotency_key: str) -> Optional[QueueJob]:
+        job = self._repo.get_by_idempotency_key(idempotency_key)
+        if not job:
+            return None
+        return self._job_to_queue_job(job)
+
     async def release_expired_leases(self) -> int:
         """Release jobs with expired leases."""
         return self._repo.release_expired_leases()
@@ -179,8 +188,9 @@ class SQLiteQueue(QueueInterface):
             heartbeat_at=job.heartbeat_at,
             visibility_timeout_ms=job.visibility_timeout_ms,
             error_message=job.error_message,
+            idempotency_key=job.idempotency_key,
             created_at=job.created_at,
             started_at=job.started_at,
             finished_at=job.finished_at,
-            metadata=metadata or {},
+            metadata=metadata if metadata is not None else job.metadata,
         )

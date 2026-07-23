@@ -1,6 +1,6 @@
 # External Connection Injection Contract
 
-Status: normative target architecture
+Status: implemented baseline contract
 
 Owners: Flyto2 Core, Flyto2 Flow, and Flyto2 Cloud maintainers
 
@@ -36,11 +36,12 @@ The target contract builds on behavior that already exists:
 - `/runtime-config` describes the active edition, deployment mode, providers,
   network policy, and unsupported surfaces to the frontend.
 
-The dedicated external-connection ports below are the required next layer.
-Until those ports are implemented, existing provider and credential services
-remain authoritative. New connection features must follow this contract
-instead of adding another deployment-specific branch directly to API routes or
-workflow code.
+The dedicated external-connection ports are implemented in
+`services.connections`. Flow provides local profile, policy, secret, and audit
+adapters. Concrete transport and tenant-aware adapters remain owned by Core,
+Cloud, or an allowlisted Enterprise provider package. New connection features
+must follow this contract instead of adding deployment-specific branches to
+API routes or workflow code.
 
 ## Architectural Boundary
 
@@ -256,17 +257,19 @@ shape is versioned and contains references rather than values:
 {
   "id": "conn_github_release",
   "name": "GitHub release automation",
-  "type": "github",
-  "schemaVersion": 1,
+  "type": "source.github",
+  "schema_version": 1,
   "scope": {
     "kind": "project",
     "id": "project_123"
   },
   "config": {
-    "baseUrl": "https://api.github.com"
+    "api_url": "https://api.github.com",
+    "owner": "flytohub",
+    "repository": "flyto-flow"
   },
-  "secretRefs": {
-    "token": {
+  "secret_refs": {
+    "access_token": {
       "type": "secretRef",
       "credential_name": "github-release-token",
       "scope": "project",
@@ -274,7 +277,10 @@ shape is versioned and contains references rather than values:
     }
   },
   "policy": {
-    "allowedHosts": ["api.github.com"]
+    "allowed_hosts": ["api.github.com"],
+    "allowed_ports": [443],
+    "allowed_protocols": ["https"],
+    "allow_private_networks": false
   }
 }
 ```
@@ -321,7 +327,7 @@ MCP is a connection type family and follows the same ports.
 ## Runtime Capability Contract
 
 The frontend must derive available controls from `/runtime-config`, not from
-build-time assumptions. The runtime response must eventually advertise:
+build-time assumptions. The runtime response advertises:
 
 - available connection profile operations
 - supported connection and transport types
@@ -330,6 +336,12 @@ build-time assumptions. The runtime response must eventually advertise:
 - audit capability
 - connection test capability
 - unsupported operations with stable reason codes
+
+Flow CE reports its catalog separately from transport availability. A
+connection type can be visible for portable profile editing while
+`builtInTransport` is `false` and `transportProvider` is `none`. A Cloud or
+Enterprise composition reports runtime injection only after an external
+`ConnectionRuntime` has been configured.
 
 Hidden UI is not an authorization boundary. Backend policy remains
 authoritative for every advertised operation.

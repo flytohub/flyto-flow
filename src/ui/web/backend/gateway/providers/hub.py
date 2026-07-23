@@ -3,7 +3,7 @@
 from functools import lru_cache
 
 from gateway.providers.access.simple import SimpleAccessProvider
-from gateway.providers.audit.noop import NoopAuditProvider
+from gateway.providers.audit.local import LocalAuditProvider
 from gateway.providers.data.offline.provider import OfflineDataProvider
 
 
@@ -11,7 +11,7 @@ class ProviderHub:
     def __init__(self, mode=None):
         del mode
         self._access_provider = SimpleAccessProvider()
-        self._audit_provider = NoopAuditProvider()
+        self._audit_provider = LocalAuditProvider()
         self._data_provider = OfflineDataProvider()
 
     @property

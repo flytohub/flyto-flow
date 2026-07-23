@@ -92,6 +92,9 @@ async def init_plugins(plugins_dir: Optional[str] = None) -> int:
 
     manager = PluginManager(plugin_dir=Path(pdir))
     _setup_notification_forwarding(manager)
+    from api.modules.catalog import set_plugin_manager
+
+    set_plugin_manager(manager)
 
     discovered = await manager.discover_plugins()
     total_steps = sum(
@@ -113,5 +116,8 @@ async def shutdown_plugins() -> None:
         manager = get_plugin_manager()
         if manager:
             await manager.shutdown()
+            from api.modules.catalog import set_plugin_manager
+
+            set_plugin_manager(None)
     except Exception as e:
         logger.debug(f"Plugin shutdown: {e}")

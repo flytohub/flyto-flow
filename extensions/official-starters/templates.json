@@ -1,0 +1,218 @@
+{
+  "schema": "flyto.template-pack.v1",
+  "templates": [
+    {
+      "id": "flyto2.http-get-mcp",
+      "name": "HTTP GET MCP Tool",
+      "description": "Expose an HTTP GET request as a callable MCP tool.",
+      "category": "agent-tools",
+      "tags": [
+        "api",
+        "mcp",
+        "starter"
+      ],
+      "steps": [
+        {
+          "id": "trigger",
+          "module": "flow.trigger",
+          "label": "MCP Trigger",
+          "params": {
+            "trigger_type": "mcp",
+            "tool_name": "http_get_tool",
+            "tool_description": "Fetch a URL via HTTP GET and return the response.",
+            "config": {
+              "input_fields": [
+                {
+                  "name": "url",
+                  "type": "string",
+                  "description": "The URL to fetch",
+                  "required": true
+                }
+              ]
+            }
+          },
+          "position_x": 100,
+          "position_y": 150,
+          "order_index": 0
+        },
+        {
+          "id": "http_get",
+          "module": "core.api.http_get",
+          "label": "HTTP GET Request",
+          "params": {
+            "url": "${url}",
+            "headers": {},
+            "params": {},
+            "timeout": 30,
+            "verify_ssl": true
+          },
+          "position_x": 400,
+          "position_y": 150,
+          "order_index": 1
+        }
+      ],
+      "ui": {
+        "components": [],
+        "sections": [],
+        "viewport": {
+          "x": 0,
+          "y": 0,
+          "zoom": 1
+        }
+      }
+    },
+    {
+      "id": "flyto2.browser-screenshot-mcp",
+      "name": "Browser Screenshot MCP Tool",
+      "description": "Expose a headless-browser screenshot as a callable MCP tool.",
+      "category": "agent-tools",
+      "tags": [
+        "browser",
+        "mcp",
+        "starter"
+      ],
+      "steps": [
+        {
+          "id": "trigger",
+          "module": "flow.trigger",
+          "label": "MCP Trigger",
+          "params": {
+            "trigger_type": "mcp",
+            "tool_name": "screenshot_tool",
+            "tool_description": "Take a screenshot of a webpage.",
+            "config": {
+              "input_fields": [
+                {
+                  "name": "url",
+                  "type": "string",
+                  "description": "The URL to screenshot",
+                  "required": true
+                }
+              ]
+            }
+          },
+          "position_x": 100,
+          "position_y": 150,
+          "order_index": 0
+        },
+        {
+          "id": "ensure",
+          "module": "browser.ensure",
+          "label": "Ensure Browser",
+          "params": {
+            "headless": true,
+            "width": 1280,
+            "height": 720
+          },
+          "position_x": 400,
+          "position_y": 150,
+          "order_index": 1
+        },
+        {
+          "id": "goto",
+          "module": "browser.goto",
+          "label": "Go to URL",
+          "params": {
+            "url": "${url}",
+            "wait_until": "domcontentloaded",
+            "timeout_ms": 30000,
+            "ssrf_protection": true
+          },
+          "position_x": 700,
+          "position_y": 150,
+          "order_index": 2
+        },
+        {
+          "id": "shot",
+          "module": "browser.screenshot",
+          "label": "Take Screenshot",
+          "params": {
+            "path": "screenshot.png",
+            "full_page": false,
+            "format": "png"
+          },
+          "position_x": 1000,
+          "position_y": 150,
+          "order_index": 3
+        },
+        {
+          "id": "close",
+          "module": "browser.close",
+          "label": "Close Browser",
+          "params": {},
+          "position_x": 1300,
+          "position_y": 150,
+          "order_index": 4
+        }
+      ],
+      "ui": {
+        "components": [],
+        "sections": [],
+        "viewport": {
+          "x": 0,
+          "y": 0,
+          "zoom": 1
+        }
+      }
+    },
+    {
+      "id": "flyto2.json-to-csv-mcp",
+      "name": "JSON to CSV MCP Tool",
+      "description": "Expose a JSON-to-CSV converter as a callable MCP tool.",
+      "category": "agent-tools",
+      "tags": [
+        "data",
+        "mcp",
+        "starter"
+      ],
+      "steps": [
+        {
+          "id": "trigger",
+          "module": "flow.trigger",
+          "label": "MCP Trigger",
+          "params": {
+            "trigger_type": "mcp",
+            "tool_name": "json_to_csv_tool",
+            "tool_description": "Convert a JSON array of records into a CSV file.",
+            "config": {
+              "input_fields": [
+                {
+                  "name": "records",
+                  "type": "array",
+                  "description": "Array of JSON objects to convert to CSV",
+                  "required": true
+                }
+              ]
+            }
+          },
+          "position_x": 100,
+          "position_y": 150,
+          "order_index": 0
+        },
+        {
+          "id": "convert",
+          "module": "data.json_to_csv",
+          "label": "JSON to CSV",
+          "params": {
+            "input_data": "${records}",
+            "output_path": "csv_output.csv",
+            "include_header": true,
+            "flatten_nested": true
+          },
+          "position_x": 400,
+          "position_y": 150,
+          "order_index": 1
+        }
+      ],
+      "ui": {
+        "components": [],
+        "sections": [],
+        "viewport": {
+          "x": 0,
+          "y": 0,
+          "zoom": 1
+        }
+      }
+    }
+  ]
+}

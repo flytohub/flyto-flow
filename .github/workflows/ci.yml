@@ -38,6 +38,10 @@ jobs:
           python-version: "3.12"
       - name: Check public documentation contract
         run: python scripts/check_docs.py .
+      - name: Check release contracts
+        run: |
+          python scripts/check_version.py .
+          python scripts/check_dependency_lock.py
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: flytohub/flyto-indexer
@@ -69,11 +73,15 @@ jobs:
           cache-dependency-path: src/ui/web/backend/requirements-ce.lock
       - run: pip install --require-hashes -r src/ui/web/backend/requirements-ce.lock
       - run: pip install pytest pytest-asyncio packaging
+      - name: Verify extension contracts
+        run: python scripts/verify_extensions.py extensions --allow-unsigned
       - run: python scripts/audit_ce_dependencies.py . --python-installed
       - run: python scripts/generate_ce_sbom.py . --python-installed
       - run: python -m pytest -q tests/ce
         env:
           DEPLOYMENT_MODE: offline
+      - name: Run queue concurrency and recovery smoke
+        run: python scripts/load_test.py queue --jobs 500 --workers 8 --min-throughput 25
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ce-compliance
@@ -101,8 +109,18 @@ jobs:
         run: npm run build
 
   container:
-    name: CE container
-    runs-on: ubuntu-latest
+    name: CE container / ${{ matrix.arch }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
@@ -110,5 +128,38 @@ jobs:
         with:
           context: .
           file: install/Dockerfile.ce
+          load: true
+          platforms: ${{ matrix.platform }}
           push: false
-          tags: flyto2-flow:test
+          tags: flyto2-flow:test-${{ matrix.arch }}
+      - name: Verify native container
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --detach \
+            --name flyto-flow-ci \
+            --init \
+            --shm-size=1g \
+            --publish 127.0.0.1:19000:9000 \
+            "flyto2-flow:test-${{ matrix.arch }}"
+          trap 'docker logs flyto-flow-ci; docker rm --force flyto-flow-ci' EXIT
+
+          ready=0
+          for _ in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:19000/api/health >/tmp/health.json; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          test "${ready}" = "1"
+          curl --fail --silent http://127.0.0.1:19000/api/runtime-config >/tmp/runtime.json
+          curl --fail --silent http://127.0.0.1:19000/api/connections/catalog >/tmp/catalog.json
+          jq -e '.status == "ok" and .version == "0.1.0" and .mode == "offline"' /tmp/health.json
+          jq -e '
+            .edition == "ce"
+            and .capabilities.connections.builtInTransport == false
+            and (.capabilities.connections.types | length) >= 9
+          ' /tmp/runtime.json
+          jq -e '.ok == true and (.connection_types | length) >= 9' /tmp/catalog.json
+          test "$(docker exec flyto-flow-ci id -u)" != "0"

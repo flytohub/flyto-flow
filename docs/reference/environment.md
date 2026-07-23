@@ -5,7 +5,7 @@
 This catalog lists literal environment-variable reads. Values and defaults remain
 owned by edition-specific `.env.example` files and configuration modules.
 
-Inventory: **70 variables**.
+Inventory: **96 variables**.
 
 | Variable | Sensitive | Purpose | Source areas |
 |---|---|---|---|
@@ -17,14 +17,19 @@ Inventory: **70 variables**.
 | `BASE_URL` | no | base url configuration. | [`src/ui/web/frontend/playwright.config.js`](../../src/ui/web/frontend/playwright.config.js) |
 | `CI` | no | ci configuration. | [`src/ui/web/frontend/playwright.config.js`](../../src/ui/web/frontend/playwright.config.js) |
 | `CORS_ORIGINS` | no | cors origins configuration. | [`src/ui/web/backend/config/settings.py`](../../src/ui/web/backend/config/settings.py) |
-| `DEBUG` | no | debug configuration. | [`src/ui/web/backend/config/settings.py`](../../src/ui/web/backend/config/settings.py)<br>[`src/ui/web/backend/services/credentials/backends/local.py`](../../src/ui/web/backend/services/credentials/backends/local.py)<br>[`src/ui/web/backend/services/credentials/encryption.py`](../../src/ui/web/backend/services/credentials/encryption.py) |
+| `DEBUG` | no | debug configuration. | [`src/ui/web/backend/config/settings.py`](../../src/ui/web/backend/config/settings.py)<br>[`src/ui/web/backend/services/credentials/backends/local.py`](../../src/ui/web/backend/services/credentials/backends/local.py) |
 | `DEPLOYMENT_MODE` | no | deployment mode configuration. | [`src/ui/web/backend/api/recording.py`](../../src/ui/web/backend/api/recording.py)<br>[`src/ui/web/backend/main_offline.py`](../../src/ui/web/backend/main_offline.py) |
 | `DEV` | no | dev configuration. | [`src/ui/web/frontend/src/config/api.js`](../../src/ui/web/frontend/src/config/api.js)<br>[`src/ui/web/frontend/src/i18n/index.js`](../../src/ui/web/frontend/src/i18n/index.js)<br>[`src/ui/web/frontend/src/stores/modulesStore.js`](../../src/ui/web/frontend/src/stores/modulesStore.js)<br>[`src/ui/web/frontend/src/utils/environment.js`](../../src/ui/web/frontend/src/utils/environment.js)<br>[`src/ui/web/frontend/src/utils/logger.js`](../../src/ui/web/frontend/src/utils/logger.js) |
 | `EMBEDDING_PROVIDER` | no | embedding provider configuration. | [`src/ui/web/backend/gateway/providers/vector/provider.py`](../../src/ui/web/backend/gateway/providers/vector/provider.py) |
 | `ENABLE_OBFUSCATION` | no | enable obfuscation configuration. | [`src/ui/web/frontend/vite.config.js`](../../src/ui/web/frontend/vite.config.js) |
+| `FLYTO_ALERT_WEBHOOK_ALLOWED_HOSTS` | no | flyto alert webhook allowed hosts configuration. | [`src/ui/web/backend/services/observability/alerts/notifier.py`](../../src/ui/web/backend/services/observability/alerts/notifier.py) |
+| `FLYTO_ALERT_WEBHOOK_SECRET` | yes | flyto alert webhook secret configuration. | [`src/ui/web/backend/services/observability/alerts/notifier.py`](../../src/ui/web/backend/services/observability/alerts/notifier.py) |
+| `FLYTO_ALERT_WEBHOOK_URL` | no | flyto alert webhook url configuration. | [`src/ui/web/backend/services/observability/alerts/notifier.py`](../../src/ui/web/backend/services/observability/alerts/notifier.py) |
 | `FLYTO_ALLOWED_MODULES` | no | flyto allowed modules configuration. | [`src/ui/web/backend/services/template/template_runtime/worker.py`](../../src/ui/web/backend/services/template/template_runtime/worker.py) |
 | `FLYTO_ARTIFACT_PATH` | no | flyto artifact path configuration. | [`src/ui/web/backend/services/runtime/snapshot/artifacts.py`](../../src/ui/web/backend/services/runtime/snapshot/artifacts.py) |
 | `FLYTO_BACKEND_URL` | no | flyto backend url configuration. | [`src/ui/web/backend/mcp_server.py`](../../src/ui/web/backend/mcp_server.py) |
+| `FLYTO_BACKUP_MAX_BYTES` | no | flyto backup max bytes configuration. | [`src/ui/web/backend/services/operations/backup.py`](../../src/ui/web/backend/services/operations/backup.py) |
+| `FLYTO_CONNECTION_RUNTIME_FACTORY` | no | flyto connection runtime factory configuration. | [`src/ui/web/backend/api/runtime_config.py`](../../src/ui/web/backend/api/runtime_config.py)<br>[`src/ui/web/backend/services/connections/runtime.py`](../../src/ui/web/backend/services/connections/runtime.py) |
 | `FLYTO_CORE_UPDATE_DIR` | no | flyto core update dir configuration. | [`src/ui/web/backend/local/core_wheel.py`](../../src/ui/web/backend/local/core_wheel.py) |
 | `FLYTO_CSP_NONCE` | no | flyto csp nonce configuration. | [`src/ui/web/backend/middleware/security_headers.py`](../../src/ui/web/backend/middleware/security_headers.py) |
 | `FLYTO_CSRF_ENABLED` | no | flyto csrf enabled configuration. | [`src/ui/web/backend/middleware/csrf.py`](../../src/ui/web/backend/middleware/csrf.py) |
@@ -36,11 +41,20 @@ Inventory: **70 variables**.
 | `FLYTO_ENCRYPTION_PREVIOUS_KEYS` | no | flyto encryption previous keys configuration. | [`src/ui/web/backend/services/credentials/backends/local.py`](../../src/ui/web/backend/services/credentials/backends/local.py) |
 | `FLYTO_ENV` | no | flyto env configuration. | [`src/ui/web/backend/api/modules/catalog.py`](../../src/ui/web/backend/api/modules/catalog.py) |
 | `FLYTO_EVIDENCE_PATH` | no | flyto evidence path configuration. | [`src/ui/web/backend/local/storage_paths.py`](../../src/ui/web/backend/local/storage_paths.py) |
-| `FLYTO_EXECUTION_DB_PATH` | no | flyto execution db path configuration. | [`src/ui/web/backend/gateway/storage/database.py`](../../src/ui/web/backend/gateway/storage/database.py) |
+| `FLYTO_EXECUTION_DB_PATH` | no | flyto execution db path configuration. | [`scripts/flow_ops.py`](../../scripts/flow_ops.py)<br>[`scripts/load_test.py`](../../scripts/load_test.py)<br>[`src/ui/web/backend/gateway/storage/database.py`](../../src/ui/web/backend/gateway/storage/database.py) |
+| `FLYTO_EXTENSIONS_DIR` | no | flyto extensions dir configuration. | [`src/ui/web/backend/services/extensions/runtime.py`](../../src/ui/web/backend/services/extensions/runtime.py) |
+| `FLYTO_EXTENSION_MAX_ARTIFACT_BYTES` | no | flyto extension max artifact bytes configuration. | [`src/ui/web/backend/services/extensions/manifest.py`](../../src/ui/web/backend/services/extensions/manifest.py) |
+| `FLYTO_EXTENSION_PERMISSION_GRANTS` | no | flyto extension permission grants configuration. | [`src/ui/web/backend/services/extensions/runtime.py`](../../src/ui/web/backend/services/extensions/runtime.py) |
+| `FLYTO_EXTENSION_REVOKED_KEYS` | no | flyto extension revoked keys configuration. | [`src/ui/web/backend/services/extensions/manifest.py`](../../src/ui/web/backend/services/extensions/manifest.py) |
+| `FLYTO_EXTENSION_SIGNATURE_POLICY` | no | flyto extension signature policy configuration. | [`src/ui/web/backend/services/extensions/runtime.py`](../../src/ui/web/backend/services/extensions/runtime.py) |
+| `FLYTO_EXTENSION_TRUSTED_KEYS` | no | flyto extension trusted keys configuration. | [`scripts/verify_extensions.py`](../../scripts/verify_extensions.py)<br>[`src/ui/web/backend/services/extensions/runtime.py`](../../src/ui/web/backend/services/extensions/runtime.py) |
 | `FLYTO_FLOW_MCP_TOKEN` | yes | flyto flow mcp token configuration. | [`src/ui/web/backend/api/mcp.py`](../../src/ui/web/backend/api/mcp.py) |
 | `FLYTO_FLOW_MCP_TRUST_LOOPBACK_PROXY` | no | flyto flow mcp trust loopback proxy configuration. | [`src/ui/web/backend/api/mcp.py`](../../src/ui/web/backend/api/mcp.py) |
-| `FLYTO_KEY_BACKEND` | no | flyto key backend configuration. | [`src/ui/web/backend/services/credentials/encryption.py`](../../src/ui/web/backend/services/credentials/encryption.py) |
+| `FLYTO_KEY_BACKEND` | no | flyto key backend configuration. | [`src/ui/web/backend/api/runtime_config.py`](../../src/ui/web/backend/api/runtime_config.py)<br>[`src/ui/web/backend/main_offline.py`](../../src/ui/web/backend/main_offline.py)<br>[`src/ui/web/backend/main_worker.py`](../../src/ui/web/backend/main_worker.py)<br>[`src/ui/web/backend/services/credentials/encryption.py`](../../src/ui/web/backend/services/credentials/encryption.py) |
+| `FLYTO_KEY_BACKEND_FACTORY` | no | flyto key backend factory configuration. | [`src/ui/web/backend/services/credentials/encryption.py`](../../src/ui/web/backend/services/credentials/encryption.py) |
 | `FLYTO_KEY_SALT` | no | flyto key salt configuration. | [`src/ui/web/backend/services/credentials/backends/local.py`](../../src/ui/web/backend/services/credentials/backends/local.py) |
+| `FLYTO_KMS_ALLOW_LEGACY_CIPHERTEXT` | no | flyto kms allow legacy ciphertext configuration. | [`src/ui/web/backend/services/credentials/backends/aws_kms.py`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py) |
+| `FLYTO_LOAD_TEST_TOKEN` | yes | flyto load test token configuration. | [`scripts/load_test.py`](../../scripts/load_test.py) |
 | `FLYTO_LOCKS_PATH` | no | flyto locks path configuration. | [`src/ui/web/backend/api/versioning/routes.py`](../../src/ui/web/backend/api/versioning/routes.py) |
 | `FLYTO_MAX_EXECUTION_TIMEOUT` | no | flyto max execution timeout configuration. | [`src/ui/web/backend/services/runtime/execution/service.py`](../../src/ui/web/backend/services/runtime/execution/service.py)<br>[`src/ui/web/backend/services/runtime/execution/workflow_runner.py`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py) |
 | `FLYTO_MCP_ALLOWED_ORIGINS` | no | flyto mcp allowed origins configuration. | [`src/ui/web/backend/api/mcp.py`](../../src/ui/web/backend/api/mcp.py) |
@@ -48,15 +62,20 @@ Inventory: **70 variables**.
 | `FLYTO_MCP_MAX_WAIT` | no | flyto mcp max wait configuration. | [`src/ui/web/backend/mcp_server.py`](../../src/ui/web/backend/mcp_server.py) |
 | `FLYTO_MODULES_PATH` | no | flyto modules path configuration. | [`src/ui/web/backend/api/versioning/routes.py`](../../src/ui/web/backend/api/versioning/routes.py) |
 | `FLYTO_OFFLINE_DB_PATH` | no | flyto offline db path configuration. | [`src/ui/web/backend/gateway/storage/offline_db.py`](../../src/ui/web/backend/gateway/storage/offline_db.py)<br>[`src/ui/web/backend/local/storage_paths.py`](../../src/ui/web/backend/local/storage_paths.py)<br>[`src/ui/web/backend/main_offline.py`](../../src/ui/web/backend/main_offline.py) |
-| `FLYTO_PLUGINS_DIR` | no | flyto plugins dir configuration. | [`src/ui/web/backend/local/plugin_runtime.py`](../../src/ui/web/backend/local/plugin_runtime.py) |
-| `FLYTO_PLUGIN_DIR` | no | flyto plugin dir configuration. | [`src/ui/web/backend/api/modules/catalog.py`](../../src/ui/web/backend/api/modules/catalog.py)<br>[`src/ui/web/backend/local/plugin_runtime.py`](../../src/ui/web/backend/local/plugin_runtime.py) |
+| `FLYTO_PLUGINS_DIR` | no | flyto plugins dir configuration. | [`src/ui/web/backend/local/plugin_runtime.py`](../../src/ui/web/backend/local/plugin_runtime.py)<br>[`src/ui/web/backend/services/extensions/runtime.py`](../../src/ui/web/backend/services/extensions/runtime.py) |
+| `FLYTO_PLUGIN_DIR` | no | flyto plugin dir configuration. | [`src/ui/web/backend/api/modules/catalog.py`](../../src/ui/web/backend/api/modules/catalog.py)<br>[`src/ui/web/backend/local/plugin_runtime.py`](../../src/ui/web/backend/local/plugin_runtime.py)<br>[`src/ui/web/backend/services/extensions/runtime.py`](../../src/ui/web/backend/services/extensions/runtime.py) |
+| `FLYTO_PROVIDER_MODULE_ALLOWLIST` | no | flyto provider module allowlist configuration. | [`src/ui/web/backend/gateway/providers/loading.py`](../../src/ui/web/backend/gateway/providers/loading.py) |
+| `FLYTO_QUEUE_FACTORY` | no | flyto queue factory configuration. | [`src/ui/web/backend/gateway/storage/queue_factory.py`](../../src/ui/web/backend/gateway/storage/queue_factory.py) |
 | `FLYTO_RELEASE_BROWSER_EXECUTABLE` | no | flyto release browser executable configuration. | [`src/ui/web/frontend/scripts/release-browser-smoke.mjs`](../../src/ui/web/frontend/scripts/release-browser-smoke.mjs) |
 | `FLYTO_RELEASE_BROWSER_SMOKE_URL` | no | flyto release browser smoke url configuration. | [`src/ui/web/frontend/scripts/release-browser-smoke.mjs`](../../src/ui/web/frontend/scripts/release-browser-smoke.mjs) |
 | `FLYTO_REQUIRE_BUNDLED_RUNTIME` | no | flyto require bundled runtime configuration. | [`src/ui/web/backend/local/runtime_dependencies.py`](../../src/ui/web/backend/local/runtime_dependencies.py) |
 | `FLYTO_RUNS_PATH` | no | flyto runs path configuration. | [`src/ui/web/backend/local/storage_paths.py`](../../src/ui/web/backend/local/storage_paths.py) |
 | `FLYTO_SNAPSHOTS_PATH` | no | flyto snapshots path configuration. | [`src/ui/web/backend/api/testing/paths.py`](../../src/ui/web/backend/api/testing/paths.py) |
 | `FLYTO_TESTS_PATH` | no | flyto tests path configuration. | [`src/ui/web/backend/api/testing/paths.py`](../../src/ui/web/backend/api/testing/paths.py) |
+| `FLYTO_TRACE_EXPORTER_FACTORY` | no | flyto trace exporter factory configuration. | [`src/ui/web/backend/api/runtime_config.py`](../../src/ui/web/backend/api/runtime_config.py)<br>[`src/ui/web/backend/main_offline.py`](../../src/ui/web/backend/main_offline.py) |
 | `FLYTO_USE_QUEUE` | no | flyto use queue configuration. | [`src/ui/web/backend/services/runtime/execution/queue_integration.py`](../../src/ui/web/backend/services/runtime/execution/queue_integration.py) |
+| `FLYTO_VERSION_FILE` | no | flyto version file configuration. | [`src/ui/web/backend/config/version.py`](../../src/ui/web/backend/config/version.py) |
+| `FLYTO_WORKER_POOL_SIZE` | no | flyto worker pool size configuration. | [`src/ui/web/backend/main_offline.py`](../../src/ui/web/backend/main_offline.py) |
 | `FLYTO_WORKFLOWS_PATH` | no | flyto workflows path configuration. | [`src/ui/web/backend/api/testing/paths.py`](../../src/ui/web/backend/api/testing/paths.py) |
 | `GITHUB_SHA` | no | github sha configuration. | [`scripts/generate_ce_sbom.py`](../../scripts/generate_ce_sbom.py) |
 | `HEADLESS` | no | headless configuration. | [`src/ui/web/backend/local/runtime_dependencies.py`](../../src/ui/web/backend/local/runtime_dependencies.py) |
@@ -72,8 +91,15 @@ Inventory: **70 variables**.
 | `PLAYWRIGHT_BROWSERS_PATH` | no | playwright browsers path configuration. | [`src/ui/web/backend/local/runtime_dependencies.py`](../../src/ui/web/backend/local/runtime_dependencies.py) |
 | `QDRANT_API_KEY` | yes | qdrant api key configuration. | [`src/ui/web/backend/gateway/providers/vector/provider.py`](../../src/ui/web/backend/gateway/providers/vector/provider.py) |
 | `QDRANT_URL` | no | qdrant url configuration. | [`src/ui/web/backend/gateway/providers/vector/provider.py`](../../src/ui/web/backend/gateway/providers/vector/provider.py) |
+| `QUEUE_BACKEND` | no | queue backend configuration. | [`src/ui/web/backend/gateway/storage/queue_factory.py`](../../src/ui/web/backend/gateway/storage/queue_factory.py) |
 | `VAULT_ADDR` | no | vault addr configuration. | [`src/ui/web/backend/services/credentials/backends/vault.py`](../../src/ui/web/backend/services/credentials/backends/vault.py) |
+| `VAULT_ALLOW_INSECURE` | no | vault allow insecure configuration. | [`src/ui/web/backend/services/credentials/backends/vault.py`](../../src/ui/web/backend/services/credentials/backends/vault.py) |
+| `VAULT_CACERT` | no | vault cacert configuration. | [`src/ui/web/backend/services/credentials/backends/vault.py`](../../src/ui/web/backend/services/credentials/backends/vault.py) |
+| `VAULT_NAMESPACE` | no | vault namespace configuration. | [`src/ui/web/backend/services/credentials/backends/vault.py`](../../src/ui/web/backend/services/credentials/backends/vault.py) |
 | `VAULT_TOKEN` | yes | vault token configuration. | [`src/ui/web/backend/services/credentials/backends/vault.py`](../../src/ui/web/backend/services/credentials/backends/vault.py) |
+| `VAULT_TOKEN_FILE` | yes | vault token file configuration. | [`src/ui/web/backend/services/credentials/backends/vault.py`](../../src/ui/web/backend/services/credentials/backends/vault.py) |
+| `VAULT_TRANSIT_KEY` | no | vault transit key configuration. | [`src/ui/web/backend/services/credentials/backends/vault.py`](../../src/ui/web/backend/services/credentials/backends/vault.py) |
+| `VAULT_TRANSIT_MOUNT_POINT` | no | vault transit mount point configuration. | [`src/ui/web/backend/services/credentials/backends/vault.py`](../../src/ui/web/backend/services/credentials/backends/vault.py) |
 | `VECTOR_STORE_PROVIDER` | no | vector store provider configuration. | [`src/ui/web/backend/gateway/providers/vector/provider.py`](../../src/ui/web/backend/gateway/providers/vector/provider.py) |
 | `VITE_API_BASE_URL` | no | vite api base url configuration. | [`src/ui/web/frontend/src/api/client.js`](../../src/ui/web/frontend/src/api/client.js)<br>[`src/ui/web/frontend/src/config/api.js`](../../src/ui/web/frontend/src/config/api.js) |
 | `VITE_API_URL` | no | vite api url configuration. | [`src/ui/web/frontend/src/api/client.js`](../../src/ui/web/frontend/src/api/client.js)<br>[`src/ui/web/frontend/src/config/api.js`](../../src/ui/web/frontend/src/config/api.js) |

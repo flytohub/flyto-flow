@@ -14,15 +14,26 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  CANDIDATE_IMAGE: flyto2-flow-release:${{ github.sha }}
   IMAGE_NAME: docker.io/flyto2/flow
 
 jobs:
-  publish:
-    name: Build, verify, and publish
+  build:
+    name: Verify and publish ${{ matrix.arch }}
     if: github.repository == 'flytohub/flyto-flow'
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 75
+    env:
+      CANDIDATE_IMAGE: flyto2-flow-release:${{ github.sha }}-${{ matrix.arch }}
     steps:
       - name: Check out the release
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -48,6 +59,7 @@ jobs:
           fi
 
           version="${tag#v}"
+          python scripts/check_version.py . --tag "${tag}"
           echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
 
@@ -60,7 +72,7 @@ jobs:
           context: .
           file: install/Dockerfile.ce
           load: true
-          platforms: linux/amd64
+          platforms: ${{ matrix.platform }}
           provenance: false
           push: false
           sbom: false
@@ -79,14 +91,18 @@ jobs:
             "${CANDIDATE_IMAGE}"
 
       - name: Verify release candidate
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
         shell: bash
         run: |
           set -euo pipefail
 
+          ready=0
           for _ in {1..60}; do
             if curl --fail --silent --show-error \
-              http://127.0.0.1:19000/api/health > /dev/null; then
-              exit 0
+              http://127.0.0.1:19000/api/health > /tmp/health.json; then
+              ready=1
+              break
             fi
 
             if [[ "$(docker inspect --format='{{.State.Running}}' flyto-flow-release)" != "true" ]]; then
@@ -95,9 +111,27 @@ jobs:
             sleep 2
           done
 
-          echo "::error::The release candidate did not become healthy."
-          docker logs flyto-flow-release
-          exit 1
+          if [[ "${ready}" != "1" ]]; then
+            echo "::error::The release candidate did not become healthy."
+            docker logs flyto-flow-release
+            exit 1
+          fi
+
+          curl --fail --silent \
+            http://127.0.0.1:19000/api/runtime-config > /tmp/runtime.json
+          curl --fail --silent \
+            http://127.0.0.1:19000/api/connections/catalog > /tmp/catalog.json
+          jq -e \
+            --arg version "${VERSION}" \
+            '.status == "ok" and .version == $version and .mode == "offline"' \
+            /tmp/health.json
+          jq -e '
+            .edition == "ce"
+            and .capabilities.connections.builtInTransport == false
+            and (.capabilities.connections.types | length) >= 9
+          ' /tmp/runtime.json
+          jq -e '.ok == true and (.connection_types | length) >= 9' /tmp/catalog.json
+          test "$(docker exec flyto-flow-release id -u)" != "0"
 
       - name: Show candidate logs on failure
         if: failure()
@@ -114,7 +148,7 @@ jobs:
         with:
           image-ref: ${{ env.CANDIDATE_IMAGE }}
           format: sarif
-          output: trivy-results.sarif
+          output: trivy-results-${{ matrix.arch }}.sarif
           scanners: vuln
           severity: HIGH,CRITICAL
           limit-severities-for-sarif: true
@@ -122,11 +156,11 @@ jobs:
           ignore-unfixed: true
 
       - name: Upload release scan
-        if: always() && hashFiles('trivy-results.sarif') != ''
+        if: always() && hashFiles(format('trivy-results-{0}.sarif', matrix.arch)) != ''
         uses: github/codeql-action/upload-sarif@e58424170fb0262c8d7ed60a2e84b9bffe205c67 # codeql-bundle-v2.26.1
         with:
-          sarif_file: trivy-results.sarif
-          category: trivy-flow-release
+          sarif_file: trivy-results-${{ matrix.arch }}.sarif
+          category: trivy-flow-release-${{ matrix.arch }}
 
       - name: Verify Docker Hub credentials
         env:
@@ -151,12 +185,6 @@ jobs:
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ${{ env.IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}},value=${{ steps.release.outputs.tag }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ steps.release.outputs.tag }}
-            type=semver,pattern={{major}},value=${{ steps.release.outputs.tag }}
-            type=raw,value=latest
-            type=sha,format=long
           labels: |
             org.opencontainers.image.title=Flyto2 Flow
             org.opencontainers.image.description=Self-hosted visual workflow builder and MCP tool studio
@@ -173,19 +201,135 @@ jobs:
         with:
           context: .
           file: install/Dockerfile.ce
-          platforms: linux/amd64
+          platforms: ${{ matrix.platform }}
           provenance: mode=max
           push: true
           sbom: true
-          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Verify published manifest
+      - name: Export platform digest
+        shell: bash
         env:
           DIGEST: ${{ steps.publish.outputs.digest }}
-        run: docker buildx imagetools inspect "${IMAGE_NAME}@${DIGEST}"
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/digests
+          touch "/tmp/digests/${DIGEST#sha256:}"
+
+      - name: Upload platform digest
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: digests-${{ matrix.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Write platform summary
+        env:
+          DIGEST: ${{ steps.publish.outputs.digest }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          {
+            echo "## Flyto2 Flow ${VERSION} / ${{ matrix.platform }}"
+            echo
+            echo "- Platform digest: \`${DIGEST}\`"
+            echo "- Security: candidate health check and blocking Trivy scan passed"
+            echo "- Supply chain: SBOM and provenance attestations published"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+  merge:
+    name: Publish multi-architecture manifest
+    if: github.repository == 'flytohub/flyto-flow'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the release
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Resolve release version
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          python scripts/check_version.py . --tag "${tag}"
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          echo "version=${tag#v}" >> "${GITHUB_OUTPUT}"
+
+      - name: Download platform digests
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Prepare manifest metadata
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ steps.release.outputs.tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.release.outputs.tag }}
+            type=semver,pattern={{major}},value=${{ steps.release.outputs.tag }}
+            type=raw,value=latest
+            type=sha,format=long
+
+      - name: Create multi-architecture manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t tags < <(jq -r '.tags[]' <<< "${DOCKER_METADATA_OUTPUT_JSON}")
+          tag_args=()
+          for tag in "${tags[@]}"; do
+            tag_args+=("-t" "${tag}")
+          done
+          sources=()
+          for digest_file in /tmp/digests/*; do
+            sources+=("${IMAGE_NAME}@sha256:$(basename "${digest_file}")")
+          done
+          if [[ "${#sources[@]}" -ne 2 ]]; then
+            echo "::error::Expected exactly two platform digests."
+            exit 1
+          fi
+          docker buildx imagetools create "${tag_args[@]}" "${sources[@]}"
+
+      - name: Verify published platforms
+        id: manifest
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$(docker buildx imagetools inspect "${IMAGE_NAME}:${VERSION}" --raw)"
+          jq -e '
+            [.manifests[].platform
+              | select(.os == "linux")
+              | .architecture] as $architectures
+            | ($architectures | index("amd64")) != null
+              and ($architectures | index("arm64")) != null
+          ' <<< "${raw}"
+          digest="$(
+            docker buildx imagetools inspect "${IMAGE_NAME}:${VERSION}" \
+              | awk '/^Digest:/ {print $2; exit}'
+          )"
+          test -n "${digest}"
+          echo "digest=${digest}" >> "${GITHUB_OUTPUT}"
 
       - name: Publish Docker Hub overview
         uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa # v5
@@ -198,7 +342,7 @@ jobs:
 
       - name: Write release summary
         env:
-          DIGEST: ${{ steps.publish.outputs.digest }}
+          DIGEST: ${{ steps.manifest.outputs.digest }}
           VERSION: ${{ steps.release.outputs.version }}
         run: |
           {
@@ -206,7 +350,7 @@ jobs:
             echo
             echo "- Image: \`${IMAGE_NAME}:${VERSION}\`"
             echo "- Digest: \`${DIGEST}\`"
-            echo "- Platform: \`linux/amd64\`"
-            echo "- Security: candidate health check and blocking Trivy scan passed"
-            echo "- Supply chain: SBOM and provenance attestations published"
+            echo "- Platforms: \`linux/amd64\`, \`linux/arm64\`"
+            echo "- Security: native health checks and blocking Trivy scans passed"
+            echo "- Supply chain: per-platform SBOM and provenance attestations published"
           } >> "${GITHUB_STEP_SUMMARY}"

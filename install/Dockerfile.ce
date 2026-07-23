@@ -18,10 +18,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     HEADLESS=1 \
     PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright \
     FLYTO_REQUIRE_BUNDLED_RUNTIME=1 \
+    FLYTO_VERSION_FILE=/app/VERSION \
     HOME=/home/appuser
 
 WORKDIR /app/backend
 
+COPY VERSION /app/VERSION
 COPY src/ui/web/backend/requirements-ce.lock requirements.txt
 COPY install/check-bundled-browser.py /tmp/check-bundled-browser.py
 RUN python -m pip install --no-cache-dir --upgrade "pip==26.1.2" \

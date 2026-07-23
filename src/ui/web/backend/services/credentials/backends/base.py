@@ -6,6 +6,9 @@ from abc import ABC, abstractmethod
 class KeyManagementBackend(ABC):
     """Abstract backend for key management."""
 
+    def validate_configuration(self) -> None:
+        """Fail startup when the configured backend cannot serve requests."""
+
     @abstractmethod
     def get_key(self, version: int) -> bytes:
         """Get encryption key by version."""

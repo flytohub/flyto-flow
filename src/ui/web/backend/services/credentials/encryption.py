@@ -4,7 +4,13 @@ import logging
 import os
 from typing import Optional
 
-from services.credentials.backends import KeyManagementBackend, LocalKeyBackend, VaultKeyBackend, AWSKMSBackend
+from gateway.providers.loading import load_provider_factory
+from services.credentials.backends import (
+    AWSKMSBackend,
+    KeyManagementBackend,
+    LocalKeyBackend,
+    VaultKeyBackend,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +23,7 @@ class EncryptionKey:
     - local: Local key with PBKDF2 derivation (default)
     - vault: HashiCorp Vault transit engine
     - kms: AWS KMS
+    - custom: Allowlisted provider for other KMS or HSM implementations
 
     Configure via FLYTO_KEY_BACKEND environment variable.
     """
@@ -35,33 +42,46 @@ class EncryptionKey:
             return
 
         backend_type = os.environ.get("FLYTO_KEY_BACKEND", "local").strip().lower()
-        if backend_type not in {"local", "vault", "kms"}:
+        if backend_type not in {"local", "vault", "kms", "custom"}:
             raise ValueError(f"Unsupported FLYTO_KEY_BACKEND: {backend_type}")
 
         try:
-            if backend_type == "vault":
-                cls._backend = VaultKeyBackend()
+            if backend_type == "custom":
+                spec = os.environ.get("FLYTO_KEY_BACKEND_FACTORY", "").strip()
+                if not spec:
+                    raise ValueError(
+                        "FLYTO_KEY_BACKEND=custom requires FLYTO_KEY_BACKEND_FACTORY"
+                    )
+                backend = load_provider_factory(
+                    spec,
+                    setting_name="FLYTO_KEY_BACKEND_FACTORY",
+                )()
+                if not isinstance(backend, KeyManagementBackend):
+                    raise TypeError(
+                        "Custom key backend must implement KeyManagementBackend"
+                    )
+                logger.info("Using custom key management backend")
+            elif backend_type == "vault":
+                backend = VaultKeyBackend()
                 logger.info("Using HashiCorp Vault key backend")
             elif backend_type == "kms":
-                cls._backend = AWSKMSBackend()
+                backend = AWSKMSBackend()
                 logger.info("Using AWS KMS key backend")
-            elif backend_type == "local":
-                cls._backend = LocalKeyBackend(master_key)
+            else:
+                backend = LocalKeyBackend(master_key)
                 logger.info("Using local key backend")
+            backend.validate_configuration()
+            cls._backend = backend
         except Exception as e:
-            is_debug = os.environ.get("DEBUG", "false").lower() == "true"
-            if is_debug and backend_type != "local":
-                logger.warning(
-                    "Failed to initialize %s backend in debug mode; using local backend: %s",
-                    backend_type,
-                    e,
-                )
-                cls._backend = LocalKeyBackend(master_key)
-                return
             cls._backend = None
             raise RuntimeError(
                 f"Failed to initialize configured {backend_type} key backend"
             ) from e
+
+    @classmethod
+    def reset(cls) -> None:
+        """Clear the process-local backend, primarily for controlled reconfiguration."""
+        cls._backend = None
 
     @classmethod
     def get_backend(cls) -> KeyManagementBackend:

@@ -63,6 +63,7 @@ def _register_local_routes(router: APIRouter) -> None:
 
 def create_offline_router() -> APIRouter:
     from api.config import router as config_router
+    from api.connections import router as connections_router
     from api.expression import router as expression_router
     from api.mcp import router as mcp_router
     from api.runtime_config import router as runtime_config_router
@@ -77,6 +78,7 @@ def create_offline_router() -> APIRouter:
     router.include_router(ui_config_router, tags=["UI Config"])
     router.include_router(expression_router, tags=["Expression"])
     router.include_router(config_router, tags=["Config"])
+    router.include_router(connections_router, tags=["Connections"])
 
     @router.get("/app/version")
     async def app_version():
