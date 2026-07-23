@@ -145,31 +145,17 @@ async def fetch_workflow_yaml(
     try:
         from gateway.providers.hub import get_data_provider
 
-        wf_data = await get_data_provider().workflows.get_workflow(
-            workspace_id=workspace_id,
-            workflow_id=workflow_id,
-            include_graph=True,
+        template = await get_data_provider().templates.get_template(
+            workflow_id, workspace_id=workspace_id,
         )
-        workflow = wf_data
 
-        if not workflow:
+        if not template:
             return None
 
-        # Convert workflow to YAML format
-        workflow_dict = workflow.model_dump() if hasattr(workflow, 'model_dump') else workflow
-
-        # Build steps from nodes
-        from services.template.workflow_converter import WorkflowConverter
-        steps_data = WorkflowConverter.vueflow_to_steps(
-            nodes=workflow_dict.get('nodes', []),
-            edges=workflow_dict.get('edges', []),
-        )
-
         workflow_yaml_data = {
-            'name': workflow_dict.get('name', 'Error Workflow'),
+            'name': template.name or 'Error Workflow',
             'version': '1.0.0',
-            'steps': steps_data.get('steps', []),
-            'edges': steps_data.get('edges', []),
+            'steps': template.steps or [],
         }
 
         return yaml.dump(workflow_yaml_data, allow_unicode=True)

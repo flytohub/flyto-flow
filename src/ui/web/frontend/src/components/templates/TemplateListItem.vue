@@ -84,5 +84,5 @@ const formattedTime = computed(() => formatRelativeTime(props.template.updatedAt
   transition: color 0.15s, background-color 0.15s;
 }
 .template-list-action:hover { background: rgb(249 250 251); }
-:global(.dark) .template-list-action:hover { background: rgb(55 65 81); }
+:global(.dark .template-list-action:hover) { background: rgb(55 65 81); }
 </style>

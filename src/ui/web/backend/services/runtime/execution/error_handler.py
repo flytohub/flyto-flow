@@ -124,14 +124,11 @@ async def get_error_workflow_id(
     try:
         from gateway.providers.hub import get_data_provider
 
-        workflow = await get_data_provider().workflows.get_workflow(
-            workspace_id=workspace_id,
-            workflow_id=workflow_id,
-            include_graph=False,
+        template = await get_data_provider().templates.get_template(
+            workflow_id, workspace_id=workspace_id,
         )
-        wf_data = workflow.model_dump() if hasattr(workflow, "model_dump") else workflow
-        if wf_data:
-            return wf_data.get('error_workflow_id')
+        if template:
+            return template.error_workflow_id
 
         return None
     except Exception as e:

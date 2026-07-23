@@ -132,13 +132,13 @@ function handleClick(event) {
   border-color: #d1d5db;
 }
 
-:global(.dark) .variant-secondary {
+:global(.dark .variant-secondary) {
   background: rgba(255, 255, 255, 0.1);
   color: white;
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-:global(.dark) .variant-secondary:hover:not(.is-disabled) {
+:global(.dark .variant-secondary:hover:not(.is-disabled)) {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.3);
 }
@@ -153,13 +153,13 @@ function handleClick(event) {
   background: #fecaca;
 }
 
-:global(.dark) .variant-danger {
+:global(.dark .variant-danger) {
   background: rgba(239, 68, 68, 0.2);
   color: #f87171;
   border-color: rgba(239, 68, 68, 0.3);
 }
 
-:global(.dark) .variant-danger:hover:not(.is-disabled) {
+:global(.dark .variant-danger:hover:not(.is-disabled)) {
   background: rgba(239, 68, 68, 0.3);
 }
 
@@ -173,11 +173,11 @@ function handleClick(event) {
   color: #374151;
 }
 
-:global(.dark) .variant-ghost {
+:global(.dark .variant-ghost) {
   color: rgba(255, 255, 255, 0.7);
 }
 
-:global(.dark) .variant-ghost:hover:not(.is-disabled) {
+:global(.dark .variant-ghost:hover:not(.is-disabled)) {
   background: rgba(255, 255, 255, 0.1);
   color: white;
 }

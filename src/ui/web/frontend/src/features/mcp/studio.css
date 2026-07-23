@@ -138,13 +138,13 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .studio-tabs {
   max-width: 1440px;
   min-height: 58px;
-  justify-content: center;
+  justify-content: flex-start;
   margin: 14px auto 0;
 }
 
 .tools-layout,
 .connect-layout,
-.audit-layout { max-width: 1440px; margin: 2px auto 0; }
+.audit-layout { max-width: 1440px; margin: 16px auto 0; }
 .tools-layout { display: grid; grid-template-columns: minmax(240px, 300px) minmax(0, 1fr); gap: 16px; min-height: 610px; }
 .tool-index,
 .tool-workbench,

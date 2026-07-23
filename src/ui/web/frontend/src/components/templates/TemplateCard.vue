@@ -110,6 +110,6 @@ const formattedTime = computed(() => formatRelativeTime(props.template.updatedAt
   color: rgb(55 65 81);
 }
 .template-menu-item:hover { background: rgb(243 244 246); }
-:global(.dark) .template-menu-item { color: rgb(209 213 219); }
-:global(.dark) .template-menu-item:hover { background: rgb(55 65 81); }
+:global(.dark .template-menu-item) { color: rgb(209 213 219); }
+:global(.dark .template-menu-item:hover) { background: rgb(55 65 81); }
 </style>

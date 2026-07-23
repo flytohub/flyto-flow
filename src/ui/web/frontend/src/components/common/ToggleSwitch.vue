@@ -61,7 +61,7 @@ function toggle() {
   background-color: #d1d5db;
 }
 
-:global(.dark) .toggle-off {
+:global(.dark .toggle-off) {
   background-color: #4b5563;
 }
 

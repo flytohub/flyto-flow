@@ -38,8 +38,8 @@ const filteredWorkflows = computed(() => {
 const fetchWorkflows = async () => {
   loading.value = true
   try {
-    const data = await get('/workflows')
-    if (data?.ok) workflows.value = data.workflows || []
+    const data = await get('/templates/', { params: { page: 1, page_size: 500 } })
+    if (data?.ok) workflows.value = data.items || []
   } catch (e) { console.error('[ErrorWorkflowSelector] fetch failed:', e) }
   finally { loading.value = false }
 }

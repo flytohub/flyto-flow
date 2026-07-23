@@ -3,78 +3,10 @@
  * Handle workflow-related API requests
  */
 
-import { get, post, put, del } from './client'
+import { post } from './client'
 import { API_ENDPOINTS } from './config'
 
 export const workflowAPI = {
-  /**
-   * List all workflows
-   *
-   * S-Grade: Supports server-side enabled filtering.
-   *
-   * @param {Object} options - Query options
-   * @param {boolean} options.enabled - Filter by enabled status
-   * @returns {Promise<Object>} Workflows list with counts
-   */
-  async list(options = {}) {
-    const params = new URLSearchParams()
-    if (options.enabled !== undefined) {
-      params.append('enabled', options.enabled)
-    }
-    if (options.tags) {
-      params.append('tags', Array.isArray(options.tags) ? options.tags.join(',') : options.tags)
-    }
-    const query = params.toString() ? `?${params.toString()}` : ''
-    return await get(`${API_ENDPOINTS.WORKFLOWS.LIST}${query}`)
-  },
-
-  /**
-   * Get single workflow
-   * @param {string} id - Workflow ID
-   * @returns {Promise<Object>} Workflow data
-   */
-  async get(id) {
-    return await get(API_ENDPOINTS.WORKFLOWS.GET(id))
-  },
-
-  /**
-   * Create new workflow
-   * @param {Object} workflow - Workflow data
-   * @returns {Promise<Object>} Created workflow
-   */
-  async create(workflow) {
-    return await post(API_ENDPOINTS.WORKFLOWS.CREATE, workflow)
-  },
-
-  /**
-   * Update workflow
-   * @param {string} id - Workflow ID
-   * @param {Object} workflow - Update data
-   * @returns {Promise<Object>} Updated workflow
-   */
-  async update(id, workflow) {
-    return await put(API_ENDPOINTS.WORKFLOWS.UPDATE(id), workflow)
-  },
-
-  /**
-   * Delete workflow
-   * @param {string} id - Workflow ID
-   * @returns {Promise<void>}
-   */
-  async delete(id) {
-    return await del(API_ENDPOINTS.WORKFLOWS.DELETE(id))
-  },
-
-  /**
-   * Execute workflow
-   * @param {string} id - Workflow ID
-   * @param {Object} params - Execution parameters
-   * @returns {Promise<Object>} Execution result
-   */
-  async execute(id, params = {}) {
-    return await post(API_ENDPOINTS.WORKFLOWS.EXECUTE(id), params)
-  },
-
   /**
    * Run workflow directly (without saving)
    * Core only accepts YAML format

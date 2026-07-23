@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from typing import Callable, Dict, Optional
 
 from services.observability.alerts.manager import AlertManager
-from services.observability.metrics import MetricsCollector
+from services.observability.metrics.collector import get_collector
 
 logger = logging.getLogger(__name__)
 
@@ -121,10 +121,13 @@ class AlertScheduler:
 
         try:
             # Get system metrics from MetricsCollector
-            collector = MetricsCollector.get_instance()
-            if collector:
-                system_metrics = collector.get_current_values()
-                metrics.update(system_metrics)
+            collector = get_collector()
+            system_metrics = {
+                m.name: m.samples[-1].value
+                for m in collector.get_all_metrics()
+                if m.samples
+            }
+            metrics.update(system_metrics)
         except Exception as e:
             logger.warning(f"Failed to collect system metrics: {e}")
 

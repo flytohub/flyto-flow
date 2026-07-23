@@ -79,6 +79,7 @@ from local.lifespan_local import (
     init_capabilities,
     init_breakpoint_manager,
     cleanup_stale_browser_locks,
+    seed_starter_templates,
 )
 from local.runtime_dependencies import verify_bundled_runtime
 
@@ -151,6 +152,7 @@ async def _startup() -> asyncio.Task:
 
     init_offline_db()
     logger.info("Offline database initialized")
+    await seed_starter_templates()
     cleanup_stale_browser_locks()
     from api.health import mark_startup_complete
 

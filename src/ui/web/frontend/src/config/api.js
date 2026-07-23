@@ -44,16 +44,7 @@ export const ENDPOINTS = {
     FEATURE_FLAGS: '/config/feature-flags'
   },
   WORKFLOWS: {
-    LIST: '/workflows',
-    GET: (id) => `/workflows/${id}`,
-    CREATE: '/workflows',
-    UPDATE: (id) => `/workflows/${id}`,
-    DELETE: (id) => `/workflows/${id}`,
-    EXECUTE: (id) => `/workflows/${id}/execute`,
-    RUN: '/workflows/run',
-    EXECUTIONS: (id) => `/workflows/${id}/executions`,
-    HISTORY: (id) => `/workflows/${id}/history`,
-    MODULES: '/workflows/modules'
+    RUN: '/workflows/run'
   },
   EXECUTIONS: {
     GET: (id) => `/executions/${id}`,
@@ -96,12 +87,6 @@ export const ENDPOINTS = {
     RULES: '/alerts/rules',
     RULE: (id) => `/alerts/rules/${id}`,
     HISTORY: '/alerts/history'
-  },
-  VERSIONS: {
-    LIST: (workflowId) => `/workflows/${workflowId}/versions`,
-    GET: (workflowId, version) => `/workflows/${workflowId}/versions/${version}`,
-    DIFF: (workflowId) => `/workflows/${workflowId}/versions/diff`,
-    ROLLBACK: (workflowId, version) => `/workflows/${workflowId}/versions/${version}/rollback`
   },
   DEBUG: {
     TIMELINE: (executionId) => `/debug/timeline/${executionId}`,

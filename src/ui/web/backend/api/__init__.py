@@ -68,12 +68,10 @@ def create_offline_router() -> APIRouter:
     from api.runtime_config import router as runtime_config_router
     from api.templates_offline import router as templates_router
     from api.ui_config import router as ui_config_router
-    from api.workflows.crud import crud_router
 
     router = APIRouter(prefix="/api")
     router.include_router(runtime_config_router, tags=["Runtime"])
     _register_local_routes(router)
-    router.include_router(crud_router, prefix="/workflows", tags=["Workflows"])
     router.include_router(templates_router, tags=["Templates"])
     router.include_router(mcp_router, tags=["MCP"])
     router.include_router(ui_config_router, tags=["UI Config"])
