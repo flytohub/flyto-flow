@@ -24,11 +24,12 @@ WORKDIR /app/backend
 
 COPY src/ui/web/backend/requirements-ce.lock requirements.txt
 COPY install/check-bundled-browser.py /tmp/check-bundled-browser.py
-RUN pip install --no-cache-dir --require-hashes -r requirements.txt
+RUN python -m pip install --no-cache-dir --upgrade "pip==26.1.2" \
+    && python -m pip install --no-cache-dir --require-hashes -r requirements.txt
 
 # Browser automation is part of the CE appliance, not a first-run download.
 # /data is a runtime volume, so browsers must live in the immutable image.
-RUN pip install --no-cache-dir --only-binary=:all: "playwright==1.57.0" \
+RUN python -m pip install --no-cache-dir --only-binary=:all: "playwright==1.57.0" \
     && python -m playwright install --with-deps chromium \
     && python -c "from importlib.metadata import version; assert version('flyto-core') == '2.26.9'" \
     && python /tmp/check-bundled-browser.py
