@@ -11,10 +11,75 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 DEFAULT_OFFLINE_DB_PATH = Path.home() / ".flyto" / "offline.db"
 OFFLINE_DB_PATH_ENV = "FLYTO_OFFLINE_DB_PATH"
+OFFLINE_SCHEMA_VERSION = 3
 
 _connection: sqlite3.Connection | None = None
 _db_path: Path | None = None
 _db_lock = threading.Lock()
+
+
+def _migrate_connection_profiles(connection: sqlite3.Connection) -> None:
+    from gateway.storage.migrations import execute_script
+
+    execute_script(
+        connection,
+        """
+        CREATE TABLE IF NOT EXISTS connection_profiles (
+            id TEXT NOT NULL,
+            scope_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            type TEXT NOT NULL,
+            schema_version INTEGER NOT NULL,
+            revision INTEGER NOT NULL,
+            scope TEXT NOT NULL,
+            config TEXT NOT NULL,
+            secret_refs TEXT NOT NULL,
+            policy TEXT NOT NULL,
+            disabled INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            PRIMARY KEY (id, scope_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_connection_profiles_scope
+            ON connection_profiles(scope_id, name);
+        """,
+    )
+
+
+def _migrate_legacy_workspace_columns(connection: sqlite3.Connection) -> None:
+    _migrate_workspace_column(connection, "templates")
+    _migrate_workspace_column(connection, "workflows")
+    connection.execute(
+        "CREATE INDEX IF NOT EXISTS idx_templates_workspace ON templates(workspace_id)"
+    )
+    connection.execute(
+        "CREATE INDEX IF NOT EXISTS idx_workflows_workspace ON workflows(workspace_id)"
+    )
+
+
+def _offline_migrations():
+    from gateway.storage.migrations import Migration
+
+    return (
+        Migration(
+            1,
+            "workspace-scoped-records",
+            "baseline:workspace_id-required:v1",
+            lambda _connection: None,
+        ),
+        Migration(
+            2,
+            "connection-profiles",
+            "connection_profiles:workspace-scoped:revisioned:v1",
+            _migrate_connection_profiles,
+        ),
+        Migration(
+            3,
+            "legacy-workspace-columns",
+            "templates,workflows:workspace-backfill,indexes:v1",
+            _migrate_legacy_workspace_columns,
+        ),
+    )
 
 
 def get_default_offline_db_path() -> Path:
@@ -89,14 +154,9 @@ def init_offline_db(db_path: Path | None = None) -> None:
         );
         """
     )
-    _migrate_workspace_column(_connection, "templates")
-    _migrate_workspace_column(_connection, "workflows")
-    _connection.execute(
-        "CREATE INDEX IF NOT EXISTS idx_templates_workspace ON templates(workspace_id)"
-    )
-    _connection.execute(
-        "CREATE INDEX IF NOT EXISTS idx_workflows_workspace ON workflows(workspace_id)"
-    )
+    from gateway.storage.migrations import apply_migrations
+
+    apply_migrations(_connection, "offline", _offline_migrations())
     _connection.commit()
     logger.info("Local CE database initialized at %s", _db_path)
 
@@ -151,3 +211,17 @@ def get_offline_cursor():
             raise
         finally:
             cursor.close()
+
+
+@contextmanager
+def offline_transaction(*, immediate: bool = False):
+    """Yield a serialized local-data transaction."""
+    with _db_lock:
+        database = get_offline_db()
+        database.execute("BEGIN IMMEDIATE" if immediate else "BEGIN")
+        try:
+            yield database
+            database.commit()
+        except Exception:
+            database.rollback()
+            raise

@@ -528,6 +528,15 @@ def test_docker_image_bundles_complete_runtime():
     assert "chown -r appuser:appuser /data /app /home/appuser" in body
 
 
+def test_version_resolver_supports_repository_and_container_layouts():
+    from config.version import _version_candidates, read_app_version
+
+    candidates = _version_candidates()
+    assert Path("/app/VERSION") in candidates
+    assert ROOT / "VERSION" in candidates
+    assert read_app_version() == (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+
+
 def test_container_release_is_verified_before_docker_hub_publish():
     workflow = (
         ROOT / ".github/workflows/publish-image.yml"
@@ -546,7 +555,10 @@ def test_container_release_is_verified_before_docker_hub_publish():
     assert workflow.index("Scan release candidate") < workflow.index(
         "Log in to Docker Hub"
     )
-    assert workflow.index("Verify published manifest") < workflow.index(
+    assert "ubuntu-24.04-arm" in workflow
+    assert "linux/amd64" in workflow
+    assert "linux/arm64" in workflow
+    assert workflow.index("Verify published platforms") < workflow.index(
         "Publish Docker Hub overview"
     )
     assert "readme-filepath: ./docs/dockerhub.md" in workflow

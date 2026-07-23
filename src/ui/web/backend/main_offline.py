@@ -111,37 +111,69 @@ def _scan_modules() -> None:
 
 
 async def _start_alerts() -> None:
-    try:
-        from services.observability.alerts.scheduler import start_alert_scheduler
+    from services.observability.alerts.scheduler import start_alert_scheduler
 
-        await start_alert_scheduler()
-    except (ImportError, Exception):
-        pass
+    await start_alert_scheduler()
 
 
 def _init_tracing() -> None:
-    try:
-        from services.observability.tracing import get_tracer, SqliteTraceExporter
+    from services.observability.tracing import (
+        SqliteTraceExporter,
+        TraceExporter,
+        get_tracer,
+    )
 
-        get_tracer(exporter=SqliteTraceExporter())
-    except (ImportError, Exception):
-        pass
+    factory_spec = os.environ.get("FLYTO_TRACE_EXPORTER_FACTORY", "").strip()
+    if factory_spec:
+        from gateway.providers.loading import load_provider_factory
+
+        exporter = load_provider_factory(
+            factory_spec,
+            setting_name="FLYTO_TRACE_EXPORTER_FACTORY",
+        )()
+        if not isinstance(exporter, TraceExporter):
+            raise TypeError("Trace exporter factory must return TraceExporter")
+    else:
+        exporter = SqliteTraceExporter()
+    get_tracer(exporter=exporter)
 
 
 async def _run_deferred() -> None:
     _scan_modules()
-    await _start_alerts()
-    _init_tracing()
     logger.info("=" * 60)
     logger.info("Flyto2 Flow fully initialized")
     logger.info("=" * 60)
 
 
+def _report_deferred_completion(completed: asyncio.Task) -> None:
+    if completed.cancelled():
+        logger.info("Deferred initialization cancelled")
+        return
+    failure = completed.exception()
+    if failure is not None:
+        logger.error(
+            "Deferred initialization failed (%s)",
+            type(failure).__name__,
+        )
+
+
 async def _startup() -> asyncio.Task:
     verify_bundled_runtime()
+    from services.extensions.runtime import verify_configured_extensions
+
+    verified_extensions = verify_configured_extensions()
+    logger.info("Verified %s extension bundles", len(verified_extensions))
+    from services.connections.runtime import configure_connection_runtime
+
+    configure_connection_runtime(verified_extensions)
+    if os.environ.get("FLYTO_KEY_BACKEND", "local").strip().lower() != "local":
+        from services.credentials.encryption import EncryptionKey
+
+        EncryptionKey.initialize()
     from services.observability.log_manager import get_log_manager
 
     get_log_manager().install_handler()
+    _init_tracing()
     await init_capabilities()
     logger.info("=" * 60)
     logger.info(f"Flyto2 Flow v{APP_VERSION}")
@@ -152,7 +184,21 @@ async def _startup() -> asyncio.Task:
 
     init_offline_db()
     logger.info("Offline database initialized")
-    await seed_starter_templates()
+    from gateway.storage.database import init_db
+
+    init_db()
+    from services.runtime.execution.queue_integration import start_worker_pool
+
+    pool_size = int(os.environ.get("FLYTO_WORKER_POOL_SIZE", "4"))
+    if pool_size < 0:
+        raise RuntimeError("FLYTO_WORKER_POOL_SIZE cannot be negative")
+    if pool_size:
+        await start_worker_pool(pool_size=pool_size)
+    await seed_starter_templates(verified_extensions)
+    from local.plugin_runtime import init_plugins
+
+    await init_plugins()
+    await _start_alerts()
     cleanup_stale_browser_locks()
     from api.health import mark_startup_complete
 
@@ -160,15 +206,26 @@ async def _startup() -> asyncio.Task:
     init_breakpoint_manager()
     logger.info("Server ready, loading modules in background...")
     task = asyncio.create_task(_run_deferred())
-    task.add_done_callback(
-        lambda completed: (
-            logger.error(f"Deferred init failed: {completed.exception()}") if completed.exception() else None
-        )
-    )
+    task.add_done_callback(_report_deferred_completion)
     return task
 
 
 async def _shutdown() -> None:
+    from services.connections.runtime import reset_connection_runtime
+
+    reset_connection_runtime()
+    try:
+        from local.plugin_runtime import shutdown_plugins
+
+        await shutdown_plugins()
+    except Exception:
+        logger.exception("Plugin shutdown failed")
+    try:
+        from services.runtime.execution.queue_integration import stop_worker_pool
+
+        await stop_worker_pool()
+    except Exception:
+        logger.exception("Worker pool shutdown failed")
     try:
         from services.observability.alerts.scheduler import stop_alert_scheduler
 
@@ -193,9 +250,16 @@ async def _shutdown() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Start and stop the local Flyto2 Flow runtime."""
-    await _startup()
-    yield
-    await _shutdown()
+    deferred_task: asyncio.Task | None = None
+    try:
+        deferred_task = await _startup()
+        yield
+    finally:
+        if deferred_task is not None:
+            if not deferred_task.done():
+                deferred_task.cancel()
+            await asyncio.gather(deferred_task, return_exceptions=True)
+        await _shutdown()
 
 
 app = FastAPI(

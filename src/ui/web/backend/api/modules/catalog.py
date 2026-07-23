@@ -111,6 +111,12 @@ def get_plugin_manager() -> Optional["PluginManager"]:
     return _plugin_manager
 
 
+def set_plugin_manager(manager: Optional["PluginManager"]) -> None:
+    """Install the lifecycle-owned plugin manager used by catalog routes."""
+    global _plugin_manager
+    _plugin_manager = manager
+
+
 async def get_workspace_templates_as_modules(
     workspace_id: Optional[str],
 ) -> List[Dict[str, Any]]:

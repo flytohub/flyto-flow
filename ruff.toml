@@ -1,0 +1,4 @@
+# Provider-bound startup and compatibility modules intentionally use delayed
+# imports and re-exports. All other default Ruff rules remain enforced.
+[lint]
+ignore = ["E402", "F401"]

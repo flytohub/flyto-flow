@@ -1,7 +1,5 @@
 """Local Key Management Backend"""
 
-import hashlib
-import hmac
 import json
 import logging
 import os
@@ -12,23 +10,15 @@ from services.credentials.backends.base import KeyManagementBackend
 
 logger = logging.getLogger(__name__)
 
-# Check for cryptography library
 try:
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
     from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.backends import default_backend
-    HAS_CRYPTOGRAPHY = True
-except ImportError:
-    HAS_CRYPTOGRAPHY = False
-    # SECURITY: Check if in production - cryptography is required
-    is_debug = os.environ.get("DEBUG", "false").lower() == "true"
-    if not is_debug:
-        raise ImportError(
-            "CRITICAL: cryptography library is required in production. "
-            "The bundled cryptography runtime is unavailable"
-        )
-    logger.warning("cryptography library not found, using fallback encryption (DEV MODE ONLY)")
+except ImportError as exc:
+    raise ImportError(
+        "cryptography is required for local credential encryption"
+    ) from exc
 
 
 class LocalKeyBackend(KeyManagementBackend):
@@ -128,24 +118,14 @@ class LocalKeyBackend(KeyManagementBackend):
 
     def _derive_key(self, master_key: bytes, version: int) -> bytes:
         """Derive encryption key using PBKDF2."""
-        if HAS_CRYPTOGRAPHY:
-            kdf = PBKDF2HMAC(
-                algorithm=hashes.SHA256(),
-                length=32,  # 256 bits for AES-256
-                salt=self._salt + str(version).encode(),
-                iterations=100000,
-                backend=default_backend(),
-            )
-            return kdf.derive(master_key)
-        else:
-            # Fallback to hashlib
-            return hashlib.pbkdf2_hmac(
-                "sha256",
-                master_key,
-                self._salt + str(version).encode(),
-                100000,
-                32,
-            )
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=self._salt + str(version).encode(),
+            iterations=100000,
+            backend=default_backend(),
+        )
+        return kdf.derive(master_key)
 
     def get_key(self, version: int) -> bytes:
         """Get encryption key by version."""
@@ -177,18 +157,8 @@ class LocalKeyBackend(KeyManagementBackend):
         key = self.get_key(self._current_version)
         nonce = secrets.token_bytes(12)
 
-        if HAS_CRYPTOGRAPHY:
-            aesgcm = AESGCM(key)
-            ciphertext = aesgcm.encrypt(nonce, plaintext, None)
-        else:
-            # Fallback XOR encryption (not recommended for production)
-            logger.warning("Using fallback XOR encryption - install cryptography!")
-            ciphertext = bytes(
-                p ^ key[i % len(key)] for i, p in enumerate(plaintext)
-            )
-            # Add simple MAC
-            mac = hmac.new(key, plaintext, hashlib.sha256).digest()[:16]
-            ciphertext = mac + ciphertext
+        aesgcm = AESGCM(key)
+        ciphertext = aesgcm.encrypt(nonce, plaintext, None)
 
         # Format: version (1 byte) + nonce (12 bytes) + ciphertext
         return bytes([self._current_version]) + nonce + ciphertext
@@ -204,18 +174,5 @@ class LocalKeyBackend(KeyManagementBackend):
 
         key = self.get_key(version)
 
-        if HAS_CRYPTOGRAPHY:
-            aesgcm = AESGCM(key)
-            return aesgcm.decrypt(nonce, encrypted, None)
-        else:
-            # Fallback XOR decryption
-            mac = encrypted[:16]
-            data = encrypted[16:]
-            plaintext = bytes(
-                d ^ key[i % len(key)] for i, d in enumerate(data)
-            )
-            # Verify MAC
-            expected_mac = hmac.new(key, plaintext, hashlib.sha256).digest()[:16]
-            if not hmac.compare_digest(mac, expected_mac):
-                raise ValueError("Authentication failed")
-            return plaintext
+        aesgcm = AESGCM(key)
+        return aesgcm.decrypt(nonce, encrypted, None)

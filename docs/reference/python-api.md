@@ -5,7 +5,7 @@
 This inventory includes public and internal production callables. Generated
 fallback descriptions identify the owning source area when no docstring exists.
 
-Inventory: **2640 callables** across production Python sources; **451** use generated ownership descriptions.
+Inventory: **2875 callables** across production Python sources; **665** use generated ownership descriptions.
 
 ## `scripts/audit_ce_dependencies.py`
 
@@ -37,6 +37,14 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | internal function | [`_git`](../../scripts/check_contribution_terms.py#L16) | `_git(*args) -> str` | Implement the git operation for `scripts/check_contribution_terms.py`. |
 | function | [`main`](../../scripts/check_contribution_terms.py#L20) | `main() -> int` | Run entry point for `scripts/check_contribution_terms.py`. |
 
+## `scripts/check_dependency_lock.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| internal function | [`_normalize`](../../scripts/check_dependency_lock.py#L22) | `_normalize(name: str) -> str` | Normalize `_normalize` operation for `scripts/check_dependency_lock.py`. |
+| function | [`check`](../../scripts/check_dependency_lock.py#L26) | `check(input_path: Path, lock_path: Path) -> list[str]` | Check `check` operation for `scripts/check_dependency_lock.py`. |
+| function | [`main`](../../scripts/check_dependency_lock.py#L67) | `main() -> int` | Run entry point for `scripts/check_dependency_lock.py`. |
+
 ## `scripts/check_docs.py`
 
 | Kind | Symbol | Signature | Purpose |
@@ -58,6 +66,19 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 |---|---|---|---|
 | function | [`check`](../../scripts/check_license_policy.py#L14) | `check(root: Path) -> list[str]` | Check `check` operation for `scripts/check_license_policy.py`. |
 | function | [`main`](../../scripts/check_license_policy.py#L83) | `main() -> int` | Run entry point for `scripts/check_license_policy.py`. |
+
+## `scripts/check_version.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| function | [`check`](../../scripts/check_version.py#L16) | `check(root: Path, expected_tag: str \| None = None) -> list[str]` | Check `check` operation for `scripts/check_version.py`. |
+| function | [`main`](../../scripts/check_version.py#L40) | `main() -> int` | Run entry point for `scripts/check_version.py`. |
+
+## `scripts/flow_ops.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| function | [`main`](../../scripts/flow_ops.py#L18) | `main() -> int` | Run entry point for `scripts/flow_ops.py`. |
 
 ## `scripts/generate_ce_sbom.py`
 
@@ -99,6 +120,29 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | function | [`render_environment`](../../scripts/generate_documentation_reference.py#L499) | `render_environment(files: list[str]) -> tuple[str, int]` | Render literal environment-variable reads with source ownership. |
 | function | [`main`](../../scripts/generate_documentation_reference.py#L532) | `main() -> int` | Write generated references or fail when committed outputs are stale. |
 
+## `scripts/load_test.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| internal function | [`_percentile`](../../scripts/load_test.py#L23) | `_percentile(values: list[float], percentile: float) -> float` | Implement the percentile operation for `scripts/load_test.py`. |
+| internal function | [`_summary`](../../scripts/load_test.py#L31) | `_summary(*, operation: str, total: int, errors: int, elapsed_seconds: float, latencies_ms: list[float]) -> dict[str, Any]` | Implement the summary operation for `scripts/load_test.py`. |
+| internal function | [`_queue_probe`](../../scripts/load_test.py#L58) | `async _queue_probe(args: argparse.Namespace) -> dict[str, Any]` | Implement the queue probe operation for `scripts/load_test.py`. |
+| function | [`consume`](../../scripts/load_test.py#L103) | `async consume(worker_index: int) -> None` | Implement the consume operation for `scripts/load_test.py`. |
+| internal function | [`_http_probe`](../../scripts/load_test.py#L136) | `async _http_probe(args: argparse.Namespace) -> dict[str, Any]` | Implement the http probe operation for `scripts/load_test.py`. |
+| function | [`request_once`](../../scripts/load_test.py#L160) | `async request_once() -> None` | Request once for `scripts/load_test.py`. |
+| internal function | [`_passes_thresholds`](../../scripts/load_test.py#L194) | `_passes_thresholds(result: dict[str, Any], args: argparse.Namespace) -> bool` | Implement the passes thresholds operation for `scripts/load_test.py`. |
+| function | [`main`](../../scripts/load_test.py#L201) | `main() -> int` | Run entry point for `scripts/load_test.py`. |
+
+## `scripts/sign_extension.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| internal function | [`_write_new_file`](../../scripts/sign_extension.py#L29) | `_write_new_file(path: Path, value: bytes, *, force: bool, mode: int) -> None` | Write new file for `scripts/sign_extension.py`. |
+| function | [`generate_key`](../../scripts/sign_extension.py#L43) | `generate_key(private_key_path: Path, public_key_path: Path, *, force: bool) -> str` | Generate key for `scripts/sign_extension.py`. |
+| internal function | [`_refresh_artifact_digests`](../../scripts/sign_extension.py#L77) | `_refresh_artifact_digests(manifest_path: Path, data: dict[str, Any]) -> dict[str, Any]` | Implement the refresh artifact digests operation for `scripts/sign_extension.py`. |
+| function | [`sign_manifest`](../../scripts/sign_extension.py#L102) | `sign_manifest(manifest_path: Path, private_key_path: Path, key_id: str) -> str` | Implement the sign manifest operation for `scripts/sign_extension.py`. |
+| function | [`main`](../../scripts/sign_extension.py#L146) | `main() -> int` | Run entry point for `scripts/sign_extension.py`. |
+
 ## `scripts/validate_flow_cloud_contract.py`
 
 | Kind | Symbol | Signature | Purpose |
@@ -123,13 +167,20 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | internal function | [`_write_github_output`](../../scripts/validate_flow_cloud_contract.py#L292) | `_write_github_output(path: Path, result: dict[str, Any]) -> None` | Write github output for `scripts/validate_flow_cloud_contract.py`. |
 | function | [`main`](../../scripts/validate_flow_cloud_contract.py#L304) | `main() -> int` | Run entry point for `scripts/validate_flow_cloud_contract.py`. |
 
+## `scripts/verify_extensions.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| internal function | [`_trusted_keys`](../../scripts/verify_extensions.py#L22) | `_trusted_keys() -> dict[str, str]` | Implement the trusted keys operation for `scripts/verify_extensions.py`. |
+| function | [`main`](../../scripts/verify_extensions.py#L37) | `main() -> int` | Run entry point for `scripts/verify_extensions.py`. |
+
 ## `src/ui/web/backend/api/__init__.py`
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
 | internal function | [`_register_local_routes`](../../src/ui/web/backend/api/__init__.py#L8) | `_register_local_routes(router: APIRouter) -> None` | Implement the register local routes operation for `src/ui/web/backend/api/__init__.py`. |
 | function | [`create_offline_router`](../../src/ui/web/backend/api/__init__.py#L64) | `create_offline_router() -> APIRouter` | Create offline router for `src/ui/web/backend/api/__init__.py`. |
-| function | [`app_version`](../../src/ui/web/backend/api/__init__.py#L82) | `async app_version()` | Implement the app version operation for `src/ui/web/backend/api/__init__.py`. |
+| function | [`app_version`](../../src/ui/web/backend/api/__init__.py#L84) | `async app_version()` | Implement the app version operation for `src/ui/web/backend/api/__init__.py`. |
 
 ## `src/ui/web/backend/api/breakpoint/routes.py`
 
@@ -179,6 +230,19 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | function | [`get_http_config`](../../src/ui/web/backend/api/config/modules.py#L139) | `async get_http_config()` | Get HTTP module configuration. |
 | function | [`get_param_type_config`](../../src/ui/web/backend/api/config/modules.py#L179) | `async get_param_type_config()` | Get parameter type to UI component mappings. |
 | function | [`get_node_design_config`](../../src/ui/web/backend/api/config/modules.py#L289) | `async get_node_design_config()` | Node dimensions, shapes, and visual config for each node type. |
+
+## `src/ui/web/backend/api/connections.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| class | [`ConnectionProfileWrite`](../../src/ui/web/backend/api/connections.py#L24) | `class ConnectionProfileWrite(BaseModel)` | Implement the connection profile write operation for `src/ui/web/backend/api/connections.py`. |
+| method | [`ConnectionProfileWrite.validate_type`](../../src/ui/web/backend/api/connections.py#L36) | `validate_type(value: str) -> str` | Validate type for `ConnectionProfileWrite`. |
+| internal function | [`_validate_profile_id`](../../src/ui/web/backend/api/connections.py#L42) | `_validate_profile_id(profile_id: str) -> None` | Validate profile id for `src/ui/web/backend/api/connections.py`. |
+| function | [`list_connection_types`](../../src/ui/web/backend/api/connections.py#L48) | `async list_connection_types()` | List connection types for `src/ui/web/backend/api/connections.py`. |
+| function | [`list_connection_profiles`](../../src/ui/web/backend/api/connections.py#L59) | `async list_connection_profiles()` | List connection profiles for `src/ui/web/backend/api/connections.py`. |
+| function | [`put_connection_profile`](../../src/ui/web/backend/api/connections.py#L68) | `async put_connection_profile(profile_id: str, request: ConnectionProfileWrite)` | Implement the put connection profile operation for `src/ui/web/backend/api/connections.py`. |
+| function | [`delete_connection_profile`](../../src/ui/web/backend/api/connections.py#L97) | `async delete_connection_profile(profile_id: str, expected_revision: int \| None = Query(default=None, ge=1))` | Delete connection profile for `src/ui/web/backend/api/connections.py`. |
+| function | [`validate_connection_profile`](../../src/ui/web/backend/api/connections.py#L116) | `async validate_connection_profile(profile_id: str)` | Validate connection profile for `src/ui/web/backend/api/connections.py`. |
 
 ## `src/ui/web/backend/api/core/health.py`
 
@@ -487,11 +551,12 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | internal function | [`_invalidate_core_cache`](../../src/ui/web/backend/api/modules/catalog.py#L61) | `_invalidate_core_cache()` | Call when modules change (currently only on restart). |
 | function | [`invalidate_workspace_templates_cache`](../../src/ui/web/backend/api/modules/catalog.py#L72) | `invalidate_workspace_templates_cache(workspace_id: Optional[str] = None)` | Invalidate local template cache after CRUD operations. |
 | function | [`get_plugin_manager`](../../src/ui/web/backend/api/modules/catalog.py#L91) | `get_plugin_manager() -> Optional['PluginManager']` | Get or create the plugin manager singleton. |
-| function | [`get_workspace_templates_as_modules`](../../src/ui/web/backend/api/modules/catalog.py#L114) | `async get_workspace_templates_as_modules(workspace_id: Optional[str]) -> List[Dict[str, Any]]` | Load local workflow templates as reusable workflow modules. |
-| function | [`get_plugin_modules`](../../src/ui/web/backend/api/modules/catalog.py#L175) | `async get_plugin_modules() -> List[Dict[str, Any]]` | Get all modules from loaded plugins. |
-| function | [`get_module_environment`](../../src/ui/web/backend/api/modules/catalog.py#L223) | `async get_module_environment() -> Dict[str, Any]` | Get current module environment settings. |
-| function | [`get_tiered_catalog`](../../src/ui/web/backend/api/modules/catalog.py#L267) | `async get_tiered_catalog(lang: str = Query(default='en', description='Language code (en, zh, ja)'), include_expert: bool = Query(default=True, description='Include expert/atomic modules'), include_plugins: bool = Query(default=True, description='Include plugin modules'), include_templates: bool = Query(default=True, description='Include local workflow templates'), skip_access_control: bool = Query(default=True, description='Skip access control (show all modules)'), exclude_template_id: Optional[str] = Query(default=None, description='Template ID to exclude (prevent self-reference)'), workspace_context: Optional[WorkspaceContext] = Depends(get_local_principal)) -> Dict[str, Any]` | Get tiered module catalog for frontend (ADR-001) Returns modules organized by visibility tier: - default: Composite modules visible in the local builder - expert: Atomic modules in collapsed section - my-templates: Workflows saved in this local workspace Modules are loaded from the bundled core, local plugins, and local templates. |
-| function | [`get_module_catalog`](../../src/ui/web/backend/api/modules/catalog.py#L327) | `async get_module_catalog(lang: str = Query(default='en', description='Language code (en, zh, ja)'), category: Optional[str] = Query(default=None, description='Filter by category'), include_params: bool = Query(default=True, description='Include params_schema')) -> Dict[str, Any]` | Get complete atomic module catalog for frontend (Level 2) Returns all registered atomic modules with metadata formatted for frontend. |
+| function | [`set_plugin_manager`](../../src/ui/web/backend/api/modules/catalog.py#L114) | `set_plugin_manager(manager: Optional['PluginManager']) -> None` | Install the lifecycle-owned plugin manager used by catalog routes. |
+| function | [`get_workspace_templates_as_modules`](../../src/ui/web/backend/api/modules/catalog.py#L120) | `async get_workspace_templates_as_modules(workspace_id: Optional[str]) -> List[Dict[str, Any]]` | Load local workflow templates as reusable workflow modules. |
+| function | [`get_plugin_modules`](../../src/ui/web/backend/api/modules/catalog.py#L181) | `async get_plugin_modules() -> List[Dict[str, Any]]` | Get all modules from loaded plugins. |
+| function | [`get_module_environment`](../../src/ui/web/backend/api/modules/catalog.py#L229) | `async get_module_environment() -> Dict[str, Any]` | Get current module environment settings. |
+| function | [`get_tiered_catalog`](../../src/ui/web/backend/api/modules/catalog.py#L273) | `async get_tiered_catalog(lang: str = Query(default='en', description='Language code (en, zh, ja)'), include_expert: bool = Query(default=True, description='Include expert/atomic modules'), include_plugins: bool = Query(default=True, description='Include plugin modules'), include_templates: bool = Query(default=True, description='Include local workflow templates'), skip_access_control: bool = Query(default=True, description='Skip access control (show all modules)'), exclude_template_id: Optional[str] = Query(default=None, description='Template ID to exclude (prevent self-reference)'), workspace_context: Optional[WorkspaceContext] = Depends(get_local_principal)) -> Dict[str, Any]` | Get tiered module catalog for frontend (ADR-001) Returns modules organized by visibility tier: - default: Composite modules visible in the local builder - expert: Atomic modules in collapsed section - my-templates: Workflows saved in this local workspace Modules are loaded from the bundled core, local plugins, and local templates. |
+| function | [`get_module_catalog`](../../src/ui/web/backend/api/modules/catalog.py#L333) | `async get_module_catalog(lang: str = Query(default='en', description='Language code (en, zh, ja)'), category: Optional[str] = Query(default=None, description='Filter by category'), include_params: bool = Query(default=True, description='Include params_schema')) -> Dict[str, Any]` | Get complete atomic module catalog for frontend (Level 2) Returns all registered atomic modules with metadata formatted for frontend. |
 
 ## `src/ui/web/backend/api/modules/catalog_loaders.py`
 
@@ -697,7 +762,7 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
-| function | [`runtime_config`](../../src/ui/web/backend/api/runtime_config.py#L9) | `async runtime_config()` | Implement the runtime config operation for `src/ui/web/backend/api/runtime_config.py`. |
+| function | [`runtime_config`](../../src/ui/web/backend/api/runtime_config.py#L14) | `async runtime_config()` | Implement the runtime config operation for `src/ui/web/backend/api/runtime_config.py`. |
 
 ## `src/ui/web/backend/api/system/routes.py`
 
@@ -839,14 +904,14 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | function | [`update_variable`](../../src/ui/web/backend/api/variables.py#L261) | `async update_variable(variable_id: str, request: UpdateVariableRequest) -> Dict[str, Any]` | Update a variable. |
 | function | [`delete_variable`](../../src/ui/web/backend/api/variables.py#L287) | `async delete_variable(variable_id: str) -> Dict[str, Any]` | Delete a variable. |
 | function | [`resolve_variables`](../../src/ui/web/backend/api/variables.py#L301) | `async resolve_variables(workflow_id: str, project_id: Optional[str] = None, workspace_id: Optional[str] = None, environment: str = 'development') -> Dict[str, Any]` | Resolve all variables for a workflow execution. |
-| function | [`create_credential`](../../src/ui/web/backend/api/variables.py#L336) | `async create_credential(request: CreateCredentialRequest) -> Dict[str, Any]` | Create a new credential (secret). |
-| function | [`list_credentials`](../../src/ui/web/backend/api/variables.py#L388) | `async list_credentials(scope: Optional[str] = None, scope_id: Optional[str] = None, group_by: Optional[str] = Query(default=None, description="Group by: 'type' or 'scope'")) -> Dict[str, Any]` | List credentials (metadata only, no values). |
-| internal function | [`_group_credentials_by_type`](../../src/ui/web/backend/api/variables.py#L426) | `_group_credentials_by_type(credentials: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]` | Group credentials by type (backend computation). |
-| internal function | [`_group_credentials_by_scope`](../../src/ui/web/backend/api/variables.py#L437) | `_group_credentials_by_scope(credentials: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]` | Group credentials by scope (backend computation). |
-| function | [`reveal_credential`](../../src/ui/web/backend/api/variables.py#L452) | `async reveal_credential(name: str, request: RevealCredentialRequest, scope: str = Query(...), scope_id: str = Query(...)) -> Dict[str, Any]` | Reveal a credential value (requires reason for audit). |
-| function | [`delete_credential`](../../src/ui/web/backend/api/variables.py#L489) | `async delete_credential(name: str, scope: str = Query(...), scope_id: str = Query(...)) -> Dict[str, Any]` | Delete a credential. |
-| function | [`get_credential_audit_log`](../../src/ui/web/backend/api/variables.py#L520) | `async get_credential_audit_log(credential_name: Optional[str] = None, workspace_id: Optional[str] = None, limit: int = Query(default=100, le=1000)) -> Dict[str, Any]` | Get credential access audit log. |
-| function | [`get_variable`](../../src/ui/web/backend/api/variables.py#L549) | `async get_variable(variable_id: str) -> Dict[str, Any]` | Get a variable by ID. |
+| function | [`create_credential`](../../src/ui/web/backend/api/variables.py#L337) | `async create_credential(request: CreateCredentialRequest) -> Dict[str, Any]` | Create a new credential (secret). |
+| function | [`list_credentials`](../../src/ui/web/backend/api/variables.py#L389) | `async list_credentials(scope: Optional[str] = None, scope_id: Optional[str] = None, group_by: Optional[str] = Query(default=None, description="Group by: 'type' or 'scope'")) -> Dict[str, Any]` | List credentials (metadata only, no values). |
+| internal function | [`_group_credentials_by_type`](../../src/ui/web/backend/api/variables.py#L427) | `_group_credentials_by_type(credentials: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]` | Group credentials by type (backend computation). |
+| internal function | [`_group_credentials_by_scope`](../../src/ui/web/backend/api/variables.py#L438) | `_group_credentials_by_scope(credentials: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]` | Group credentials by scope (backend computation). |
+| function | [`reveal_credential`](../../src/ui/web/backend/api/variables.py#L453) | `async reveal_credential(name: str, request: RevealCredentialRequest, scope: str = Query(...), scope_id: str = Query(...)) -> Dict[str, Any]` | Reveal a credential value (requires reason for audit). |
+| function | [`delete_credential`](../../src/ui/web/backend/api/variables.py#L490) | `async delete_credential(name: str, scope: str = Query(...), scope_id: str = Query(...)) -> Dict[str, Any]` | Delete a credential. |
+| function | [`get_credential_audit_log`](../../src/ui/web/backend/api/variables.py#L521) | `async get_credential_audit_log(credential_name: Optional[str] = None, workspace_id: Optional[str] = None, limit: int = Query(default=100, le=1000)) -> Dict[str, Any]` | Get credential access audit log. |
+| function | [`get_variable`](../../src/ui/web/backend/api/variables.py#L550) | `async get_variable(variable_id: str) -> Dict[str, Any]` | Get a variable by ID. |
 
 ## `src/ui/web/backend/api/vector/routes.py`
 
@@ -1022,7 +1087,7 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
-| function | [`get_category_defaults`](../../src/ui/web/backend/config/constants.py#L185) | `get_category_defaults(category: str) -> dict` | Get category defaults with fallback. |
+| function | [`get_category_defaults`](../../src/ui/web/backend/config/constants.py#L187) | `get_category_defaults(category: str) -> dict` | Get category defaults with fallback. |
 
 ## `src/ui/web/backend/config/paths.py`
 
@@ -1043,12 +1108,19 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
-| function | [`validate_env`](../../src/ui/web/backend/config/settings.py#L28) | `validate_env(mode: str = 'offline', *, fail_on_missing: bool = False) -> list[str]` | Validate env for `src/ui/web/backend/config/settings.py`. |
-| class | [`Settings`](../../src/ui/web/backend/config/settings.py#L50) | `class Settings` | Implement the settings operation for `src/ui/web/backend/config/settings.py`. |
-| internal method | [`Settings.__init__`](../../src/ui/web/backend/config/settings.py#L51) | `__init__()` | Implement the init operation for `Settings`. |
-| internal method | [`Settings._parse_cors_origins`](../../src/ui/web/backend/config/settings.py#L59) | `_parse_cors_origins(value: str, debug: bool) -> list[str]` | Parse cors origins for `Settings`. |
-| method | [`Settings.is_selfhosted`](../../src/ui/web/backend/config/settings.py#L78) | `is_selfhosted() -> bool` | Determine whether selfhosted applies in `Settings`. |
-| function | [`get_settings`](../../src/ui/web/backend/config/settings.py#L84) | `get_settings() -> Settings` | Return settings for `src/ui/web/backend/config/settings.py`. |
+| function | [`validate_env`](../../src/ui/web/backend/config/settings.py#L78) | `validate_env(mode: str = 'offline', *, fail_on_missing: bool = False) -> list[str]` | Validate env for `src/ui/web/backend/config/settings.py`. |
+| class | [`Settings`](../../src/ui/web/backend/config/settings.py#L100) | `class Settings` | Implement the settings operation for `src/ui/web/backend/config/settings.py`. |
+| internal method | [`Settings.__init__`](../../src/ui/web/backend/config/settings.py#L101) | `__init__()` | Implement the init operation for `Settings`. |
+| internal method | [`Settings._parse_cors_origins`](../../src/ui/web/backend/config/settings.py#L109) | `_parse_cors_origins(value: str, debug: bool) -> list[str]` | Parse cors origins for `Settings`. |
+| method | [`Settings.is_selfhosted`](../../src/ui/web/backend/config/settings.py#L128) | `is_selfhosted() -> bool` | Determine whether selfhosted applies in `Settings`. |
+| function | [`get_settings`](../../src/ui/web/backend/config/settings.py#L134) | `get_settings() -> Settings` | Return settings for `src/ui/web/backend/config/settings.py`. |
+
+## `src/ui/web/backend/config/version.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| internal function | [`_version_candidates`](../../src/ui/web/backend/config/version.py#L13) | `_version_candidates() -> list[Path]` | Implement the version candidates operation for `src/ui/web/backend/config/version.py`. |
+| function | [`read_app_version`](../../src/ui/web/backend/config/version.py#L23) | `read_app_version() -> str` | Read and validate the first available authoritative VERSION file. |
 
 ## `src/ui/web/backend/gateway/capabilities/definitions.py`
 
@@ -1105,6 +1177,20 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | function | [`get_local_actor`](../../src/ui/web/backend/gateway/local_context.py#L23) | `async get_local_actor() -> dict` | FastAPI dependency for legacy handlers that expect a dictionary actor. |
 | function | [`local_principal_dict`](../../src/ui/web/backend/gateway/local_context.py#L28) | `local_principal_dict() -> dict` | Implement the local principal dict operation for `src/ui/web/backend/gateway/local_context.py`. |
 
+## `src/ui/web/backend/gateway/providers/access/rbac.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| class | [`AccessRequest`](../../src/ui/web/backend/gateway/providers/access/rbac.py#L68) | `class AccessRequest` | Implement the access request operation for `src/ui/web/backend/gateway/providers/access/rbac.py`. |
+| internal function | [`_permission_matches`](../../src/ui/web/backend/gateway/providers/access/rbac.py#L74) | `_permission_matches(granted: str, requested: str) -> bool` | Implement the permission matches operation for `src/ui/web/backend/gateway/providers/access/rbac.py`. |
+| class | [`RBACAccessProvider`](../../src/ui/web/backend/gateway/providers/access/rbac.py#L83) | `class RBACAccessProvider` | RBAC evaluator for external identity providers and private editions. |
+| internal method | [`RBACAccessProvider.__init__`](../../src/ui/web/backend/gateway/providers/access/rbac.py#L86) | `__init__(roles: Mapping[str, Iterable[str]] \| None = None) -> None` | Implement the init operation for `RBACAccessProvider`. |
+| method | [`RBACAccessProvider.name`](../../src/ui/web/backend/gateway/providers/access/rbac.py#L96) | `name() -> str` | Implement the name operation for `RBACAccessProvider`. |
+| method | [`RBACAccessProvider.check_permission`](../../src/ui/web/backend/gateway/providers/access/rbac.py#L99) | `async check_permission(actor: PrincipalContext, permission: str, resource: str \| None = None) -> bool` | Check permission for `RBACAccessProvider`. |
+| method | [`RBACAccessProvider.authorize`](../../src/ui/web/backend/gateway/providers/access/rbac.py#L109) | `authorize(actor: PrincipalContext, request: AccessRequest) -> bool` | Implement the authorize operation for `RBACAccessProvider`. |
+| method | [`RBACAccessProvider.get_accessible_pages`](../../src/ui/web/backend/gateway/providers/access/rbac.py#L142) | `async get_accessible_pages(actor: PrincipalContext) -> list[str]` | Return accessible pages for `RBACAccessProvider`. |
+| internal method | [`RBACAccessProvider._parse_resource`](../../src/ui/web/backend/gateway/providers/access/rbac.py#L151) | `_parse_resource(resource: str \| None) -> tuple[str, str \| None]` | Parse resource for `RBACAccessProvider`. |
+
 ## `src/ui/web/backend/gateway/providers/access/simple.py`
 
 | Kind | Symbol | Signature | Purpose |
@@ -1130,6 +1216,23 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | internal function | [`_validate_anthropic`](../../src/ui/web/backend/gateway/providers/ai/validation.py#L89) | `async _validate_anthropic(*, api_key: str, model: Optional[str]) -> dict[str, Any]` | Validate anthropic for `src/ui/web/backend/gateway/providers/ai/validation.py`. |
 | internal function | [`_is_authentication_error`](../../src/ui/web/backend/gateway/providers/ai/validation.py#L127) | `_is_authentication_error(exc: Exception, module: str, class_name: str) -> bool` | Determine whether authentication error applies in `src/ui/web/backend/gateway/providers/ai/validation.py`. |
 
+## `src/ui/web/backend/gateway/providers/audit/local.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| internal function | [`_is_redacted_key`](../../src/ui/web/backend/gateway/providers/audit/local.py#L28) | `_is_redacted_key(value: str) -> bool` | Determine whether redacted key applies in `src/ui/web/backend/gateway/providers/audit/local.py`. |
+| internal function | [`_redact`](../../src/ui/web/backend/gateway/providers/audit/local.py#L35) | `_redact(value: Any) -> Any` | Implement the redact operation for `src/ui/web/backend/gateway/providers/audit/local.py`. |
+| class | [`LocalAuditProvider`](../../src/ui/web/backend/gateway/providers/audit/local.py#L46) | `class LocalAuditProvider` | Append-only hash chain stored in the local execution database. |
+| method | [`LocalAuditProvider.name`](../../src/ui/web/backend/gateway/providers/audit/local.py#L50) | `name() -> str` | Implement the name operation for `LocalAuditProvider`. |
+| internal method | [`LocalAuditProvider._ensure_table`](../../src/ui/web/backend/gateway/providers/audit/local.py#L54) | `_ensure_table() -> None` | Ensure table for `LocalAuditProvider`. |
+| method | [`LocalAuditProvider.log`](../../src/ui/web/backend/gateway/providers/audit/local.py#L77) | `async log(action: str, actor_id: str, resource_type: str \| None = None, resource_id: str \| None = None, result: str = 'success', details: dict \| None = None, **_kwargs) -> None` | Implement the log operation for `LocalAuditProvider`. |
+| method | [`LocalAuditProvider.get_recent`](../../src/ui/web/backend/gateway/providers/audit/local.py#L138) | `async get_recent(limit: int = 100) -> list[dict[str, Any]]` | Return recent for `LocalAuditProvider`. |
+| method | [`LocalAuditProvider.get_by_actor`](../../src/ui/web/backend/gateway/providers/audit/local.py#L141) | `async get_by_actor(actor_id: str, limit: int = 100) -> list[dict[str, Any]]` | Return by actor for `LocalAuditProvider`. |
+| method | [`LocalAuditProvider.query`](../../src/ui/web/backend/gateway/providers/audit/local.py#L144) | `async query(filters: dict, limit: int = 100, offset: int = 0) -> list[dict[str, Any]]` | Implement the query operation for `LocalAuditProvider`. |
+| method | [`LocalAuditProvider.verify_chain`](../../src/ui/web/backend/gateway/providers/audit/local.py#L166) | `async verify_chain() -> bool` | Verify chain for `LocalAuditProvider`. |
+| method | [`LocalAuditProvider.export`](../../src/ui/web/backend/gateway/providers/audit/local.py#L193) | `async export(format_name: str = 'jsonl') -> str` | Export `export` operation for `LocalAuditProvider`. |
+| internal method | [`LocalAuditProvider._decode`](../../src/ui/web/backend/gateway/providers/audit/local.py#L225) | `_decode(row: dict[str, Any]) -> dict[str, Any]` | Implement the decode operation for `LocalAuditProvider`. |
+
 ## `src/ui/web/backend/gateway/providers/audit/noop.py`
 
 | Kind | Symbol | Signature | Purpose |
@@ -1149,6 +1252,13 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
 | class | [`WorkspaceContext`](../../src/ui/web/backend/gateway/providers/base.py#L6) | `class WorkspaceContext(BaseModel)` | Fixed local workspace actor used only for resource scoping. |
+
+## `src/ui/web/backend/gateway/providers/bundle.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| class | [`ProviderBundle`](../../src/ui/web/backend/gateway/providers/bundle.py#L15) | `class ProviderBundle` | Implement the provider bundle operation for `src/ui/web/backend/gateway/providers/bundle.py`. |
+| function | [`load_provider_bundle`](../../src/ui/web/backend/gateway/providers/bundle.py#L25) | `load_provider_bundle(spec: str) -> ProviderBundle` | Load one explicitly allowlisted ``module:factory`` provider bundle. |
 
 ## `src/ui/web/backend/gateway/providers/data/models/common.py`
 
@@ -1254,6 +1364,49 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | function | [`check_providers_health`](../../src/ui/web/backend/gateway/providers/hub.py#L95) | `async check_providers_health() -> dict` | Check providers health for `src/ui/web/backend/gateway/providers/hub.py`. |
 | function | [`shutdown_providers`](../../src/ui/web/backend/gateway/providers/hub.py#L99) | `async shutdown_providers() -> None` | Implement the shutdown providers operation for `src/ui/web/backend/gateway/providers/hub.py`. |
 
+## `src/ui/web/backend/gateway/providers/identity/contracts.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| class | [`SSOProtocol`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L18) | `class SSOProtocol(str, Enum)` | Implement the ssoprotocol operation for `src/ui/web/backend/gateway/providers/identity/contracts.py`. |
+| class | [`SSOConfiguration`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L23) | `class SSOConfiguration(BaseModel)` | Non-secret SSO metadata; credentials remain external references. |
+| method | [`SSOConfiguration.normalize_domains`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L41) | `normalize_domains(values: list[str]) -> list[str]` | Normalize domains for `SSOConfiguration`. |
+| method | [`SSOConfiguration.require_https_metadata`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L51) | `require_https_metadata(value: HttpUrl \| None) -> HttpUrl \| None` | Implement the require https metadata operation for `SSOConfiguration`. |
+| method | [`SSOConfiguration.require_nonempty_identity_fields`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L58) | `require_nonempty_identity_fields(value: str) -> str` | Implement the require nonempty identity fields operation for `SSOConfiguration`. |
+| method | [`SSOConfiguration.validate_protocol_fields`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L65) | `validate_protocol_fields()` | Validate protocol fields for `SSOConfiguration`. |
+| class | [`RoleBinding`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L74) | `class RoleBinding(BaseModel)` | Implement the role binding operation for `src/ui/web/backend/gateway/providers/identity/contracts.py`. |
+| method | [`RoleBinding.require_nonempty_scope`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L83) | `require_nonempty_scope(value: str \| None) -> str \| None` | Implement the require nonempty scope operation for `RoleBinding`. |
+| class | [`PrincipalContext`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L92) | `class PrincipalContext(BaseModel)` | Implement the principal context operation for `src/ui/web/backend/gateway/providers/identity/contracts.py`. |
+| method | [`PrincipalContext.require_nonempty_principal_fields`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L107) | `require_nonempty_principal_fields(value: str) -> str` | Implement the require nonempty principal fields operation for `PrincipalContext`. |
+| method | [`PrincipalContext.normalize_unique_values`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L115) | `normalize_unique_values(values: tuple[str, ...]) -> tuple[str, ...]` | Normalize unique values for `PrincipalContext`. |
+| class | [`SCIMPrincipal`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L120) | `class SCIMPrincipal(BaseModel)` | Implement the scimprincipal operation for `src/ui/web/backend/gateway/providers/identity/contracts.py`. |
+| class | [`SCIMGroup`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L132) | `class SCIMGroup(BaseModel)` | Implement the scimgroup operation for `src/ui/web/backend/gateway/providers/identity/contracts.py`. |
+| class | [`IdentityProvider`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L142) | `class IdentityProvider(Protocol)` | Implement the identity provider operation for `src/ui/web/backend/gateway/providers/identity/contracts.py`. |
+| method | [`IdentityProvider.name`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L144) | `name() -> str` | Implement the name operation for `IdentityProvider`. |
+| method | [`IdentityProvider.begin_login`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L146) | `async begin_login(configuration: SSOConfiguration, redirect_uri: str, state: str) -> str` | Implement the begin login operation for `IdentityProvider`. |
+| method | [`IdentityProvider.complete_login`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L153) | `async complete_login(configuration: SSOConfiguration, callback: dict[str, str]) -> PrincipalContext` | Implement the complete login operation for `IdentityProvider`. |
+| method | [`IdentityProvider.validate_session`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L159) | `async validate_session(token: str) -> PrincipalContext \| None` | Validate session for `IdentityProvider`. |
+| method | [`IdentityProvider.logout`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L161) | `async logout(token: str) -> None` | Implement the logout operation for `IdentityProvider`. |
+| method | [`IdentityProvider.health_check`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L163) | `async health_check() -> dict[str, Any]` | Implement the health check operation for `IdentityProvider`. |
+| class | [`ProvisioningProvider`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L167) | `class ProvisioningProvider(Protocol)` | SCIM 2.0 storage contract with organization isolation. |
+| method | [`ProvisioningProvider.list_principals`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L170) | `async list_principals(organization_id: str, *, filter_expression: str \| None = None, start_index: int = 1, count: int = 100) -> tuple[list[SCIMPrincipal], int]` | List principals for `ProvisioningProvider`. |
+| method | [`ProvisioningProvider.get_principal`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L179) | `async get_principal(organization_id: str, principal_id: str) -> SCIMPrincipal \| None` | Return principal for `ProvisioningProvider`. |
+| method | [`ProvisioningProvider.upsert_principal`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L185) | `async upsert_principal(organization_id: str, principal: SCIMPrincipal) -> SCIMPrincipal` | Implement the upsert principal operation for `ProvisioningProvider`. |
+| method | [`ProvisioningProvider.deactivate_principal`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L191) | `async deactivate_principal(organization_id: str, principal_id: str) -> bool` | Implement the deactivate principal operation for `ProvisioningProvider`. |
+| method | [`ProvisioningProvider.list_groups`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L197) | `async list_groups(organization_id: str) -> list[SCIMGroup]` | List groups for `ProvisioningProvider`. |
+| method | [`ProvisioningProvider.get_group`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L199) | `async get_group(organization_id: str, group_id: str) -> SCIMGroup \| None` | Return group for `ProvisioningProvider`. |
+| method | [`ProvisioningProvider.upsert_group`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L205) | `async upsert_group(organization_id: str, group: SCIMGroup) -> SCIMGroup` | Implement the upsert group operation for `ProvisioningProvider`. |
+| method | [`ProvisioningProvider.delete_group`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L211) | `async delete_group(organization_id: str, group_id: str) -> bool` | Delete group for `ProvisioningProvider`. |
+| method | [`ProvisioningProvider.health_check`](../../src/ui/web/backend/gateway/providers/identity/contracts.py#L217) | `async health_check() -> dict[str, Any]` | Implement the health check operation for `ProvisioningProvider`. |
+
+## `src/ui/web/backend/gateway/providers/loading.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| function | [`configured_provider_prefixes`](../../src/ui/web/backend/gateway/providers/loading.py#L15) | `configured_provider_prefixes() -> tuple[str, ...]` | Implement the configured provider prefixes operation for `src/ui/web/backend/gateway/providers/loading.py`. |
+| function | [`is_provider_module_allowed`](../../src/ui/web/backend/gateway/providers/loading.py#L30) | `is_provider_module_allowed(module_name: str, prefixes: tuple[str, ...] \| None = None) -> bool` | Determine whether provider module allowed applies in `src/ui/web/backend/gateway/providers/loading.py`. |
+| function | [`load_provider_factory`](../../src/ui/web/backend/gateway/providers/loading.py#L42) | `load_provider_factory(spec: str, *, setting_name: str) -> Callable[[], Any]` | Load provider factory for `src/ui/web/backend/gateway/providers/loading.py`. |
+
 ## `src/ui/web/backend/gateway/providers/vector/provider.py`
 
 | Kind | Symbol | Signature | Purpose |
@@ -1301,17 +1454,23 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
-| function | [`init_db`](../../src/ui/web/backend/gateway/storage/database.py#L19) | `init_db(db_path: Path \| None = None) -> None` | Implement the init db operation for `src/ui/web/backend/gateway/storage/database.py`. |
-| internal function | [`_migrate_executions`](../../src/ui/web/backend/gateway/storage/database.py#L123) | `_migrate_executions(connection: sqlite3.Connection) -> None` | Implement the migrate executions operation for `src/ui/web/backend/gateway/storage/database.py`. |
-| internal function | [`_migrate_workspace_column`](../../src/ui/web/backend/gateway/storage/database.py#L141) | `_migrate_workspace_column(connection: sqlite3.Connection, table: str) -> None` | Keep local data created before the accountless workspace schema. |
-| function | [`get_db`](../../src/ui/web/backend/gateway/storage/database.py#L158) | `get_db() -> sqlite3.Connection` | Return db for `src/ui/web/backend/gateway/storage/database.py`. |
-| function | [`close_db`](../../src/ui/web/backend/gateway/storage/database.py#L166) | `close_db() -> None` | Implement the close db operation for `src/ui/web/backend/gateway/storage/database.py`. |
-| function | [`get_cursor`](../../src/ui/web/backend/gateway/storage/database.py#L174) | `get_cursor()` | Return cursor for `src/ui/web/backend/gateway/storage/database.py`. |
-| function | [`get_db_connection`](../../src/ui/web/backend/gateway/storage/database.py#L188) | `get_db_connection() -> sqlite3.Connection` | Return db connection for `src/ui/web/backend/gateway/storage/database.py`. |
-| class | [`DatabaseManager`](../../src/ui/web/backend/gateway/storage/database.py#L192) | `class DatabaseManager` | Compatibility wrapper for local repositories sharing this database. |
-| method | [`DatabaseManager.execute`](../../src/ui/web/backend/gateway/storage/database.py#L196) | `execute(sql: str, params: tuple \| None = None)` | Implement the execute operation for `DatabaseManager`. |
-| method | [`DatabaseManager.fetchone`](../../src/ui/web/backend/gateway/storage/database.py#L205) | `fetchone(sql: str, params: tuple \| None = None)` | Implement the fetchone operation for `DatabaseManager`. |
-| method | [`DatabaseManager.fetchall`](../../src/ui/web/backend/gateway/storage/database.py#L211) | `fetchall(sql: str, params: tuple \| None = None)` | Implement the fetchall operation for `DatabaseManager`. |
+| function | [`get_db_path`](../../src/ui/web/backend/gateway/storage/database.py#L20) | `get_db_path() -> Path` | Return db path for `src/ui/web/backend/gateway/storage/database.py`. |
+| internal function | [`_migrate_job_idempotency`](../../src/ui/web/backend/gateway/storage/database.py#L25) | `_migrate_job_idempotency(connection: sqlite3.Connection) -> None` | Implement the migrate job idempotency operation for `src/ui/web/backend/gateway/storage/database.py`. |
+| internal function | [`_migrate_operational_tables`](../../src/ui/web/backend/gateway/storage/database.py#L39) | `_migrate_operational_tables(connection: sqlite3.Connection) -> None` | Implement the migrate operational tables operation for `src/ui/web/backend/gateway/storage/database.py`. |
+| internal function | [`_migrate_legacy_execution_columns`](../../src/ui/web/backend/gateway/storage/database.py#L226) | `_migrate_legacy_execution_columns(connection: sqlite3.Connection) -> None` | Implement the migrate legacy execution columns operation for `src/ui/web/backend/gateway/storage/database.py`. |
+| internal function | [`_execution_migrations`](../../src/ui/web/backend/gateway/storage/database.py#L238) | `_execution_migrations()` | Implement the execution migrations operation for `src/ui/web/backend/gateway/storage/database.py`. |
+| function | [`init_db`](../../src/ui/web/backend/gateway/storage/database.py#L264) | `init_db(db_path: Path \| None = None) -> None` | Implement the init db operation for `src/ui/web/backend/gateway/storage/database.py`. |
+| internal function | [`_migrate_executions`](../../src/ui/web/backend/gateway/storage/database.py#L364) | `_migrate_executions(connection: sqlite3.Connection) -> None` | Implement the migrate executions operation for `src/ui/web/backend/gateway/storage/database.py`. |
+| internal function | [`_migrate_workspace_column`](../../src/ui/web/backend/gateway/storage/database.py#L382) | `_migrate_workspace_column(connection: sqlite3.Connection, table: str) -> None` | Keep local data created before the accountless workspace schema. |
+| function | [`get_db`](../../src/ui/web/backend/gateway/storage/database.py#L399) | `get_db() -> sqlite3.Connection` | Return db for `src/ui/web/backend/gateway/storage/database.py`. |
+| function | [`close_db`](../../src/ui/web/backend/gateway/storage/database.py#L407) | `close_db() -> None` | Implement the close db operation for `src/ui/web/backend/gateway/storage/database.py`. |
+| function | [`get_cursor`](../../src/ui/web/backend/gateway/storage/database.py#L415) | `get_cursor()` | Return cursor for `src/ui/web/backend/gateway/storage/database.py`. |
+| function | [`transaction`](../../src/ui/web/backend/gateway/storage/database.py#L430) | `transaction(*, immediate: bool = False)` | Serialize a database transaction and optionally acquire the write lease. |
+| function | [`get_db_connection`](../../src/ui/web/backend/gateway/storage/database.py#L443) | `get_db_connection() -> sqlite3.Connection` | Return db connection for `src/ui/web/backend/gateway/storage/database.py`. |
+| class | [`DatabaseManager`](../../src/ui/web/backend/gateway/storage/database.py#L447) | `class DatabaseManager` | Compatibility wrapper for local repositories sharing this database. |
+| method | [`DatabaseManager.execute`](../../src/ui/web/backend/gateway/storage/database.py#L451) | `execute(sql: str, params: tuple \| None = None)` | Implement the execute operation for `DatabaseManager`. |
+| method | [`DatabaseManager.fetchone`](../../src/ui/web/backend/gateway/storage/database.py#L460) | `fetchone(sql: str, params: tuple \| None = None)` | Implement the fetchone operation for `DatabaseManager`. |
+| method | [`DatabaseManager.fetchall`](../../src/ui/web/backend/gateway/storage/database.py#L466) | `fetchall(sql: str, params: tuple \| None = None)` | Implement the fetchall operation for `DatabaseManager`. |
 
 ## `src/ui/web/backend/gateway/storage/execution_read.py`
 
@@ -1350,25 +1509,26 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
-| internal function | [`_utc_now`](../../src/ui/web/backend/gateway/storage/job_queue.py#L20) | `_utc_now() -> str` | Get current UTC timestamp as ISO string. |
-| internal function | [`_parse_timestamp`](../../src/ui/web/backend/gateway/storage/job_queue.py#L25) | `_parse_timestamp(ts: Optional[str]) -> Optional[datetime]` | Parse ISO timestamp string to datetime. |
-| class | [`Job`](../../src/ui/web/backend/gateway/storage/job_queue.py#L36) | `class Job` | Job queue entry for workflow execution. |
-| method | [`Job.to_dict`](../../src/ui/web/backend/gateway/storage/job_queue.py#L63) | `to_dict() -> Dict[str, Any]` | Convert to dictionary. |
-| method | [`Job.from_row`](../../src/ui/web/backend/gateway/storage/job_queue.py#L86) | `from_row(row) -> 'Job'` | Create from SQLite row. |
-| class | [`JobQueueRepository`](../../src/ui/web/backend/gateway/storage/job_queue.py#L109) | `class JobQueueRepository` | Repository for job queue operations with lease management. |
-| method | [`JobQueueRepository.enqueue`](../../src/ui/web/backend/gateway/storage/job_queue.py#L113) | `enqueue(execution_id: str, workflow_id: str, workspace_id: Optional[str] = None, priority: int = 0, max_attempts: int = 3, timeout_ms: int = 0, visibility_timeout_ms: int = 30000) -> Job` | Add a new job to the queue. |
-| method | [`JobQueueRepository.dequeue`](../../src/ui/web/backend/gateway/storage/job_queue.py#L181) | `dequeue(worker_id: str, lease_duration_seconds: int = 300) -> Optional[Job]` | Atomically dequeue and lock the highest priority pending job. |
-| method | [`JobQueueRepository.ack`](../../src/ui/web/backend/gateway/storage/job_queue.py#L265) | `ack(job_id: str, worker_id: str) -> bool` | Acknowledge successful job completion. |
-| method | [`JobQueueRepository.nack`](../../src/ui/web/backend/gateway/storage/job_queue.py#L298) | `nack(job_id: str, worker_id: str, error_message: Optional[str] = None, requeue: bool = True) -> bool` | Negative acknowledge - job failed. |
-| method | [`JobQueueRepository.heartbeat`](../../src/ui/web/backend/gateway/storage/job_queue.py#L369) | `heartbeat(job_id: str, worker_id: str, extend_seconds: int = 60) -> bool` | Update job heartbeat and extend lease. |
-| method | [`JobQueueRepository.cancel`](../../src/ui/web/backend/gateway/storage/job_queue.py#L404) | `cancel(job_id: str) -> bool` | Cancel a pending or running job. |
-| method | [`JobQueueRepository.cancel_by_execution_id`](../../src/ui/web/backend/gateway/storage/job_queue.py#L433) | `cancel_by_execution_id(execution_id: str) -> bool` | Cancel job by execution ID. |
-| method | [`JobQueueRepository.get_job`](../../src/ui/web/backend/gateway/storage/job_queue.py#L462) | `get_job(job_id: str) -> Optional[Job]` | Get job by ID. |
-| method | [`JobQueueRepository.get_by_execution_id`](../../src/ui/web/backend/gateway/storage/job_queue.py#L474) | `get_by_execution_id(execution_id: str) -> Optional[Job]` | Get job by execution ID. |
-| method | [`JobQueueRepository.release_expired_leases`](../../src/ui/web/backend/gateway/storage/job_queue.py#L489) | `release_expired_leases() -> int` | Release jobs with expired leases (crashed workers). |
-| method | [`JobQueueRepository.list_jobs`](../../src/ui/web/backend/gateway/storage/job_queue.py#L516) | `list_jobs(status: Optional[str] = None, workspace_id: Optional[str] = None, limit: int = 50, offset: int = 0) -> List[Job]` | List jobs with optional filters. |
-| method | [`JobQueueRepository.get_queue_stats`](../../src/ui/web/backend/gateway/storage/job_queue.py#L562) | `get_queue_stats() -> Dict[str, Any]` | Get queue statistics. |
-| method | [`JobQueueRepository.cleanup_old_jobs`](../../src/ui/web/backend/gateway/storage/job_queue.py#L589) | `cleanup_old_jobs(days: int = 7) -> int` | Delete completed/failed/cancelled jobs older than specified days. |
+| internal function | [`_utc_now`](../../src/ui/web/backend/gateway/storage/job_queue.py#L21) | `_utc_now() -> str` | Get current UTC timestamp as ISO string. |
+| internal function | [`_parse_timestamp`](../../src/ui/web/backend/gateway/storage/job_queue.py#L26) | `_parse_timestamp(ts: Optional[str]) -> Optional[datetime]` | Parse ISO timestamp string to datetime. |
+| class | [`Job`](../../src/ui/web/backend/gateway/storage/job_queue.py#L37) | `class Job` | Job queue entry for workflow execution. |
+| method | [`Job.to_dict`](../../src/ui/web/backend/gateway/storage/job_queue.py#L66) | `to_dict() -> Dict[str, Any]` | Convert to dictionary. |
+| method | [`Job.from_row`](../../src/ui/web/backend/gateway/storage/job_queue.py#L91) | `from_row(row) -> 'Job'` | Create from SQLite row. |
+| class | [`JobQueueRepository`](../../src/ui/web/backend/gateway/storage/job_queue.py#L116) | `class JobQueueRepository` | Repository for job queue operations with lease management. |
+| method | [`JobQueueRepository.enqueue`](../../src/ui/web/backend/gateway/storage/job_queue.py#L120) | `enqueue(execution_id: str, workflow_id: str, workspace_id: Optional[str] = None, priority: int = 0, max_attempts: int = 3, timeout_ms: int = 0, visibility_timeout_ms: int = 30000, metadata: Optional[Dict[str, Any]] = None, idempotency_key: Optional[str] = None) -> Job` | Add a new job to the queue. |
+| method | [`JobQueueRepository.dequeue`](../../src/ui/web/backend/gateway/storage/job_queue.py#L209) | `dequeue(worker_id: str, lease_duration_seconds: int = 300) -> Optional[Job]` | Atomically dequeue and lock the highest priority pending job. |
+| method | [`JobQueueRepository.ack`](../../src/ui/web/backend/gateway/storage/job_queue.py#L276) | `ack(job_id: str, worker_id: str) -> bool` | Acknowledge successful job completion. |
+| method | [`JobQueueRepository.nack`](../../src/ui/web/backend/gateway/storage/job_queue.py#L309) | `nack(job_id: str, worker_id: str, error_message: Optional[str] = None, requeue: bool = True) -> bool` | Negative acknowledge - job failed. |
+| method | [`JobQueueRepository.heartbeat`](../../src/ui/web/backend/gateway/storage/job_queue.py#L380) | `heartbeat(job_id: str, worker_id: str, extend_seconds: int = 60) -> bool` | Update job heartbeat and extend lease. |
+| method | [`JobQueueRepository.cancel`](../../src/ui/web/backend/gateway/storage/job_queue.py#L415) | `cancel(job_id: str) -> bool` | Cancel a pending or running job. |
+| method | [`JobQueueRepository.cancel_by_execution_id`](../../src/ui/web/backend/gateway/storage/job_queue.py#L444) | `cancel_by_execution_id(execution_id: str) -> bool` | Cancel job by execution ID. |
+| method | [`JobQueueRepository.get_job`](../../src/ui/web/backend/gateway/storage/job_queue.py#L473) | `get_job(job_id: str) -> Optional[Job]` | Get job by ID. |
+| method | [`JobQueueRepository.get_by_execution_id`](../../src/ui/web/backend/gateway/storage/job_queue.py#L485) | `get_by_execution_id(execution_id: str) -> Optional[Job]` | Get job by execution ID. |
+| method | [`JobQueueRepository.get_by_idempotency_key`](../../src/ui/web/backend/gateway/storage/job_queue.py#L500) | `get_by_idempotency_key(idempotency_key: str) -> Optional[Job]` | Return an active job for an idempotency key. |
+| method | [`JobQueueRepository.release_expired_leases`](../../src/ui/web/backend/gateway/storage/job_queue.py#L515) | `release_expired_leases() -> int` | Release jobs with expired leases (crashed workers). |
+| method | [`JobQueueRepository.list_jobs`](../../src/ui/web/backend/gateway/storage/job_queue.py#L542) | `list_jobs(status: Optional[str] = None, workspace_id: Optional[str] = None, limit: int = 50, offset: int = 0) -> List[Job]` | List jobs with optional filters. |
+| method | [`JobQueueRepository.get_queue_stats`](../../src/ui/web/backend/gateway/storage/job_queue.py#L588) | `get_queue_stats() -> Dict[str, Any]` | Get queue statistics. |
+| method | [`JobQueueRepository.cleanup_old_jobs`](../../src/ui/web/backend/gateway/storage/job_queue.py#L615) | `cleanup_old_jobs(days: int = 7) -> int` | Delete completed/failed/cancelled jobs older than specified days. |
 
 ## `src/ui/web/backend/gateway/storage/metrics_repo.py`
 
@@ -1388,6 +1548,17 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | method | [`MetricsRepository.get_metric_names`](../../src/ui/web/backend/gateway/storage/metrics_repo.py#L358) | `get_metric_names() -> List[str]` | Get list of unique metric names. |
 | method | [`MetricsRepository.count`](../../src/ui/web/backend/gateway/storage/metrics_repo.py#L371) | `count(name: Optional[str] = None) -> int` | Count stored metrics. |
 
+## `src/ui/web/backend/gateway/storage/migrations.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| class | [`Migration`](../../src/ui/web/backend/gateway/storage/migrations.py#L16) | `class Migration` | Implement the migration operation for `src/ui/web/backend/gateway/storage/migrations.py`. |
+| method | [`Migration.checksum`](../../src/ui/web/backend/gateway/storage/migrations.py#L23) | `checksum() -> str` | Implement the checksum operation for `Migration`. |
+| function | [`ensure_column`](../../src/ui/web/backend/gateway/storage/migrations.py#L28) | `ensure_column(connection: sqlite3.Connection, table: str, name: str, declaration: str) -> None` | Ensure column for `src/ui/web/backend/gateway/storage/migrations.py`. |
+| function | [`execute_script`](../../src/ui/web/backend/gateway/storage/migrations.py#L41) | `execute_script(connection: sqlite3.Connection, script: str) -> None` | Execute complete SQLite statements without implicit transaction commits. |
+| function | [`apply_migrations`](../../src/ui/web/backend/gateway/storage/migrations.py#L53) | `apply_migrations(connection: sqlite3.Connection, namespace: str, migrations: Iterable[Migration]) -> int` | Apply pending migrations atomically and reject changed history. |
+| function | [`current_schema_version`](../../src/ui/web/backend/gateway/storage/migrations.py#L134) | `current_schema_version(connection: sqlite3.Connection, namespace: str) -> int` | Implement the current schema version operation for `src/ui/web/backend/gateway/storage/migrations.py`. |
+
 ## `src/ui/web/backend/gateway/storage/models.py`
 
 | Kind | Symbol | Signature | Purpose |
@@ -1404,23 +1575,28 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
-| function | [`get_default_offline_db_path`](../../src/ui/web/backend/gateway/storage/offline_db.py#L20) | `get_default_offline_db_path() -> Path` | Resolve the configured offline database path for the current process. |
-| function | [`get_offline_db_path`](../../src/ui/web/backend/gateway/storage/offline_db.py#L28) | `get_offline_db_path() -> Path` | Return the active database path, or the path that will be used on init. |
-| function | [`init_offline_db`](../../src/ui/web/backend/gateway/storage/offline_db.py#L33) | `init_offline_db(db_path: Path \| None = None) -> None` | Open the local database and create only Flow workflow tables. |
-| internal function | [`_migrate_workspace_column`](../../src/ui/web/backend/gateway/storage/offline_db.py#L104) | `_migrate_workspace_column(connection: sqlite3.Connection, table: str) -> None` | Migrate pre-Flow local databases without losing existing records. |
-| function | [`get_offline_db`](../../src/ui/web/backend/gateway/storage/offline_db.py#L121) | `get_offline_db() -> sqlite3.Connection` | Return offline db for `src/ui/web/backend/gateway/storage/offline_db.py`. |
-| function | [`close_offline_db`](../../src/ui/web/backend/gateway/storage/offline_db.py#L129) | `close_offline_db() -> None` | Close offline database connection. |
-| function | [`get_offline_cursor`](../../src/ui/web/backend/gateway/storage/offline_db.py#L141) | `get_offline_cursor()` | Yield a serialized cursor and commit or roll back atomically. |
+| internal function | [`_migrate_connection_profiles`](../../src/ui/web/backend/gateway/storage/offline_db.py#L21) | `_migrate_connection_profiles(connection: sqlite3.Connection) -> None` | Implement the migrate connection profiles operation for `src/ui/web/backend/gateway/storage/offline_db.py`. |
+| internal function | [`_migrate_legacy_workspace_columns`](../../src/ui/web/backend/gateway/storage/offline_db.py#L49) | `_migrate_legacy_workspace_columns(connection: sqlite3.Connection) -> None` | Implement the migrate legacy workspace columns operation for `src/ui/web/backend/gateway/storage/offline_db.py`. |
+| internal function | [`_offline_migrations`](../../src/ui/web/backend/gateway/storage/offline_db.py#L60) | `_offline_migrations()` | Implement the offline migrations operation for `src/ui/web/backend/gateway/storage/offline_db.py`. |
+| function | [`get_default_offline_db_path`](../../src/ui/web/backend/gateway/storage/offline_db.py#L85) | `get_default_offline_db_path() -> Path` | Resolve the configured offline database path for the current process. |
+| function | [`get_offline_db_path`](../../src/ui/web/backend/gateway/storage/offline_db.py#L93) | `get_offline_db_path() -> Path` | Return the active database path, or the path that will be used on init. |
+| function | [`init_offline_db`](../../src/ui/web/backend/gateway/storage/offline_db.py#L98) | `init_offline_db(db_path: Path \| None = None) -> None` | Open the local database and create only Flow workflow tables. |
+| internal function | [`_migrate_workspace_column`](../../src/ui/web/backend/gateway/storage/offline_db.py#L164) | `_migrate_workspace_column(connection: sqlite3.Connection, table: str) -> None` | Migrate pre-Flow local databases without losing existing records. |
+| function | [`get_offline_db`](../../src/ui/web/backend/gateway/storage/offline_db.py#L181) | `get_offline_db() -> sqlite3.Connection` | Return offline db for `src/ui/web/backend/gateway/storage/offline_db.py`. |
+| function | [`close_offline_db`](../../src/ui/web/backend/gateway/storage/offline_db.py#L189) | `close_offline_db() -> None` | Close offline database connection. |
+| function | [`get_offline_cursor`](../../src/ui/web/backend/gateway/storage/offline_db.py#L201) | `get_offline_cursor()` | Yield a serialized cursor and commit or roll back atomically. |
+| function | [`offline_transaction`](../../src/ui/web/backend/gateway/storage/offline_db.py#L217) | `offline_transaction(*, immediate: bool = False)` | Yield a serialized local-data transaction. |
 
 ## `src/ui/web/backend/gateway/storage/queue_factory.py`
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
-| function | [`get_queue_backend`](../../src/ui/web/backend/gateway/storage/queue_factory.py#L9) | `get_queue_backend() -> str` | Return queue backend for `src/ui/web/backend/gateway/storage/queue_factory.py`. |
-| function | [`create_queue`](../../src/ui/web/backend/gateway/storage/queue_factory.py#L13) | `create_queue(backend: str \| None = None) -> QueueInterface` | Create queue for `src/ui/web/backend/gateway/storage/queue_factory.py`. |
-| function | [`get_queue`](../../src/ui/web/backend/gateway/storage/queue_factory.py#L21) | `get_queue() -> QueueInterface` | Return queue for `src/ui/web/backend/gateway/storage/queue_factory.py`. |
-| function | [`reset_queue`](../../src/ui/web/backend/gateway/storage/queue_factory.py#L28) | `reset_queue() -> None` | Implement the reset queue operation for `src/ui/web/backend/gateway/storage/queue_factory.py`. |
-| function | [`get_queue_health`](../../src/ui/web/backend/gateway/storage/queue_factory.py#L33) | `async get_queue_health() -> dict` | Return queue health for `src/ui/web/backend/gateway/storage/queue_factory.py`. |
+| function | [`get_queue_backend`](../../src/ui/web/backend/gateway/storage/queue_factory.py#L12) | `get_queue_backend() -> str` | Return queue backend for `src/ui/web/backend/gateway/storage/queue_factory.py`. |
+| internal function | [`_create_external_queue`](../../src/ui/web/backend/gateway/storage/queue_factory.py#L16) | `_create_external_queue(spec: str) -> QueueInterface` | Create external queue for `src/ui/web/backend/gateway/storage/queue_factory.py`. |
+| function | [`create_queue`](../../src/ui/web/backend/gateway/storage/queue_factory.py#L27) | `create_queue(backend: str \| None = None) -> QueueInterface` | Create queue for `src/ui/web/backend/gateway/storage/queue_factory.py`. |
+| function | [`get_queue`](../../src/ui/web/backend/gateway/storage/queue_factory.py#L41) | `get_queue() -> QueueInterface` | Return queue for `src/ui/web/backend/gateway/storage/queue_factory.py`. |
+| function | [`reset_queue`](../../src/ui/web/backend/gateway/storage/queue_factory.py#L48) | `reset_queue() -> None` | Implement the reset queue operation for `src/ui/web/backend/gateway/storage/queue_factory.py`. |
+| function | [`get_queue_health`](../../src/ui/web/backend/gateway/storage/queue_factory.py#L53) | `async get_queue_health() -> dict` | Return queue health for `src/ui/web/backend/gateway/storage/queue_factory.py`. |
 
 ## `src/ui/web/backend/gateway/storage/queue_interface.py`
 
@@ -1453,20 +1629,21 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 |---|---|---|---|
 | class | [`SQLiteQueue`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L17) | `class SQLiteQueue(QueueInterface)` | SQLite-based job queue implementation. |
 | internal method | [`SQLiteQueue.__init__`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L25) | `__init__()` | Initialize SQLite queue. |
-| method | [`SQLiteQueue.enqueue`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L30) | `async enqueue(execution_id: str, workflow_id: str, workspace_id: Optional[str] = None, priority: int = 0, max_attempts: int = 3, timeout_ms: int = 300000, visibility_timeout_ms: int = 30000, metadata: Optional[Dict[str, Any]] = None) -> QueueJob` | Add a new job to the queue. |
-| method | [`SQLiteQueue.dequeue`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L55) | `async dequeue(worker_id: str, lease_duration_seconds: int = 300) -> Optional[QueueJob]` | Atomically dequeue and lock the highest priority pending job. |
-| method | [`SQLiteQueue.ack`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L71) | `async ack(job_id: str, worker_id: str) -> bool` | Acknowledge successful job completion. |
-| method | [`SQLiteQueue.nack`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L75) | `async nack(job_id: str, worker_id: str, error_message: Optional[str] = None, requeue: bool = True) -> bool` | Negative acknowledge - job failed. |
-| method | [`SQLiteQueue.heartbeat`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L90) | `async heartbeat(job_id: str, worker_id: str, extend_seconds: int = 60) -> bool` | Update job heartbeat and extend lease. |
-| method | [`SQLiteQueue.cancel`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L103) | `async cancel(job_id: str) -> bool` | Cancel a pending or running job. |
-| method | [`SQLiteQueue.cancel_by_execution_id`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L107) | `async cancel_by_execution_id(execution_id: str) -> bool` | Cancel job by execution ID. |
-| method | [`SQLiteQueue.get_job`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L111) | `async get_job(job_id: str) -> Optional[QueueJob]` | Get job by ID. |
-| method | [`SQLiteQueue.get_by_execution_id`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L118) | `async get_by_execution_id(execution_id: str) -> Optional[QueueJob]` | Get job by execution ID. |
-| method | [`SQLiteQueue.release_expired_leases`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L125) | `async release_expired_leases() -> int` | Release jobs with expired leases. |
-| method | [`SQLiteQueue.list_jobs`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L129) | `async list_jobs(status: Optional[str] = None, workspace_id: Optional[str] = None, limit: int = 50, offset: int = 0) -> List[QueueJob]` | List jobs with optional filters. |
-| method | [`SQLiteQueue.get_stats`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L145) | `async get_stats() -> QueueStats` | Get queue statistics. |
-| method | [`SQLiteQueue.cleanup_old_jobs`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L157) | `async cleanup_old_jobs(days: int = 7) -> int` | Delete old completed/failed/cancelled jobs. |
-| internal method | [`SQLiteQueue._job_to_queue_job`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L161) | `_job_to_queue_job(job: Job, metadata: Optional[Dict[str, Any]] = None) -> QueueJob` | Convert Job to QueueJob. |
+| method | [`SQLiteQueue.enqueue`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L30) | `async enqueue(execution_id: str, workflow_id: str, workspace_id: Optional[str] = None, priority: int = 0, max_attempts: int = 3, timeout_ms: int = 300000, visibility_timeout_ms: int = 30000, metadata: Optional[Dict[str, Any]] = None, idempotency_key: Optional[str] = None) -> QueueJob` | Add a new job to the queue. |
+| method | [`SQLiteQueue.dequeue`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L58) | `async dequeue(worker_id: str, lease_duration_seconds: int = 300) -> Optional[QueueJob]` | Atomically dequeue and lock the highest priority pending job. |
+| method | [`SQLiteQueue.ack`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L74) | `async ack(job_id: str, worker_id: str) -> bool` | Acknowledge successful job completion. |
+| method | [`SQLiteQueue.nack`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L78) | `async nack(job_id: str, worker_id: str, error_message: Optional[str] = None, requeue: bool = True) -> bool` | Negative acknowledge - job failed. |
+| method | [`SQLiteQueue.heartbeat`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L93) | `async heartbeat(job_id: str, worker_id: str, extend_seconds: int = 60) -> bool` | Update job heartbeat and extend lease. |
+| method | [`SQLiteQueue.cancel`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L106) | `async cancel(job_id: str) -> bool` | Cancel a pending or running job. |
+| method | [`SQLiteQueue.cancel_by_execution_id`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L110) | `async cancel_by_execution_id(execution_id: str) -> bool` | Cancel job by execution ID. |
+| method | [`SQLiteQueue.get_job`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L114) | `async get_job(job_id: str) -> Optional[QueueJob]` | Get job by ID. |
+| method | [`SQLiteQueue.get_by_execution_id`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L121) | `async get_by_execution_id(execution_id: str) -> Optional[QueueJob]` | Get job by execution ID. |
+| method | [`SQLiteQueue.get_by_idempotency_key`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L128) | `async get_by_idempotency_key(idempotency_key: str) -> Optional[QueueJob]` | Return by idempotency key for `SQLiteQueue`. |
+| method | [`SQLiteQueue.release_expired_leases`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L134) | `async release_expired_leases() -> int` | Release jobs with expired leases. |
+| method | [`SQLiteQueue.list_jobs`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L138) | `async list_jobs(status: Optional[str] = None, workspace_id: Optional[str] = None, limit: int = 50, offset: int = 0) -> List[QueueJob]` | List jobs with optional filters. |
+| method | [`SQLiteQueue.get_stats`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L154) | `async get_stats() -> QueueStats` | Get queue statistics. |
+| method | [`SQLiteQueue.cleanup_old_jobs`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L166) | `async cleanup_old_jobs(days: int = 7) -> int` | Delete old completed/failed/cancelled jobs. |
+| internal method | [`SQLiteQueue._job_to_queue_job`](../../src/ui/web/backend/gateway/storage/sqlite_queue.py#L170) | `_job_to_queue_job(job: Job, metadata: Optional[Dict[str, Any]] = None) -> QueueJob` | Convert Job to QueueJob. |
 
 ## `src/ui/web/backend/gateway/storage/trace_repo.py`
 
@@ -1496,18 +1673,18 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | method | [`Variable.to_dict`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L84) | `to_dict(include_value: bool = True) -> Dict[str, Any]` | Convert to dict, optionally excluding value for secrets. |
 | method | [`Variable.from_dict`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L109) | `from_dict(data: Dict[str, Any]) -> 'Variable'` | Create from dict. |
 | internal function | [`_ensure_table`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L128) | `_ensure_table() -> None` | Ensure variables table exists. |
-| internal function | [`_encrypt`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L164) | `_encrypt(value: str) -> str` | Encrypt a secret value (placeholder - use proper encryption in production). |
-| internal function | [`_decrypt`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L169) | `_decrypt(encrypted: str) -> str` | Decrypt a secret value (placeholder - use proper encryption in production). |
-| internal function | [`_row_to_variable`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L177) | `_row_to_variable(row, include_secrets: bool = False) -> Variable` | Convert database row to Variable. |
-| internal function | [`_parse_value`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L201) | `_parse_value(variable: Variable) -> Any` | Parse variable value based on type. |
-| class | [`VariableRepository`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L225) | `class VariableRepository` | Repository for variable CRUD operations. |
-| method | [`VariableRepository.create`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L229) | `create(variable: Variable) -> Variable` | Create a new variable. |
-| method | [`VariableRepository.get`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L274) | `get(variable_id: str) -> Optional[Variable]` | Get variable by ID. |
-| method | [`VariableRepository.get_by_name`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L288) | `get_by_name(name: str, scope: VariableScope, scope_id: str, environment: Optional[Environment] = None) -> Optional[Variable]` | Get variable by name within a scope. |
-| method | [`VariableRepository.list_variables`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L326) | `list_variables(scope: Optional[VariableScope] = None, scope_id: Optional[str] = None, environment: Optional[Environment] = None, include_secrets: bool = False) -> List[Variable]` | List variables with optional filters. |
-| method | [`VariableRepository.update`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L366) | `update(variable_id: str, **kwargs) -> bool` | Update variable fields. |
-| method | [`VariableRepository.delete`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L401) | `delete(variable_id: str) -> bool` | Delete a variable. |
-| method | [`VariableRepository.resolve_variables`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L410) | `resolve_variables(workflow_id: str, project_id: Optional[str] = None, workspace_id: Optional[str] = None, environment: Environment = Environment.DEVELOPMENT) -> Dict[str, Any]` | Resolve all variables for a workflow execution. |
+| internal function | [`_encrypt`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L164) | `_encrypt(value: str) -> str` | Encrypt a secret variable with the configured key-management backend. |
+| internal function | [`_decrypt`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L172) | `_decrypt(encrypted: str) -> str` | Decrypt secret variables, including the legacy base64-only format. |
+| internal function | [`_row_to_variable`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L185) | `_row_to_variable(row, include_secrets: bool = False) -> Variable` | Convert database row to Variable. |
+| internal function | [`_parse_value`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L209) | `_parse_value(variable: Variable) -> Any` | Parse variable value based on type. |
+| class | [`VariableRepository`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L233) | `class VariableRepository` | Repository for variable CRUD operations. |
+| method | [`VariableRepository.create`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L237) | `create(variable: Variable) -> Variable` | Create a new variable. |
+| method | [`VariableRepository.get`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L282) | `get(variable_id: str) -> Optional[Variable]` | Get variable by ID. |
+| method | [`VariableRepository.get_by_name`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L296) | `get_by_name(name: str, scope: VariableScope, scope_id: str, environment: Optional[Environment] = None) -> Optional[Variable]` | Get variable by name within a scope. |
+| method | [`VariableRepository.list_variables`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L334) | `list_variables(scope: Optional[VariableScope] = None, scope_id: Optional[str] = None, environment: Optional[Environment] = None, include_secrets: bool = False) -> List[Variable]` | List variables with optional filters. |
+| method | [`VariableRepository.update`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L374) | `update(variable_id: str, **kwargs) -> bool` | Update variable fields. |
+| method | [`VariableRepository.delete`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L418) | `delete(variable_id: str) -> bool` | Delete a variable. |
+| method | [`VariableRepository.resolve_variables`](../../src/ui/web/backend/gateway/storage/variable_repo.py#L427) | `resolve_variables(workflow_id: str, project_id: Optional[str] = None, workspace_id: Optional[str] = None, environment: Environment = Environment.DEVELOPMENT, include_secrets: bool = True) -> Dict[str, Any]` | Resolve all variables for a workflow execution. |
 
 ## `src/ui/web/backend/local/core_reload.py`
 
@@ -1537,7 +1714,7 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | function | [`cleanup_stale_browser_locks`](../../src/ui/web/backend/local/lifespan_local.py#L10) | `cleanup_stale_browser_locks() -> None` | Remove Chromium singleton files left by an interrupted local run. |
 | function | [`init_capabilities`](../../src/ui/web/backend/local/lifespan_local.py#L24) | `async init_capabilities() -> None` | Initialize the local capability context once during application startup. |
 | function | [`init_breakpoint_manager`](../../src/ui/web/backend/local/lifespan_local.py#L32) | `init_breakpoint_manager() -> None` | Initialize optional breakpoint support without blocking local startup. |
-| function | [`seed_starter_templates`](../../src/ui/web/backend/local/lifespan_local.py#L221) | `async seed_starter_templates() -> None` | Create official starter templates on first run (empty template library only). |
+| function | [`seed_starter_templates`](../../src/ui/web/backend/local/lifespan_local.py#L224) | `async seed_starter_templates(extensions = ()) -> None` | Create official starter templates on first run (empty template library only). |
 
 ## `src/ui/web/backend/local/plugin_runtime.py`
 
@@ -1549,7 +1726,7 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | function | [`make_handler`](../../src/ui/web/backend/local/plugin_runtime.py#L53) | `make_handler(pid)` | Implement the make handler operation for `src/ui/web/backend/local/plugin_runtime.py`. |
 | function | [`on_notification`](../../src/ui/web/backend/local/plugin_runtime.py#L54) | `on_notification(method, params)` | Implement the on notification operation for `src/ui/web/backend/local/plugin_runtime.py`. |
 | function | [`init_plugins`](../../src/ui/web/backend/local/plugin_runtime.py#L76) | `async init_plugins(plugins_dir: Optional[str] = None) -> int` | Initialize the plugin system using flyto-core's PluginManager. |
-| function | [`shutdown_plugins`](../../src/ui/web/backend/local/plugin_runtime.py#L109) | `async shutdown_plugins() -> None` | Shutdown all plugin processes via flyto-core's PluginManager. |
+| function | [`shutdown_plugins`](../../src/ui/web/backend/local/plugin_runtime.py#L112) | `async shutdown_plugins() -> None` | Shutdown all plugin processes via flyto-core's PluginManager. |
 
 ## `src/ui/web/backend/local/runtime_dependencies.py`
 
@@ -1591,13 +1768,21 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 |---|---|---|---|
 | internal function | [`_scan_modules`](../../src/ui/web/backend/main_offline.py#L103) | `_scan_modules() -> None` | Implement the scan modules operation for `src/ui/web/backend/main_offline.py`. |
 | internal function | [`_start_alerts`](../../src/ui/web/backend/main_offline.py#L113) | `async _start_alerts() -> None` | Start alerts for `src/ui/web/backend/main_offline.py`. |
-| internal function | [`_init_tracing`](../../src/ui/web/backend/main_offline.py#L122) | `_init_tracing() -> None` | Implement the init tracing operation for `src/ui/web/backend/main_offline.py`. |
-| internal function | [`_run_deferred`](../../src/ui/web/backend/main_offline.py#L131) | `async _run_deferred() -> None` | Run deferred for `src/ui/web/backend/main_offline.py`. |
-| internal function | [`_startup`](../../src/ui/web/backend/main_offline.py#L140) | `async _startup() -> asyncio.Task` | Implement the startup operation for `src/ui/web/backend/main_offline.py`. |
-| internal function | [`_shutdown`](../../src/ui/web/backend/main_offline.py#L171) | `async _shutdown() -> None` | Implement the shutdown operation for `src/ui/web/backend/main_offline.py`. |
-| function | [`lifespan`](../../src/ui/web/backend/main_offline.py#L194) | `async lifespan(app: FastAPI)` | Start and stop the local Flyto2 Flow runtime. |
-| function | [`health_check`](../../src/ui/web/backend/main_offline.py#L233) | `async health_check()` | Implement the health check operation for `src/ui/web/backend/main_offline.py`. |
-| internal function | [`_no_proxy`](../../src/ui/web/backend/main_offline.py#L260) | `async _no_proxy(path: str)` | Implement the no proxy operation for `src/ui/web/backend/main_offline.py`. |
+| internal function | [`_init_tracing`](../../src/ui/web/backend/main_offline.py#L119) | `_init_tracing() -> None` | Implement the init tracing operation for `src/ui/web/backend/main_offline.py`. |
+| internal function | [`_run_deferred`](../../src/ui/web/backend/main_offline.py#L141) | `async _run_deferred() -> None` | Run deferred for `src/ui/web/backend/main_offline.py`. |
+| internal function | [`_report_deferred_completion`](../../src/ui/web/backend/main_offline.py#L148) | `_report_deferred_completion(completed: asyncio.Task) -> None` | Implement the report deferred completion operation for `src/ui/web/backend/main_offline.py`. |
+| internal function | [`_startup`](../../src/ui/web/backend/main_offline.py#L160) | `async _startup() -> asyncio.Task` | Implement the startup operation for `src/ui/web/backend/main_offline.py`. |
+| internal function | [`_shutdown`](../../src/ui/web/backend/main_offline.py#L213) | `async _shutdown() -> None` | Implement the shutdown operation for `src/ui/web/backend/main_offline.py`. |
+| function | [`lifespan`](../../src/ui/web/backend/main_offline.py#L251) | `async lifespan(app: FastAPI)` | Start and stop the local Flyto2 Flow runtime. |
+| function | [`health_check`](../../src/ui/web/backend/main_offline.py#L297) | `async health_check()` | Implement the health check operation for `src/ui/web/backend/main_offline.py`. |
+| internal function | [`_no_proxy`](../../src/ui/web/backend/main_offline.py#L324) | `async _no_proxy(path: str)` | Implement the no proxy operation for `src/ui/web/backend/main_offline.py`. |
+
+## `src/ui/web/backend/main_worker.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| internal function | [`_run`](../../src/ui/web/backend/main_worker.py#L15) | `async _run(worker_id: str \| None, concurrency: int) -> None` | Run `_run` operation for `src/ui/web/backend/main_worker.py`. |
+| function | [`main`](../../src/ui/web/backend/main_worker.py#L59) | `main() -> int` | Run entry point for `src/ui/web/backend/main_worker.py`. |
 
 ## `src/ui/web/backend/mcp_server.py`
 
@@ -1809,53 +1994,137 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | function | [`acquire_execution_slot`](../../src/ui/web/backend/services/concurrency_manager.py#L59) | `async acquire_execution_slot(execution_id: str) -> SlotAcquisitionResult` | Implement the acquire execution slot operation for `src/ui/web/backend/services/concurrency_manager.py`. |
 | function | [`release_execution_slot`](../../src/ui/web/backend/services/concurrency_manager.py#L63) | `async release_execution_slot(execution_id: str) -> bool` | Implement the release execution slot operation for `src/ui/web/backend/services/concurrency_manager.py`. |
 
+## `src/ui/web/backend/services/connections/contracts.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| internal function | [`_empty_config_schema`](../../src/ui/web/backend/services/connections/contracts.py#L18) | `_empty_config_schema() -> dict[str, Any]` | Implement the empty config schema operation for `src/ui/web/backend/services/connections/contracts.py`. |
+| class | [`ConnectionScope`](../../src/ui/web/backend/services/connections/contracts.py#L26) | `class ConnectionScope(BaseModel)` | Implement the connection scope operation for `src/ui/web/backend/services/connections/contracts.py`. |
+| class | [`ConnectionDefinition`](../../src/ui/web/backend/services/connections/contracts.py#L33) | `class ConnectionDefinition(BaseModel)` | Implement the connection definition operation for `src/ui/web/backend/services/connections/contracts.py`. |
+| method | [`ConnectionDefinition.validate_id`](../../src/ui/web/backend/services/connections/contracts.py#L50) | `validate_id(value: str) -> str` | Validate id for `ConnectionDefinition`. |
+| method | [`ConnectionDefinition.validate_config_schema`](../../src/ui/web/backend/services/connections/contracts.py#L56) | `validate_config_schema() -> ConnectionDefinition` | Validate config schema for `ConnectionDefinition`. |
+| class | [`ConnectionProfile`](../../src/ui/web/backend/services/connections/contracts.py#L70) | `class ConnectionProfile(BaseModel)` | Implement the connection profile operation for `src/ui/web/backend/services/connections/contracts.py`. |
+| method | [`ConnectionProfile.validate_profile_id`](../../src/ui/web/backend/services/connections/contracts.py#L88) | `validate_profile_id(value: str) -> str` | Validate profile id for `ConnectionProfile`. |
+| method | [`ConnectionProfile.validate_type`](../../src/ui/web/backend/services/connections/contracts.py#L95) | `validate_type(value: str) -> str` | Validate type for `ConnectionProfile`. |
+| class | [`PolicyContext`](../../src/ui/web/backend/services/connections/contracts.py#L101) | `class PolicyContext(BaseModel)` | Implement the policy context operation for `src/ui/web/backend/services/connections/contracts.py`. |
+| class | [`PolicyDecision`](../../src/ui/web/backend/services/connections/contracts.py#L111) | `class PolicyDecision(BaseModel)` | Implement the policy decision operation for `src/ui/web/backend/services/connections/contracts.py`. |
+| class | [`ConnectionCatalog`](../../src/ui/web/backend/services/connections/contracts.py#L118) | `class ConnectionCatalog(Protocol)` | Implement the connection catalog operation for `src/ui/web/backend/services/connections/contracts.py`. |
+| method | [`ConnectionCatalog.get`](../../src/ui/web/backend/services/connections/contracts.py#L119) | `get(type_id: str) -> ConnectionDefinition \| None` | Return `get` operation for `ConnectionCatalog`. |
+| method | [`ConnectionCatalog.list`](../../src/ui/web/backend/services/connections/contracts.py#L121) | `list() -> list[ConnectionDefinition]` | List `list` operation for `ConnectionCatalog`. |
+| class | [`ConnectionProfileStore`](../../src/ui/web/backend/services/connections/contracts.py#L124) | `class ConnectionProfileStore(Protocol)` | Implement the connection profile store operation for `src/ui/web/backend/services/connections/contracts.py`. |
+| method | [`ConnectionProfileStore.get`](../../src/ui/web/backend/services/connections/contracts.py#L125) | `async get(profile_id: str, scope_id: str) -> ConnectionProfile \| None` | Return `get` operation for `ConnectionProfileStore`. |
+| method | [`ConnectionProfileStore.list`](../../src/ui/web/backend/services/connections/contracts.py#L127) | `async list(scope_id: str) -> list[ConnectionProfile]` | List `list` operation for `ConnectionProfileStore`. |
+| method | [`ConnectionProfileStore.put`](../../src/ui/web/backend/services/connections/contracts.py#L129) | `async put(profile: ConnectionProfile, *, expected_revision: int \| None = None) -> ConnectionProfile` | Implement the put operation for `ConnectionProfileStore`. |
+| method | [`ConnectionProfileStore.delete`](../../src/ui/web/backend/services/connections/contracts.py#L136) | `async delete(profile_id: str, scope_id: str) -> bool` | Delete `delete` operation for `ConnectionProfileStore`. |
+| class | [`ConnectionPolicy`](../../src/ui/web/backend/services/connections/contracts.py#L139) | `class ConnectionPolicy(Protocol)` | Implement the connection policy operation for `src/ui/web/backend/services/connections/contracts.py`. |
+| method | [`ConnectionPolicy.authorize`](../../src/ui/web/backend/services/connections/contracts.py#L140) | `async authorize(definition: ConnectionDefinition, profile: ConnectionProfile, context: PolicyContext) -> PolicyDecision` | Implement the authorize operation for `ConnectionPolicy`. |
+| class | [`SecretResolver`](../../src/ui/web/backend/services/connections/contracts.py#L148) | `class SecretResolver(Protocol)` | Implement the secret resolver operation for `src/ui/web/backend/services/connections/contracts.py`. |
+| method | [`SecretResolver.resolve`](../../src/ui/web/backend/services/connections/contracts.py#L149) | `async resolve(profile: ConnectionProfile, context: PolicyContext) -> Mapping[str, str]` | Resolve `resolve` operation for `SecretResolver`. |
+| class | [`TransportFactory`](../../src/ui/web/backend/services/connections/contracts.py#L156) | `class TransportFactory(Protocol)` | Implement the transport factory operation for `src/ui/web/backend/services/connections/contracts.py`. |
+| method | [`TransportFactory.create`](../../src/ui/web/backend/services/connections/contracts.py#L157) | `async create(definition: ConnectionDefinition, profile: ConnectionProfile, secrets: Mapping[str, str], context: PolicyContext) -> Any` | Create `create` operation for `TransportFactory`. |
+| class | [`ConnectionAuditSink`](../../src/ui/web/backend/services/connections/contracts.py#L166) | `class ConnectionAuditSink(Protocol)` | Implement the connection audit sink operation for `src/ui/web/backend/services/connections/contracts.py`. |
+| method | [`ConnectionAuditSink.record`](../../src/ui/web/backend/services/connections/contracts.py#L167) | `async record(*, profile: ConnectionProfile, context: PolicyContext, decision: PolicyDecision, result: str, duration_ms: int \| None = None) -> None` | Implement the record operation for `ConnectionAuditSink`. |
+| class | [`ConnectionRuntime`](../../src/ui/web/backend/services/connections/contracts.py#L179) | `class ConnectionRuntime` | Implement the connection runtime operation for `src/ui/web/backend/services/connections/contracts.py`. |
+
+## `src/ui/web/backend/services/connections/local.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| class | [`StaticConnectionCatalog`](../../src/ui/web/backend/services/connections/local.py#L22) | `class StaticConnectionCatalog` | Implement the static connection catalog operation for `src/ui/web/backend/services/connections/local.py`. |
+| internal method | [`StaticConnectionCatalog.__init__`](../../src/ui/web/backend/services/connections/local.py#L23) | `__init__(definitions: Iterable[ConnectionDefinition] = ()) -> None` | Implement the init operation for `StaticConnectionCatalog`. |
+| method | [`StaticConnectionCatalog.get`](../../src/ui/web/backend/services/connections/local.py#L26) | `get(type_id: str) -> ConnectionDefinition \| None` | Return `get` operation for `StaticConnectionCatalog`. |
+| method | [`StaticConnectionCatalog.list`](../../src/ui/web/backend/services/connections/local.py#L29) | `list() -> list[ConnectionDefinition]` | List `list` operation for `StaticConnectionCatalog`. |
+| class | [`LocalConnectionProfileStore`](../../src/ui/web/backend/services/connections/local.py#L33) | `class LocalConnectionProfileStore` | Implement the local connection profile store operation for `src/ui/web/backend/services/connections/local.py`. |
+| internal method | [`LocalConnectionProfileStore._ensure_table`](../../src/ui/web/backend/services/connections/local.py#L35) | `_ensure_table() -> None` | Ensure table for `LocalConnectionProfileStore`. |
+| method | [`LocalConnectionProfileStore.get`](../../src/ui/web/backend/services/connections/local.py#L62) | `async get(profile_id: str, scope_id: str) -> ConnectionProfile \| None` | Return `get` operation for `LocalConnectionProfileStore`. |
+| method | [`LocalConnectionProfileStore.list`](../../src/ui/web/backend/services/connections/local.py#L72) | `async list(scope_id: str) -> list[ConnectionProfile]` | List `list` operation for `LocalConnectionProfileStore`. |
+| method | [`LocalConnectionProfileStore.put`](../../src/ui/web/backend/services/connections/local.py#L82) | `async put(profile: ConnectionProfile, *, expected_revision: int \| None = None) -> ConnectionProfile` | Implement the put operation for `LocalConnectionProfileStore`. |
+| method | [`LocalConnectionProfileStore.delete`](../../src/ui/web/backend/services/connections/local.py#L145) | `async delete(profile_id: str, scope_id: str) -> bool` | Delete `delete` operation for `LocalConnectionProfileStore`. |
+| internal method | [`LocalConnectionProfileStore._decode`](../../src/ui/web/backend/services/connections/local.py#L155) | `_decode(row: dict[str, Any]) -> ConnectionProfile` | Implement the decode operation for `LocalConnectionProfileStore`. |
+| class | [`LocalConnectionPolicy`](../../src/ui/web/backend/services/connections/local.py#L172) | `class LocalConnectionPolicy` | Implement the local connection policy operation for `src/ui/web/backend/services/connections/local.py`. |
+| method | [`LocalConnectionPolicy.authorize`](../../src/ui/web/backend/services/connections/local.py#L173) | `async authorize(definition: ConnectionDefinition, profile: ConnectionProfile, context: PolicyContext) -> PolicyDecision` | Implement the authorize operation for `LocalConnectionPolicy`. |
+| class | [`LocalSecretResolver`](../../src/ui/web/backend/services/connections/local.py#L203) | `class LocalSecretResolver` | Implement the local secret resolver operation for `src/ui/web/backend/services/connections/local.py`. |
+| method | [`LocalSecretResolver.resolve`](../../src/ui/web/backend/services/connections/local.py#L204) | `async resolve(profile: ConnectionProfile, context: PolicyContext) -> Mapping[str, str]` | Resolve `resolve` operation for `LocalSecretResolver`. |
+| class | [`LocalConnectionAuditSink`](../../src/ui/web/backend/services/connections/local.py#L231) | `class LocalConnectionAuditSink` | Implement the local connection audit sink operation for `src/ui/web/backend/services/connections/local.py`. |
+| internal method | [`LocalConnectionAuditSink.__init__`](../../src/ui/web/backend/services/connections/local.py#L232) | `__init__(audit: LocalAuditProvider \| None = None) -> None` | Implement the init operation for `LocalConnectionAuditSink`. |
+| method | [`LocalConnectionAuditSink.record`](../../src/ui/web/backend/services/connections/local.py#L235) | `async record(*, profile: ConnectionProfile, context: PolicyContext, decision: PolicyDecision, result: str, duration_ms: int \| None = None) -> None` | Implement the record operation for `LocalConnectionAuditSink`. |
+| function | [`create_local_connection_runtime`](../../src/ui/web/backend/services/connections/local.py#L263) | `create_local_connection_runtime(definitions: Iterable[ConnectionDefinition] = ()) -> ConnectionRuntime` | Create local connection runtime for `src/ui/web/backend/services/connections/local.py`. |
+
+## `src/ui/web/backend/services/connections/runtime.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| internal function | [`_is_sensitive_name`](../../src/ui/web/backend/services/connections/runtime.py#L53) | `_is_sensitive_name(value: str) -> bool` | Determine whether sensitive name applies in `src/ui/web/backend/services/connections/runtime.py`. |
+| internal function | [`_reject_plaintext_secrets`](../../src/ui/web/backend/services/connections/runtime.py#L58) | `_reject_plaintext_secrets(value: Any, path: str = 'config') -> None` | Implement the reject plaintext secrets operation for `src/ui/web/backend/services/connections/runtime.py`. |
+| internal function | [`_validate_secret_references`](../../src/ui/web/backend/services/connections/runtime.py#L71) | `_validate_secret_references(profile: ConnectionProfile) -> None` | Validate secret references for `src/ui/web/backend/services/connections/runtime.py`. |
+| internal function | [`_validate_policy`](../../src/ui/web/backend/services/connections/runtime.py#L104) | `_validate_policy(policy: Mapping[str, Any]) -> None` | Validate policy for `src/ui/web/backend/services/connections/runtime.py`. |
+| function | [`validate_connection_profile`](../../src/ui/web/backend/services/connections/runtime.py#L152) | `validate_connection_profile(profile: ConnectionProfile, definitions: Mapping[str, ConnectionDefinition]) -> None` | Validate connection profile for `src/ui/web/backend/services/connections/runtime.py`. |
+| internal function | [`_external_runtime`](../../src/ui/web/backend/services/connections/runtime.py#L196) | `_external_runtime(spec: str) -> ConnectionRuntime` | Implement the external runtime operation for `src/ui/web/backend/services/connections/runtime.py`. |
+| function | [`configure_connection_runtime`](../../src/ui/web/backend/services/connections/runtime.py#L207) | `configure_connection_runtime(extensions: Iterable[VerifiedExtension] = ()) -> ConnectionRuntime` | Implement the configure connection runtime operation for `src/ui/web/backend/services/connections/runtime.py`. |
+| function | [`get_connection_runtime`](../../src/ui/web/backend/services/connections/runtime.py#L227) | `get_connection_runtime() -> ConnectionRuntime` | Return connection runtime for `src/ui/web/backend/services/connections/runtime.py`. |
+| function | [`reset_connection_runtime`](../../src/ui/web/backend/services/connections/runtime.py#L231) | `reset_connection_runtime() -> None` | Implement the reset connection runtime operation for `src/ui/web/backend/services/connections/runtime.py`. |
+
+## `src/ui/web/backend/services/connections/service.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| class | [`ConnectionService`](../../src/ui/web/backend/services/connections/service.py#L18) | `class ConnectionService` | Implement the connection service operation for `src/ui/web/backend/services/connections/service.py`. |
+| method | [`ConnectionService.list_profiles`](../../src/ui/web/backend/services/connections/service.py#L20) | `async list_profiles(scope_id: str) -> list[ConnectionProfile]` | List profiles for `ConnectionService`. |
+| method | [`ConnectionService.put_profile`](../../src/ui/web/backend/services/connections/service.py#L24) | `async put_profile(profile: ConnectionProfile, *, expected_revision: int \| None = None) -> ConnectionProfile` | Implement the put profile operation for `ConnectionService`. |
+| method | [`ConnectionService.delete_profile`](../../src/ui/web/backend/services/connections/service.py#L38) | `async delete_profile(profile_id: str, scope_id: str, *, expected_revision: int \| None = None) -> bool` | Delete profile for `ConnectionService`. |
+| method | [`ConnectionService.acquire`](../../src/ui/web/backend/services/connections/service.py#L56) | `async acquire(profile_id: str, context: PolicyContext) -> Any` | Implement the acquire operation for `ConnectionService`. |
+| method | [`ConnectionService.validate_access`](../../src/ui/web/backend/services/connections/service.py#L109) | `async validate_access(profile_id: str, context: PolicyContext) -> dict[str, Any]` | Validate access for `ConnectionService`. |
+
 ## `src/ui/web/backend/services/credentials/backends/aws_kms.py`
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
-| class | [`AWSKMSBackend`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L20) | `class AWSKMSBackend(KeyManagementBackend)` | AWS KMS backend for key management. |
-| internal method | [`AWSKMSBackend.__init__`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L27) | `__init__(key_id: Optional[str] = None, region: Optional[str] = None)` | Initialize AWS KMS backend. |
-| method | [`AWSKMSBackend.get_key`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L50) | `get_key(version: int) -> bytes` | Generate data key from KMS. |
-| method | [`AWSKMSBackend.get_current_version`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L62) | `get_current_version() -> int` | KMS handles versioning internally. |
-| method | [`AWSKMSBackend.rotate_key`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L66) | `rotate_key() -> int` | KMS handles rotation automatically if enabled. |
-| method | [`AWSKMSBackend.encrypt`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L71) | `encrypt(plaintext: bytes) -> bytes` | Encrypt using AWS KMS (envelope encryption). |
-| method | [`AWSKMSBackend.decrypt`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L94) | `decrypt(ciphertext: bytes) -> bytes` | Decrypt using AWS KMS (envelope encryption). |
+| class | [`AWSKMSBackend`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L22) | `class AWSKMSBackend(KeyManagementBackend)` | AWS KMS backend for key management. |
+| internal method | [`AWSKMSBackend.__init__`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L29) | `__init__(key_id: Optional[str] = None, region: Optional[str] = None)` | Initialize AWS KMS backend. |
+| method | [`AWSKMSBackend.validate_configuration`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L52) | `validate_configuration() -> None` | Verify the configured key exists and can encrypt and decrypt. |
+| method | [`AWSKMSBackend.get_key`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L67) | `get_key(version: int) -> bytes` | Generate data key from KMS. |
+| method | [`AWSKMSBackend.get_current_version`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L80) | `get_current_version() -> int` | KMS handles versioning internally. |
+| method | [`AWSKMSBackend.rotate_key`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L84) | `rotate_key() -> int` | KMS handles rotation automatically if enabled. |
+| method | [`AWSKMSBackend.encrypt`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L89) | `encrypt(plaintext: bytes) -> bytes` | Encrypt using AWS KMS (envelope encryption). |
+| method | [`AWSKMSBackend.decrypt`](../../src/ui/web/backend/services/credentials/backends/aws_kms.py#L115) | `decrypt(ciphertext: bytes) -> bytes` | Decrypt using AWS KMS (envelope encryption). |
 
 ## `src/ui/web/backend/services/credentials/backends/base.py`
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
 | class | [`KeyManagementBackend`](../../src/ui/web/backend/services/credentials/backends/base.py#L6) | `class KeyManagementBackend(ABC)` | Abstract backend for key management. |
-| method | [`KeyManagementBackend.get_key`](../../src/ui/web/backend/services/credentials/backends/base.py#L10) | `get_key(version: int) -> bytes` | Get encryption key by version. |
-| method | [`KeyManagementBackend.get_current_version`](../../src/ui/web/backend/services/credentials/backends/base.py#L15) | `get_current_version() -> int` | Get current key version. |
-| method | [`KeyManagementBackend.rotate_key`](../../src/ui/web/backend/services/credentials/backends/base.py#L20) | `rotate_key() -> int` | Rotate to new key version. |
-| method | [`KeyManagementBackend.encrypt`](../../src/ui/web/backend/services/credentials/backends/base.py#L25) | `encrypt(plaintext: bytes) -> bytes` | Encrypt data (for KMS that does server-side encryption). |
-| method | [`KeyManagementBackend.decrypt`](../../src/ui/web/backend/services/credentials/backends/base.py#L30) | `decrypt(ciphertext: bytes) -> bytes` | Decrypt data (for KMS that does server-side encryption). |
+| method | [`KeyManagementBackend.validate_configuration`](../../src/ui/web/backend/services/credentials/backends/base.py#L9) | `validate_configuration() -> None` | Fail startup when the configured backend cannot serve requests. |
+| method | [`KeyManagementBackend.get_key`](../../src/ui/web/backend/services/credentials/backends/base.py#L13) | `get_key(version: int) -> bytes` | Get encryption key by version. |
+| method | [`KeyManagementBackend.get_current_version`](../../src/ui/web/backend/services/credentials/backends/base.py#L18) | `get_current_version() -> int` | Get current key version. |
+| method | [`KeyManagementBackend.rotate_key`](../../src/ui/web/backend/services/credentials/backends/base.py#L23) | `rotate_key() -> int` | Rotate to new key version. |
+| method | [`KeyManagementBackend.encrypt`](../../src/ui/web/backend/services/credentials/backends/base.py#L28) | `encrypt(plaintext: bytes) -> bytes` | Encrypt data (for KMS that does server-side encryption). |
+| method | [`KeyManagementBackend.decrypt`](../../src/ui/web/backend/services/credentials/backends/base.py#L33) | `decrypt(ciphertext: bytes) -> bytes` | Decrypt data (for KMS that does server-side encryption). |
 
 ## `src/ui/web/backend/services/credentials/backends/local.py`
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
-| class | [`LocalKeyBackend`](../../src/ui/web/backend/services/credentials/backends/local.py#L34) | `class LocalKeyBackend(KeyManagementBackend)` | Local key management with PBKDF2 key derivation. |
-| internal method | [`LocalKeyBackend.__init__`](../../src/ui/web/backend/services/credentials/backends/local.py#L41) | `__init__(master_key: Optional[str] = None)` | Initialize with master key. |
-| internal method | [`LocalKeyBackend._derive_key`](../../src/ui/web/backend/services/credentials/backends/local.py#L129) | `_derive_key(master_key: bytes, version: int) -> bytes` | Derive encryption key using PBKDF2. |
-| method | [`LocalKeyBackend.get_key`](../../src/ui/web/backend/services/credentials/backends/local.py#L150) | `get_key(version: int) -> bytes` | Get encryption key by version. |
-| method | [`LocalKeyBackend.get_current_version`](../../src/ui/web/backend/services/credentials/backends/local.py#L164) | `get_current_version() -> int` | Get current key version. |
-| method | [`LocalKeyBackend.rotate_key`](../../src/ui/web/backend/services/credentials/backends/local.py#L168) | `rotate_key() -> int` | Reject process-local rotation that cannot coordinate replicas. |
-| method | [`LocalKeyBackend.encrypt`](../../src/ui/web/backend/services/credentials/backends/local.py#L175) | `encrypt(plaintext: bytes) -> bytes` | Encrypt using AES-256-GCM. |
-| method | [`LocalKeyBackend.decrypt`](../../src/ui/web/backend/services/credentials/backends/local.py#L196) | `decrypt(ciphertext: bytes) -> bytes` | Decrypt using AES-256-GCM. |
+| class | [`LocalKeyBackend`](../../src/ui/web/backend/services/credentials/backends/local.py#L24) | `class LocalKeyBackend(KeyManagementBackend)` | Local key management with PBKDF2 key derivation. |
+| internal method | [`LocalKeyBackend.__init__`](../../src/ui/web/backend/services/credentials/backends/local.py#L31) | `__init__(master_key: Optional[str] = None)` | Initialize with master key. |
+| internal method | [`LocalKeyBackend._derive_key`](../../src/ui/web/backend/services/credentials/backends/local.py#L119) | `_derive_key(master_key: bytes, version: int) -> bytes` | Derive encryption key using PBKDF2. |
+| method | [`LocalKeyBackend.get_key`](../../src/ui/web/backend/services/credentials/backends/local.py#L130) | `get_key(version: int) -> bytes` | Get encryption key by version. |
+| method | [`LocalKeyBackend.get_current_version`](../../src/ui/web/backend/services/credentials/backends/local.py#L144) | `get_current_version() -> int` | Get current key version. |
+| method | [`LocalKeyBackend.rotate_key`](../../src/ui/web/backend/services/credentials/backends/local.py#L148) | `rotate_key() -> int` | Reject process-local rotation that cannot coordinate replicas. |
+| method | [`LocalKeyBackend.encrypt`](../../src/ui/web/backend/services/credentials/backends/local.py#L155) | `encrypt(plaintext: bytes) -> bytes` | Encrypt using AES-256-GCM. |
+| method | [`LocalKeyBackend.decrypt`](../../src/ui/web/backend/services/credentials/backends/local.py#L166) | `decrypt(ciphertext: bytes) -> bytes` | Decrypt using AES-256-GCM. |
 
 ## `src/ui/web/backend/services/credentials/backends/vault.py`
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
-| class | [`VaultKeyBackend`](../../src/ui/web/backend/services/credentials/backends/vault.py#L13) | `class VaultKeyBackend(KeyManagementBackend)` | HashiCorp Vault transit engine backend. |
-| internal method | [`VaultKeyBackend.__init__`](../../src/ui/web/backend/services/credentials/backends/vault.py#L20) | `__init__(vault_addr: Optional[str] = None, vault_token: Optional[str] = None, key_name: str = 'flyto-credentials')` | Initialize Vault backend. |
-| method | [`VaultKeyBackend.get_key`](../../src/ui/web/backend/services/credentials/backends/vault.py#L45) | `get_key(version: int) -> bytes` | Not applicable for Vault - keys never leave Vault. |
-| method | [`VaultKeyBackend.get_current_version`](../../src/ui/web/backend/services/credentials/backends/vault.py#L49) | `get_current_version() -> int` | Get current key version from Vault. |
-| method | [`VaultKeyBackend.rotate_key`](../../src/ui/web/backend/services/credentials/backends/vault.py#L62) | `rotate_key() -> int` | Rotate key in Vault. |
-| method | [`VaultKeyBackend.encrypt`](../../src/ui/web/backend/services/credentials/backends/vault.py#L73) | `encrypt(plaintext: bytes) -> bytes` | Encrypt using Vault transit engine. |
-| method | [`VaultKeyBackend.decrypt`](../../src/ui/web/backend/services/credentials/backends/vault.py#L89) | `decrypt(ciphertext: bytes) -> bytes` | Decrypt using Vault transit engine. |
+| class | [`VaultKeyBackend`](../../src/ui/web/backend/services/credentials/backends/vault.py#L14) | `class VaultKeyBackend(KeyManagementBackend)` | HashiCorp Vault transit engine backend. |
+| internal method | [`VaultKeyBackend.__init__`](../../src/ui/web/backend/services/credentials/backends/vault.py#L21) | `__init__(vault_addr: Optional[str] = None, vault_token: Optional[str] = None, key_name: str = 'flyto-credentials')` | Initialize Vault backend. |
+| method | [`VaultKeyBackend.validate_configuration`](../../src/ui/web/backend/services/credentials/backends/vault.py#L72) | `validate_configuration() -> None` | Verify Transit encrypt and decrypt permissions before readiness. |
+| method | [`VaultKeyBackend.get_key`](../../src/ui/web/backend/services/credentials/backends/vault.py#L81) | `get_key(version: int) -> bytes` | Not applicable for Vault - keys never leave Vault. |
+| method | [`VaultKeyBackend.get_current_version`](../../src/ui/web/backend/services/credentials/backends/vault.py#L85) | `get_current_version() -> int` | Get current key version from Vault. |
+| method | [`VaultKeyBackend.rotate_key`](../../src/ui/web/backend/services/credentials/backends/vault.py#L101) | `rotate_key() -> int` | Rotate key in Vault. |
+| method | [`VaultKeyBackend.encrypt`](../../src/ui/web/backend/services/credentials/backends/vault.py#L115) | `encrypt(plaintext: bytes) -> bytes` | Encrypt using Vault transit engine. |
+| method | [`VaultKeyBackend.decrypt`](../../src/ui/web/backend/services/credentials/backends/vault.py#L135) | `decrypt(ciphertext: bytes) -> bytes` | Decrypt using Vault transit engine. |
 
 ## `src/ui/web/backend/services/credentials/crypto.py`
 
@@ -1870,14 +2139,15 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
-| class | [`EncryptionKey`](../../src/ui/web/backend/services/credentials/encryption.py#L12) | `class EncryptionKey` | Encryption key management facade. |
-| method | [`EncryptionKey.initialize`](../../src/ui/web/backend/services/credentials/encryption.py#L27) | `initialize(master_key: Optional[str] = None) -> None` | Initialize encryption key backend. |
-| method | [`EncryptionKey.get_backend`](../../src/ui/web/backend/services/credentials/encryption.py#L67) | `get_backend() -> KeyManagementBackend` | Get the key management backend. |
-| method | [`EncryptionKey.get_key`](../../src/ui/web/backend/services/credentials/encryption.py#L74) | `get_key(version: int) -> bytes` | Get encryption key by version. |
-| method | [`EncryptionKey.get_current_version`](../../src/ui/web/backend/services/credentials/encryption.py#L83) | `get_current_version() -> int` | Get current key version. |
-| method | [`EncryptionKey.rotate_key`](../../src/ui/web/backend/services/credentials/encryption.py#L88) | `rotate_key(new_master_key: Optional[str] = None) -> int` | Rotate to a new encryption key. |
-| method | [`EncryptionKey.encrypt`](../../src/ui/web/backend/services/credentials/encryption.py#L101) | `encrypt(plaintext: bytes) -> bytes` | Encrypt data using current backend. |
-| method | [`EncryptionKey.decrypt`](../../src/ui/web/backend/services/credentials/encryption.py#L106) | `decrypt(ciphertext: bytes) -> bytes` | Decrypt data using current backend. |
+| class | [`EncryptionKey`](../../src/ui/web/backend/services/credentials/encryption.py#L18) | `class EncryptionKey` | Encryption key management facade. |
+| method | [`EncryptionKey.initialize`](../../src/ui/web/backend/services/credentials/encryption.py#L34) | `initialize(master_key: Optional[str] = None) -> None` | Initialize encryption key backend. |
+| method | [`EncryptionKey.reset`](../../src/ui/web/backend/services/credentials/encryption.py#L82) | `reset() -> None` | Clear the process-local backend, primarily for controlled reconfiguration. |
+| method | [`EncryptionKey.get_backend`](../../src/ui/web/backend/services/credentials/encryption.py#L87) | `get_backend() -> KeyManagementBackend` | Get the key management backend. |
+| method | [`EncryptionKey.get_key`](../../src/ui/web/backend/services/credentials/encryption.py#L94) | `get_key(version: int) -> bytes` | Get encryption key by version. |
+| method | [`EncryptionKey.get_current_version`](../../src/ui/web/backend/services/credentials/encryption.py#L103) | `get_current_version() -> int` | Get current key version. |
+| method | [`EncryptionKey.rotate_key`](../../src/ui/web/backend/services/credentials/encryption.py#L108) | `rotate_key(new_master_key: Optional[str] = None) -> int` | Rotate to a new encryption key. |
+| method | [`EncryptionKey.encrypt`](../../src/ui/web/backend/services/credentials/encryption.py#L121) | `encrypt(plaintext: bytes) -> bytes` | Encrypt data using current backend. |
+| method | [`EncryptionKey.decrypt`](../../src/ui/web/backend/services/credentials/encryption.py#L126) | `decrypt(ciphertext: bytes) -> bytes` | Decrypt data using current backend. |
 
 ## `src/ui/web/backend/services/credentials/models.py`
 
@@ -2055,6 +2325,56 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | method | [`EvidenceHooks.on_retry`](../../src/ui/web/backend/services/evidence_hooks.py#L208) | `on_retry(context: HookContext) -> HookResult` | Handle retry attempt. |
 | function | [`create_evidence_hooks`](../../src/ui/web/backend/services/evidence_hooks.py#L213) | `create_evidence_hooks(execution_id: str, screenshot_mode: Optional[str] = None) -> Optional[EvidenceHooks]` | Create evidence hooks for an execution. |
 
+## `src/ui/web/backend/services/extensions/manifest.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| class | [`ExtensionKind`](../../src/ui/web/backend/services/extensions/manifest.py#L32) | `class ExtensionKind(str, Enum)` | Implement the extension kind operation for `src/ui/web/backend/services/extensions/manifest.py`. |
+| class | [`ExtensionArtifact`](../../src/ui/web/backend/services/extensions/manifest.py#L38) | `class ExtensionArtifact(BaseModel)` | Implement the extension artifact operation for `src/ui/web/backend/services/extensions/manifest.py`. |
+| method | [`ExtensionArtifact.validate_path`](../../src/ui/web/backend/services/extensions/manifest.py#L46) | `validate_path(value: str) -> str` | Validate path for `ExtensionArtifact`. |
+| class | [`ExtensionSignature`](../../src/ui/web/backend/services/extensions/manifest.py#L55) | `class ExtensionSignature(BaseModel)` | Implement the extension signature operation for `src/ui/web/backend/services/extensions/manifest.py`. |
+| method | [`ExtensionSignature.validate_value`](../../src/ui/web/backend/services/extensions/manifest.py#L64) | `validate_value(value: str) -> str` | Validate value for `ExtensionSignature`. |
+| class | [`ExtensionManifest`](../../src/ui/web/backend/services/extensions/manifest.py#L74) | `class ExtensionManifest(BaseModel)` | Implement the extension manifest operation for `src/ui/web/backend/services/extensions/manifest.py`. |
+| method | [`ExtensionManifest.validate_id`](../../src/ui/web/backend/services/extensions/manifest.py#L90) | `validate_id(value: str) -> str` | Validate id for `ExtensionManifest`. |
+| method | [`ExtensionManifest.validate_version`](../../src/ui/web/backend/services/extensions/manifest.py#L97) | `validate_version(value: str) -> str` | Validate version for `ExtensionManifest`. |
+| method | [`ExtensionManifest.validate_permissions`](../../src/ui/web/backend/services/extensions/manifest.py#L104) | `validate_permissions(values: tuple[str, ...]) -> tuple[str, ...]` | Validate permissions for `ExtensionManifest`. |
+| method | [`ExtensionManifest.validate_artifacts`](../../src/ui/web/backend/services/extensions/manifest.py#L112) | `validate_artifacts(values: tuple[ExtensionArtifact, ...]) -> tuple[ExtensionArtifact, ...]` | Validate artifacts for `ExtensionManifest`. |
+| method | [`ExtensionManifest.validate_connection_types`](../../src/ui/web/backend/services/extensions/manifest.py#L123) | `validate_connection_types(values: tuple[dict[str, Any], ...]) -> tuple[dict[str, Any], ...]` | Validate connection types for `ExtensionManifest`. |
+| method | [`ExtensionManifest.validate_kind_contract`](../../src/ui/web/backend/services/extensions/manifest.py#L139) | `validate_kind_contract()` | Validate kind contract for `ExtensionManifest`. |
+| class | [`ExtensionPolicy`](../../src/ui/web/backend/services/extensions/manifest.py#L153) | `class ExtensionPolicy(str, Enum)` | Implement the extension policy operation for `src/ui/web/backend/services/extensions/manifest.py`. |
+| class | [`VerifiedExtension`](../../src/ui/web/backend/services/extensions/manifest.py#L159) | `class VerifiedExtension` | Implement the verified extension operation for `src/ui/web/backend/services/extensions/manifest.py`. |
+| internal function | [`_canonical_payload`](../../src/ui/web/backend/services/extensions/manifest.py#L166) | `_canonical_payload(data: dict[str, Any]) -> bytes` | Implement the canonical payload operation for `src/ui/web/backend/services/extensions/manifest.py`. |
+| internal function | [`_verify_signature`](../../src/ui/web/backend/services/extensions/manifest.py#L172) | `_verify_signature(data: dict[str, Any], signature: ExtensionSignature, trusted_keys: Mapping[str, str]) -> None` | Verify signature for `src/ui/web/backend/services/extensions/manifest.py`. |
+| function | [`load_extension_manifest`](../../src/ui/web/backend/services/extensions/manifest.py#L195) | `load_extension_manifest(path: Path, *, policy: ExtensionPolicy = ExtensionPolicy.REQUIRE_SIGNATURE, trusted_keys: Mapping[str, str] \| None = None) -> VerifiedExtension` | Load extension manifest for `src/ui/web/backend/services/extensions/manifest.py`. |
+| function | [`discover_extensions`](../../src/ui/web/backend/services/extensions/manifest.py#L270) | `discover_extensions(root: Path, *, policy: ExtensionPolicy = ExtensionPolicy.REQUIRE_SIGNATURE, trusted_keys: Mapping[str, str] \| None = None) -> list[VerifiedExtension]` | Implement the discover extensions operation for `src/ui/web/backend/services/extensions/manifest.py`. |
+
+## `src/ui/web/backend/services/extensions/runtime.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| internal function | [`_trusted_keys`](../../src/ui/web/backend/services/extensions/runtime.py#L18) | `_trusted_keys() -> Mapping[str, str]` | Implement the trusted keys operation for `src/ui/web/backend/services/extensions/runtime.py`. |
+| internal function | [`_permission_grants`](../../src/ui/web/backend/services/extensions/runtime.py#L36) | `_permission_grants() -> Mapping[str, frozenset[str]]` | Implement the permission grants operation for `src/ui/web/backend/services/extensions/runtime.py`. |
+| function | [`configured_plugin_root`](../../src/ui/web/backend/services/extensions/runtime.py#L66) | `configured_plugin_root() -> Path` | Implement the configured plugin root operation for `src/ui/web/backend/services/extensions/runtime.py`. |
+| function | [`configured_extension_root`](../../src/ui/web/backend/services/extensions/runtime.py#L77) | `configured_extension_root() -> Path` | Implement the configured extension root operation for `src/ui/web/backend/services/extensions/runtime.py`. |
+| function | [`verify_configured_extensions`](../../src/ui/web/backend/services/extensions/runtime.py#L86) | `verify_configured_extensions() -> list[VerifiedExtension]` | Verify configured extensions for `src/ui/web/backend/services/extensions/runtime.py`. |
+
+## `src/ui/web/backend/services/extensions/templates.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| class | [`PackedTemplateStep`](../../src/ui/web/backend/services/extensions/templates.py#L21) | `class PackedTemplateStep(BaseModel)` | Implement the packed template step operation for `src/ui/web/backend/services/extensions/templates.py`. |
+| method | [`PackedTemplateStep.validate_id`](../../src/ui/web/backend/services/extensions/templates.py#L34) | `validate_id(value: str) -> str` | Validate id for `PackedTemplateStep`. |
+| method | [`PackedTemplateStep.validate_module`](../../src/ui/web/backend/services/extensions/templates.py#L41) | `validate_module(value: str) -> str` | Validate module for `PackedTemplateStep`. |
+| class | [`PackedTemplate`](../../src/ui/web/backend/services/extensions/templates.py#L47) | `class PackedTemplate(BaseModel)` | Implement the packed template operation for `src/ui/web/backend/services/extensions/templates.py`. |
+| method | [`PackedTemplate.validate_id`](../../src/ui/web/backend/services/extensions/templates.py#L68) | `validate_id(value: str) -> str` | Validate id for `PackedTemplate`. |
+| method | [`PackedTemplate.validate_tags`](../../src/ui/web/backend/services/extensions/templates.py#L75) | `validate_tags(values: tuple[str, ...]) -> tuple[str, ...]` | Validate tags for `PackedTemplate`. |
+| method | [`PackedTemplate.validate_steps`](../../src/ui/web/backend/services/extensions/templates.py#L85) | `validate_steps()` | Validate steps for `PackedTemplate`. |
+| method | [`PackedTemplate.create_payload`](../../src/ui/web/backend/services/extensions/templates.py#L96) | `create_payload() -> dict[str, Any]` | Create payload for `PackedTemplate`. |
+| class | [`TemplatePack`](../../src/ui/web/backend/services/extensions/templates.py#L100) | `class TemplatePack(BaseModel)` | Implement the template pack operation for `src/ui/web/backend/services/extensions/templates.py`. |
+| method | [`TemplatePack.validate_template_ids`](../../src/ui/web/backend/services/extensions/templates.py#L107) | `validate_template_ids()` | Validate template ids for `TemplatePack`. |
+| function | [`load_template_pack`](../../src/ui/web/backend/services/extensions/templates.py#L114) | `load_template_pack(path: Path) -> TemplatePack` | Load template pack for `src/ui/web/backend/services/extensions/templates.py`. |
+| function | [`load_template_packs`](../../src/ui/web/backend/services/extensions/templates.py#L122) | `load_template_packs(extensions: Iterable[VerifiedExtension]) -> list[PackedTemplate]` | Load template packs for `src/ui/web/backend/services/extensions/templates.py`. |
+
 ## `src/ui/web/backend/services/folder_tree.py`
 
 | Kind | Symbol | Signature | Purpose |
@@ -2171,13 +2491,13 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
 | class | [`QueueService`](../../src/ui/web/backend/services/infra/queue_service.py#L17) | `class QueueService` | High-level service for queue operations. |
-| method | [`QueueService.enqueue_execution`](../../src/ui/web/backend/services/infra/queue_service.py#L40) | `async enqueue_execution(execution_id: str, workflow_id: str, workspace_id: Optional[str] = None, priority: int = 0, max_attempts: int = 3, timeout_ms: int = 0, visibility_timeout_ms: int = 30000) -> Job` | Enqueue an execution for processing. |
-| method | [`QueueService.cancel_execution`](../../src/ui/web/backend/services/infra/queue_service.py#L87) | `async cancel_execution(execution_id: str, reason: str = 'User cancelled') -> bool` | Cancel an execution. |
-| method | [`QueueService.get_job_status`](../../src/ui/web/backend/services/infra/queue_service.py#L125) | `async get_job_status(execution_id: str) -> Optional[Dict[str, Any]]` | Get the status of a job by execution ID. |
-| method | [`QueueService.get_queue_stats`](../../src/ui/web/backend/services/infra/queue_service.py#L155) | `async get_queue_stats() -> Dict[str, Any]` | Get queue statistics. |
-| method | [`QueueService.retry_execution`](../../src/ui/web/backend/services/infra/queue_service.py#L173) | `async retry_execution(execution_id: str) -> Optional[Job]` | Retry a failed execution. |
-| method | [`QueueService.cleanup_old_jobs`](../../src/ui/web/backend/services/infra/queue_service.py#L214) | `async cleanup_old_jobs(days: int = 7) -> int` | Clean up old completed/failed/cancelled jobs. |
-| method | [`QueueService.release_stale_leases`](../../src/ui/web/backend/services/infra/queue_service.py#L229) | `async release_stale_leases() -> int` | Release jobs with expired leases. |
+| method | [`QueueService.enqueue_execution`](../../src/ui/web/backend/services/infra/queue_service.py#L40) | `async enqueue_execution(execution_id: str, workflow_id: str, workspace_id: Optional[str] = None, priority: int = 0, max_attempts: int = 3, timeout_ms: int = 0, visibility_timeout_ms: int = 30000) -> QueueJob` | Enqueue an execution for processing. |
+| method | [`QueueService.cancel_execution`](../../src/ui/web/backend/services/infra/queue_service.py#L90) | `async cancel_execution(execution_id: str, reason: str = 'User cancelled') -> bool` | Cancel an execution. |
+| method | [`QueueService.get_job_status`](../../src/ui/web/backend/services/infra/queue_service.py#L130) | `async get_job_status(execution_id: str) -> Optional[Dict[str, Any]]` | Get the status of a job by execution ID. |
+| method | [`QueueService.get_queue_stats`](../../src/ui/web/backend/services/infra/queue_service.py#L162) | `async get_queue_stats() -> Dict[str, Any]` | Get queue statistics. |
+| method | [`QueueService.retry_execution`](../../src/ui/web/backend/services/infra/queue_service.py#L182) | `async retry_execution(execution_id: str) -> Optional[QueueJob]` | Retry a failed execution. |
+| method | [`QueueService.cleanup_old_jobs`](../../src/ui/web/backend/services/infra/queue_service.py#L217) | `async cleanup_old_jobs(days: int = 7) -> int` | Clean up old completed/failed/cancelled jobs. |
+| method | [`QueueService.release_stale_leases`](../../src/ui/web/backend/services/infra/queue_service.py#L234) | `async release_stale_leases() -> int` | Release jobs with expired leases. |
 
 ## `src/ui/web/backend/services/infra/scheduler/cron_parser.py`
 
@@ -2376,11 +2696,21 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
-| class | [`AlertNotifier`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L8) | `class AlertNotifier(ABC)` | Implement the alert notifier operation for `src/ui/web/backend/services/observability/alerts/notifier.py`. |
-| method | [`AlertNotifier.notify`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L10) | `notify(alert: Alert, state: str) -> bool` | Implement the notify operation for `AlertNotifier`. |
-| method | [`AlertNotifier.shutdown`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L13) | `shutdown() -> None` | Implement the shutdown operation for `AlertNotifier`. |
-| class | [`ConsoleNotifier`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L17) | `class ConsoleNotifier(AlertNotifier)` | Implement the console notifier operation for `src/ui/web/backend/services/observability/alerts/notifier.py`. |
-| method | [`ConsoleNotifier.notify`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L18) | `notify(alert: Alert, state: str) -> bool` | Implement the notify operation for `ConsoleNotifier`. |
+| class | [`_NoRedirectHandler`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L19) | `class _NoRedirectHandler(HTTPRedirectHandler)` | Implement the no redirect handler operation for `src/ui/web/backend/services/observability/alerts/notifier.py`. |
+| method | [`_NoRedirectHandler.redirect_request`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L20) | `redirect_request(req, fp, code, msg, headers, newurl)` | Implement the redirect request operation for `_NoRedirectHandler`. |
+| class | [`AlertNotifier`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L25) | `class AlertNotifier(ABC)` | Implement the alert notifier operation for `src/ui/web/backend/services/observability/alerts/notifier.py`. |
+| method | [`AlertNotifier.notify`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L27) | `notify(alert: Alert, state: str) -> bool` | Implement the notify operation for `AlertNotifier`. |
+| method | [`AlertNotifier.shutdown`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L30) | `shutdown() -> None` | Implement the shutdown operation for `AlertNotifier`. |
+| class | [`ConsoleNotifier`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L34) | `class ConsoleNotifier(AlertNotifier)` | Implement the console notifier operation for `src/ui/web/backend/services/observability/alerts/notifier.py`. |
+| method | [`ConsoleNotifier.notify`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L35) | `notify(alert: Alert, state: str) -> bool` | Implement the notify operation for `ConsoleNotifier`. |
+| class | [`WebhookNotifier`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L42) | `class WebhookNotifier(AlertNotifier)` | Send bounded JSON notifications to an explicitly configured HTTPS URL. |
+| internal method | [`WebhookNotifier.__init__`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L45) | `__init__(url: str, *, signing_secret: str \| None = None, timeout_seconds: float = 5.0) -> None` | Implement the init operation for `WebhookNotifier`. |
+| method | [`WebhookNotifier.notify`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L78) | `notify(alert: Alert, state: str) -> bool` | Implement the notify operation for `WebhookNotifier`. |
+| class | [`CompositeNotifier`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L122) | `class CompositeNotifier(AlertNotifier)` | Implement the composite notifier operation for `src/ui/web/backend/services/observability/alerts/notifier.py`. |
+| internal method | [`CompositeNotifier.__init__`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L123) | `__init__(notifiers: list[AlertNotifier]) -> None` | Implement the init operation for `CompositeNotifier`. |
+| method | [`CompositeNotifier.notify`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L126) | `notify(alert: Alert, state: str) -> bool` | Implement the notify operation for `CompositeNotifier`. |
+| method | [`CompositeNotifier.shutdown`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L136) | `shutdown() -> None` | Implement the shutdown operation for `CompositeNotifier`. |
+| function | [`notifier_from_environment`](../../src/ui/web/backend/services/observability/alerts/notifier.py#L141) | `notifier_from_environment() -> AlertNotifier` | Implement the notifier from environment operation for `src/ui/web/backend/services/observability/alerts/notifier.py`. |
 
 ## `src/ui/web/backend/services/observability/alerts/repository.py`
 
@@ -2439,8 +2769,8 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | method | [`AlertScheduler.get_stats`](../../src/ui/web/backend/services/observability/alerts/scheduler.py#L158) | `get_stats() -> Dict` | Get scheduler statistics. |
 | method | [`AlertScheduler.is_running`](../../src/ui/web/backend/services/observability/alerts/scheduler.py#L169) | `is_running() -> bool` | Check if scheduler is running. |
 | function | [`get_alert_scheduler`](../../src/ui/web/backend/services/observability/alerts/scheduler.py#L178) | `get_alert_scheduler() -> AlertScheduler` | Get or create the global alert scheduler. |
-| function | [`start_alert_scheduler`](../../src/ui/web/backend/services/observability/alerts/scheduler.py#L186) | `async start_alert_scheduler() -> None` | Start the global alert scheduler. |
-| function | [`stop_alert_scheduler`](../../src/ui/web/backend/services/observability/alerts/scheduler.py#L192) | `async stop_alert_scheduler() -> None` | Stop the global alert scheduler. |
+| function | [`start_alert_scheduler`](../../src/ui/web/backend/services/observability/alerts/scheduler.py#L188) | `async start_alert_scheduler() -> None` | Start the global alert scheduler. |
+| function | [`stop_alert_scheduler`](../../src/ui/web/backend/services/observability/alerts/scheduler.py#L194) | `async stop_alert_scheduler() -> None` | Stop the global alert scheduler. |
 
 ## `src/ui/web/backend/services/observability/log_manager.py`
 
@@ -2634,41 +2964,43 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 |---|---|---|---|
 | internal function | [`_redact_sensitive_value`](../../src/ui/web/backend/services/observability/structured_logging.py#L38) | `_redact_sensitive_value(value: Any) -> Any` | Redact sensitive values from log data. |
 | internal function | [`_redact_sensitive_dict`](../../src/ui/web/backend/services/observability/structured_logging.py#L66) | `_redact_sensitive_dict(data: Dict[str, Any]) -> Dict[str, Any]` | Redact sensitive data from a dictionary. |
-| class | [`ExecutionLogContext`](../../src/ui/web/backend/services/observability/structured_logging.py#L93) | `class ExecutionLogContext` | Context for correlating logs within an execution. |
-| method | [`ExecutionLogContext.to_dict`](../../src/ui/web/backend/services/observability/structured_logging.py#L109) | `to_dict() -> Dict[str, Any]` | Convert to dict, excluding None values. |
-| method | [`ExecutionLogContext.with_node`](../../src/ui/web/backend/services/observability/structured_logging.py#L113) | `with_node(node_id: str, node_run_id: Optional[str] = None, step_index: Optional[int] = None, attempt_no: Optional[int] = None, module_id: Optional[str] = None) -> 'ExecutionLogContext'` | Create a new context with node-level info. |
-| class | [`ExecutionContextManager`](../../src/ui/web/backend/services/observability/structured_logging.py#L138) | `class ExecutionContextManager` | Context manager for setting execution log context. |
-| internal method | [`ExecutionContextManager.__init__`](../../src/ui/web/backend/services/observability/structured_logging.py#L141) | `__init__(context: ExecutionLogContext)` | Initialize with the execution log context to set. |
-| internal method | [`ExecutionContextManager.__enter__`](../../src/ui/web/backend/services/observability/structured_logging.py#L146) | `__enter__() -> ExecutionLogContext` | Set the execution context and return it. |
-| internal method | [`ExecutionContextManager.__exit__`](../../src/ui/web/backend/services/observability/structured_logging.py#L151) | `__exit__(exc_type, exc_val, exc_tb)` | Reset the execution context to its previous value. |
-| function | [`get_current_context`](../../src/ui/web/backend/services/observability/structured_logging.py#L158) | `get_current_context() -> Optional[ExecutionLogContext]` | Get the current execution log context. |
-| function | [`set_context`](../../src/ui/web/backend/services/observability/structured_logging.py#L163) | `set_context(context: ExecutionLogContext) -> None` | Set the current execution log context. |
-| function | [`clear_context`](../../src/ui/web/backend/services/observability/structured_logging.py#L168) | `clear_context() -> None` | Clear the current execution log context. |
-| class | [`JsonLogFormatter`](../../src/ui/web/backend/services/observability/structured_logging.py#L173) | `class JsonLogFormatter(logging.Formatter)` | JSON log formatter for structured logging. |
-| internal method | [`JsonLogFormatter.__init__`](../../src/ui/web/backend/services/observability/structured_logging.py#L181) | `__init__(include_context: bool = True, include_extra: bool = True, include_exception: bool = True)` | Initialize formatter with toggles for context, extras, and exceptions. |
-| method | [`JsonLogFormatter.format`](../../src/ui/web/backend/services/observability/structured_logging.py#L193) | `format(record: logging.LogRecord) -> str` | Format log record as JSON. |
-| class | [`StructuredLogger`](../../src/ui/web/backend/services/observability/structured_logging.py#L258) | `class StructuredLogger` | Structured logger with execution context support. |
-| internal method | [`StructuredLogger.__init__`](../../src/ui/web/backend/services/observability/structured_logging.py#L272) | `__init__(name: str)` | Initialize with a logger name. |
-| method | [`StructuredLogger.logger`](../../src/ui/web/backend/services/observability/structured_logging.py#L277) | `logger() -> logging.Logger` | Return the underlying standard library logger. |
-| method | [`StructuredLogger.execution_context`](../../src/ui/web/backend/services/observability/structured_logging.py#L281) | `execution_context(exec_id: str, workflow_id: Optional[str] = None, workflow_name: Optional[str] = None, workspace_id: Optional[str] = None, trace_id: Optional[str] = None, worker_id: Optional[str] = None) -> ExecutionContextManager` | Create an execution context manager. |
-| method | [`StructuredLogger.node_context`](../../src/ui/web/backend/services/observability/structured_logging.py#L301) | `node_context(node_id: str, node_run_id: Optional[str] = None, step_index: Optional[int] = None, attempt_no: Optional[int] = None, module_id: Optional[str] = None) -> ExecutionContextManager` | Create a node context manager (extends current execution context). |
-| internal method | [`StructuredLogger._log`](../../src/ui/web/backend/services/observability/structured_logging.py#L331) | `_log(level: int, msg: str, *args, exc_info: bool = False, **kwargs) -> None` | Internal log method with extra context. |
-| method | [`StructuredLogger.debug`](../../src/ui/web/backend/services/observability/structured_logging.py#L342) | `debug(msg: str, *args, **kwargs) -> None` | Log debug message. |
-| method | [`StructuredLogger.info`](../../src/ui/web/backend/services/observability/structured_logging.py#L346) | `info(msg: str, *args, **kwargs) -> None` | Log info message. |
-| method | [`StructuredLogger.warning`](../../src/ui/web/backend/services/observability/structured_logging.py#L350) | `warning(msg: str, *args, **kwargs) -> None` | Log warning message. |
-| method | [`StructuredLogger.error`](../../src/ui/web/backend/services/observability/structured_logging.py#L354) | `error(msg: str, *args, exc_info: bool = True, **kwargs) -> None` | Log error message (includes exception by default). |
-| method | [`StructuredLogger.critical`](../../src/ui/web/backend/services/observability/structured_logging.py#L358) | `critical(msg: str, *args, exc_info: bool = True, **kwargs) -> None` | Log critical message. |
-| method | [`StructuredLogger.node_started`](../../src/ui/web/backend/services/observability/structured_logging.py#L362) | `node_started(node_id: str, module_id: str, inputs: Optional[Dict[str, Any]] = None) -> None` | Log node execution started event. |
-| method | [`StructuredLogger.node_succeeded`](../../src/ui/web/backend/services/observability/structured_logging.py#L377) | `node_succeeded(node_id: str, module_id: str, duration_ms: int, outputs: Optional[Dict[str, Any]] = None) -> None` | Log node execution succeeded event. |
-| method | [`StructuredLogger.node_failed`](../../src/ui/web/backend/services/observability/structured_logging.py#L394) | `node_failed(node_id: str, module_id: str, error: str, error_type: Optional[str] = None, duration_ms: Optional[int] = None, retryable: bool = False) -> None` | Log node execution failed event. |
-| method | [`StructuredLogger.node_skipped`](../../src/ui/web/backend/services/observability/structured_logging.py#L416) | `node_skipped(node_id: str, module_id: str, reason: str) -> None` | Log node execution skipped event. |
-| method | [`StructuredLogger.execution_started`](../../src/ui/web/backend/services/observability/structured_logging.py#L431) | `execution_started(exec_id: str, workflow_id: str, workflow_name: Optional[str] = None) -> None` | Log workflow execution started event. |
-| method | [`StructuredLogger.execution_completed`](../../src/ui/web/backend/services/observability/structured_logging.py#L446) | `execution_completed(exec_id: str, status: str, duration_ms: int, total_steps: int, succeeded_steps: int, failed_steps: int) -> None` | Log workflow execution completed event. |
-| function | [`setup_json_logging`](../../src/ui/web/backend/services/observability/structured_logging.py#L470) | `setup_json_logging(level: int = logging.INFO, stream: Any = None, include_context: bool = True) -> None` | Configure root logger for JSON output. |
-| function | [`log_execution`](../../src/ui/web/backend/services/observability/structured_logging.py#L495) | `log_execution(func: Callable) -> Callable` | Decorator to log function execution with timing. |
-| function | [`async_wrapper`](../../src/ui/web/backend/services/observability/structured_logging.py#L507) | `async async_wrapper(*args, **kwargs)` | Implement the async wrapper operation for `src/ui/web/backend/services/observability/structured_logging.py`. |
-| function | [`sync_wrapper`](../../src/ui/web/backend/services/observability/structured_logging.py#L531) | `sync_wrapper(*args, **kwargs)` | Implement the sync wrapper operation for `src/ui/web/backend/services/observability/structured_logging.py`. |
-| function | [`get_logger`](../../src/ui/web/backend/services/observability/structured_logging.py#L562) | `get_logger(name: str) -> StructuredLogger` | Get a structured logger instance. |
+| function | [`redact_sensitive_data`](../../src/ui/web/backend/services/observability/structured_logging.py#L86) | `redact_sensitive_data(value: Any) -> Any` | Return a recursively redacted copy suitable for logs and events. |
+| function | [`redact_error_message`](../../src/ui/web/backend/services/observability/structured_logging.py#L91) | `redact_error_message(value: Any, *, max_length: int = 2000) -> str` | Sanitize an exception or traceback before persistence or delivery. |
+| class | [`ExecutionLogContext`](../../src/ui/web/backend/services/observability/structured_logging.py#L107) | `class ExecutionLogContext` | Context for correlating logs within an execution. |
+| method | [`ExecutionLogContext.to_dict`](../../src/ui/web/backend/services/observability/structured_logging.py#L123) | `to_dict() -> Dict[str, Any]` | Convert to dict, excluding None values. |
+| method | [`ExecutionLogContext.with_node`](../../src/ui/web/backend/services/observability/structured_logging.py#L127) | `with_node(node_id: str, node_run_id: Optional[str] = None, step_index: Optional[int] = None, attempt_no: Optional[int] = None, module_id: Optional[str] = None) -> 'ExecutionLogContext'` | Create a new context with node-level info. |
+| class | [`ExecutionContextManager`](../../src/ui/web/backend/services/observability/structured_logging.py#L152) | `class ExecutionContextManager` | Context manager for setting execution log context. |
+| internal method | [`ExecutionContextManager.__init__`](../../src/ui/web/backend/services/observability/structured_logging.py#L155) | `__init__(context: ExecutionLogContext)` | Initialize with the execution log context to set. |
+| internal method | [`ExecutionContextManager.__enter__`](../../src/ui/web/backend/services/observability/structured_logging.py#L160) | `__enter__() -> ExecutionLogContext` | Set the execution context and return it. |
+| internal method | [`ExecutionContextManager.__exit__`](../../src/ui/web/backend/services/observability/structured_logging.py#L165) | `__exit__(exc_type, exc_val, exc_tb)` | Reset the execution context to its previous value. |
+| function | [`get_current_context`](../../src/ui/web/backend/services/observability/structured_logging.py#L172) | `get_current_context() -> Optional[ExecutionLogContext]` | Get the current execution log context. |
+| function | [`set_context`](../../src/ui/web/backend/services/observability/structured_logging.py#L177) | `set_context(context: ExecutionLogContext) -> None` | Set the current execution log context. |
+| function | [`clear_context`](../../src/ui/web/backend/services/observability/structured_logging.py#L182) | `clear_context() -> None` | Clear the current execution log context. |
+| class | [`JsonLogFormatter`](../../src/ui/web/backend/services/observability/structured_logging.py#L187) | `class JsonLogFormatter(logging.Formatter)` | JSON log formatter for structured logging. |
+| internal method | [`JsonLogFormatter.__init__`](../../src/ui/web/backend/services/observability/structured_logging.py#L195) | `__init__(include_context: bool = True, include_extra: bool = True, include_exception: bool = True)` | Initialize formatter with toggles for context, extras, and exceptions. |
+| method | [`JsonLogFormatter.format`](../../src/ui/web/backend/services/observability/structured_logging.py#L207) | `format(record: logging.LogRecord) -> str` | Format log record as JSON. |
+| class | [`StructuredLogger`](../../src/ui/web/backend/services/observability/structured_logging.py#L272) | `class StructuredLogger` | Structured logger with execution context support. |
+| internal method | [`StructuredLogger.__init__`](../../src/ui/web/backend/services/observability/structured_logging.py#L286) | `__init__(name: str)` | Initialize with a logger name. |
+| method | [`StructuredLogger.logger`](../../src/ui/web/backend/services/observability/structured_logging.py#L291) | `logger() -> logging.Logger` | Return the underlying standard library logger. |
+| method | [`StructuredLogger.execution_context`](../../src/ui/web/backend/services/observability/structured_logging.py#L295) | `execution_context(exec_id: str, workflow_id: Optional[str] = None, workflow_name: Optional[str] = None, workspace_id: Optional[str] = None, trace_id: Optional[str] = None, worker_id: Optional[str] = None) -> ExecutionContextManager` | Create an execution context manager. |
+| method | [`StructuredLogger.node_context`](../../src/ui/web/backend/services/observability/structured_logging.py#L315) | `node_context(node_id: str, node_run_id: Optional[str] = None, step_index: Optional[int] = None, attempt_no: Optional[int] = None, module_id: Optional[str] = None) -> ExecutionContextManager` | Create a node context manager (extends current execution context). |
+| internal method | [`StructuredLogger._log`](../../src/ui/web/backend/services/observability/structured_logging.py#L345) | `_log(level: int, msg: str, *args, exc_info: bool = False, **kwargs) -> None` | Internal log method with extra context. |
+| method | [`StructuredLogger.debug`](../../src/ui/web/backend/services/observability/structured_logging.py#L356) | `debug(msg: str, *args, **kwargs) -> None` | Log debug message. |
+| method | [`StructuredLogger.info`](../../src/ui/web/backend/services/observability/structured_logging.py#L360) | `info(msg: str, *args, **kwargs) -> None` | Log info message. |
+| method | [`StructuredLogger.warning`](../../src/ui/web/backend/services/observability/structured_logging.py#L364) | `warning(msg: str, *args, **kwargs) -> None` | Log warning message. |
+| method | [`StructuredLogger.error`](../../src/ui/web/backend/services/observability/structured_logging.py#L368) | `error(msg: str, *args, exc_info: bool = True, **kwargs) -> None` | Log error message (includes exception by default). |
+| method | [`StructuredLogger.critical`](../../src/ui/web/backend/services/observability/structured_logging.py#L372) | `critical(msg: str, *args, exc_info: bool = True, **kwargs) -> None` | Log critical message. |
+| method | [`StructuredLogger.node_started`](../../src/ui/web/backend/services/observability/structured_logging.py#L376) | `node_started(node_id: str, module_id: str, inputs: Optional[Dict[str, Any]] = None) -> None` | Log node execution started event. |
+| method | [`StructuredLogger.node_succeeded`](../../src/ui/web/backend/services/observability/structured_logging.py#L391) | `node_succeeded(node_id: str, module_id: str, duration_ms: int, outputs: Optional[Dict[str, Any]] = None) -> None` | Log node execution succeeded event. |
+| method | [`StructuredLogger.node_failed`](../../src/ui/web/backend/services/observability/structured_logging.py#L408) | `node_failed(node_id: str, module_id: str, error: str, error_type: Optional[str] = None, duration_ms: Optional[int] = None, retryable: bool = False) -> None` | Log node execution failed event. |
+| method | [`StructuredLogger.node_skipped`](../../src/ui/web/backend/services/observability/structured_logging.py#L430) | `node_skipped(node_id: str, module_id: str, reason: str) -> None` | Log node execution skipped event. |
+| method | [`StructuredLogger.execution_started`](../../src/ui/web/backend/services/observability/structured_logging.py#L445) | `execution_started(exec_id: str, workflow_id: str, workflow_name: Optional[str] = None) -> None` | Log workflow execution started event. |
+| method | [`StructuredLogger.execution_completed`](../../src/ui/web/backend/services/observability/structured_logging.py#L460) | `execution_completed(exec_id: str, status: str, duration_ms: int, total_steps: int, succeeded_steps: int, failed_steps: int) -> None` | Log workflow execution completed event. |
+| function | [`setup_json_logging`](../../src/ui/web/backend/services/observability/structured_logging.py#L484) | `setup_json_logging(level: int = logging.INFO, stream: Any = None, include_context: bool = True) -> None` | Configure root logger for JSON output. |
+| function | [`log_execution`](../../src/ui/web/backend/services/observability/structured_logging.py#L509) | `log_execution(func: Callable) -> Callable` | Decorator to log function execution with timing. |
+| function | [`async_wrapper`](../../src/ui/web/backend/services/observability/structured_logging.py#L521) | `async async_wrapper(*args, **kwargs)` | Implement the async wrapper operation for `src/ui/web/backend/services/observability/structured_logging.py`. |
+| function | [`sync_wrapper`](../../src/ui/web/backend/services/observability/structured_logging.py#L545) | `sync_wrapper(*args, **kwargs)` | Implement the sync wrapper operation for `src/ui/web/backend/services/observability/structured_logging.py`. |
+| function | [`get_logger`](../../src/ui/web/backend/services/observability/structured_logging.py#L576) | `get_logger(name: str) -> StructuredLogger` | Get a structured logger instance. |
 
 ## `src/ui/web/backend/services/observability/tracing/context.py`
 
@@ -2779,6 +3111,24 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | function | [`decorator`](../../src/ui/web/backend/services/observability/tracing/tracer.py#L216) | `decorator(func: Callable) -> Callable` | Implement the decorator operation for `src/ui/web/backend/services/observability/tracing/tracer.py`. |
 | function | [`async_wrapper`](../../src/ui/web/backend/services/observability/tracing/tracer.py#L223) | `async async_wrapper(*args, **kwargs)` | Implement the async wrapper operation for `src/ui/web/backend/services/observability/tracing/tracer.py`. |
 | function | [`sync_wrapper`](../../src/ui/web/backend/services/observability/tracing/tracer.py#L236) | `sync_wrapper(*args, **kwargs)` | Implement the sync wrapper operation for `src/ui/web/backend/services/observability/tracing/tracer.py`. |
+
+## `src/ui/web/backend/services/operations/backup.py`
+
+| Kind | Symbol | Signature | Purpose |
+|---|---|---|---|
+| class | [`BackupFile`](../../src/ui/web/backend/services/operations/backup.py#L32) | `class BackupFile(BaseModel)` | Implement the backup file operation for `src/ui/web/backend/services/operations/backup.py`. |
+| class | [`BackupManifest`](../../src/ui/web/backend/services/operations/backup.py#L41) | `class BackupManifest(BaseModel)` | Implement the backup manifest operation for `src/ui/web/backend/services/operations/backup.py`. |
+| internal function | [`_sha256`](../../src/ui/web/backend/services/operations/backup.py#L51) | `_sha256(path: Path) -> str` | Implement the sha256 operation for `src/ui/web/backend/services/operations/backup.py`. |
+| internal function | [`_schema_versions`](../../src/ui/web/backend/services/operations/backup.py#L59) | `_schema_versions(path: Path) -> dict[str, int]` | Implement the schema versions operation for `src/ui/web/backend/services/operations/backup.py`. |
+| internal function | [`_copy_sqlite`](../../src/ui/web/backend/services/operations/backup.py#L74) | `_copy_sqlite(source: Path, destination: Path) -> None` | Implement the copy sqlite operation for `src/ui/web/backend/services/operations/backup.py`. |
+| function | [`create_backup`](../../src/ui/web/backend/services/operations/backup.py#L84) | `create_backup(data_dir: Path, destination: Path) -> BackupManifest` | Create a consistent archive without copying WAL files directly. |
+| internal function | [`_safe_members`](../../src/ui/web/backend/services/operations/backup.py#L141) | `_safe_members(archive: tarfile.TarFile) -> dict[str, tarfile.TarInfo]` | Implement the safe members operation for `src/ui/web/backend/services/operations/backup.py`. |
+| internal function | [`_semver`](../../src/ui/web/backend/services/operations/backup.py#L156) | `_semver(version: str) -> tuple[int, int, int]` | Implement the semver operation for `src/ui/web/backend/services/operations/backup.py`. |
+| internal function | [`_compatibility_floor`](../../src/ui/web/backend/services/operations/backup.py#L166) | `_compatibility_floor(version: str) -> str` | Implement the compatibility floor operation for `src/ui/web/backend/services/operations/backup.py`. |
+| internal function | [`_extract_backup`](../../src/ui/web/backend/services/operations/backup.py#L171) | `_extract_backup(archive_path: Path, staging: Path) -> BackupManifest` | Extract backup for `src/ui/web/backend/services/operations/backup.py`. |
+| internal function | [`_verify_extracted`](../../src/ui/web/backend/services/operations/backup.py#L212) | `_verify_extracted(staging: Path, manifest: BackupManifest) -> None` | Verify extracted for `src/ui/web/backend/services/operations/backup.py`. |
+| function | [`verify_backup`](../../src/ui/web/backend/services/operations/backup.py#L251) | `verify_backup(archive_path: Path) -> BackupManifest` | Verify backup for `src/ui/web/backend/services/operations/backup.py`. |
+| function | [`restore_backup`](../../src/ui/web/backend/services/operations/backup.py#L260) | `restore_backup(archive_path: Path, data_dir: Path, *, allow_overwrite: bool = False) -> BackupManifest` | Restore verified databases. |
 
 ## `src/ui/web/backend/services/outcome_classifier.py`
 
@@ -3030,10 +3380,10 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
-| function | [`trigger_error_workflow`](../../src/ui/web/backend/services/runtime/execution/error_handler.py#L20) | `async trigger_error_workflow(manager: Any, info: Any, error_message: str, traceback_str: str, workflow_data: Optional[Dict[str, Any]]) -> None` | Trigger error workflow when execution fails. |
-| function | [`get_error_workflow_id`](../../src/ui/web/backend/services/runtime/execution/error_handler.py#L111) | `async get_error_workflow_id(workflow_id: str, workspace_id: Optional[str]) -> Optional[str]` | Get error workflow ID from workflow metadata. |
-| function | [`get_failed_step_module`](../../src/ui/web/backend/services/runtime/execution/error_handler.py#L139) | `get_failed_step_module(workflow_data: Optional[Dict[str, Any]], step_id: Optional[str]) -> str` | Get module ID of failed step. |
-| function | [`extract_error_code`](../../src/ui/web/backend/services/runtime/execution/error_handler.py#L155) | `extract_error_code(error_message: str) -> str` | Extract error code from error message if present. |
+| function | [`trigger_error_workflow`](../../src/ui/web/backend/services/runtime/execution/error_handler.py#L24) | `async trigger_error_workflow(manager: Any, info: Any, error_message: str, traceback_str: str, workflow_data: Optional[Dict[str, Any]]) -> None` | Trigger error workflow when execution fails. |
+| function | [`get_error_workflow_id`](../../src/ui/web/backend/services/runtime/execution/error_handler.py#L117) | `async get_error_workflow_id(workflow_id: str, workspace_id: Optional[str]) -> Optional[str]` | Get error workflow ID from workflow metadata. |
+| function | [`get_failed_step_module`](../../src/ui/web/backend/services/runtime/execution/error_handler.py#L145) | `get_failed_step_module(workflow_data: Optional[Dict[str, Any]], step_id: Optional[str]) -> str` | Get module ID of failed step. |
+| function | [`extract_error_code`](../../src/ui/web/backend/services/runtime/execution/error_handler.py#L161) | `extract_error_code(error_message: str) -> str` | Extract error code from error message if present. |
 
 ## `src/ui/web/backend/services/runtime/execution/file_output.py`
 
@@ -3151,23 +3501,23 @@ Inventory: **2640 callables** across production Python sources; **451** use gene
 | Kind | Symbol | Signature | Purpose |
 |---|---|---|---|
 | function | [`run_workflow`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L37) | `async run_workflow(manager: Any, execution_id: str, workflow_yaml: str, variables: Dict[str, Any], start_step: Optional[int] = None, end_step: Optional[int] = None, workflow_data: Optional[Dict[str, Any]] = None) -> None` | Execute workflow and update status. |
-| internal function | [`_auto_blueprint_feedback`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L163) | `async _auto_blueprint_feedback(info: ExecutionInfo, workflow_data: Optional[Dict[str, Any]]) -> None` | System-level blueprint feedback — no LLM dependency. |
-| internal function | [`_ensure_module_registry`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L217) | `_ensure_module_registry()` | Ensure ModuleRegistry is populated; force re-registration if near-empty. |
-| internal function | [`_import_workflow_engine`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L234) | `_import_workflow_engine()` | Import WorkflowEngine from the installed flyto-core package. |
-| function | [`create_workflow_engine`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L240) | `async create_workflow_engine(manager: Any, info: ExecutionInfo, workflow_yaml: str, variables: Dict[str, Any], workflow_data: Optional[Dict[str, Any]], start_step: Optional[int], end_step: Optional[int], hooks: Optional[Any]) -> Any` | Create and configure WorkflowEngine. |
-| function | [`resolve_ui_vars_in_steps`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L349) | `resolve_ui_vars_in_steps(steps: List[Dict[str, Any]], ui_values: Dict[str, Any]) -> None` | Replace [[variable]] and {{variable}} placeholders in step params with actual UI input values. |
-| internal function | [`_resolve_mustache`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L365) | `_resolve_mustache(value)` | Phase 2: Replace {{var}} using ui_values. |
-| internal function | [`_sub`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L368) | `_sub(m)` | Implement the sub operation for `src/ui/web/backend/services/runtime/execution/workflow_runner.py`. |
-| internal function | [`_create_pause_callback`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L404) | `async _create_pause_callback(info: ExecutionInfo) -> Optional[callable]` | Create pause callback for execution control. |
-| function | [`on_state_change`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L417) | `on_state_change(exec_id: str, state)` | Implement the on state change operation for `src/ui/web/backend/services/runtime/execution/workflow_runner.py`. |
-| function | [`pause_callback`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L426) | `async pause_callback(step_index, step_id, variables, node_outputs, internal_should_pause = False)` | Implement the pause callback operation for `src/ui/web/backend/services/runtime/execution/workflow_runner.py`. |
-| internal function | [`_create_checkpoint_callback`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L442) | `async _create_checkpoint_callback(execution_id: str, workflow_yaml: str = '') -> Optional[callable]` | Create checkpoint callback for state snapshots. |
-| function | [`checkpoint_callback`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L450) | `async checkpoint_callback(step_index, step_id, checkpoint_data, status)` | Implement the checkpoint callback operation for `src/ui/web/backend/services/runtime/execution/workflow_runner.py`. |
-| internal function | [`_cleanup_execution`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L466) | `async _cleanup_execution(info: ExecutionInfo) -> None` | Clean up resources after execution. |
-| internal function | [`_start_browser_idle_timer`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L507) | `async _start_browser_idle_timer(execution_id: str, info: ExecutionInfo) -> None` | Start an idle timer that closes the browser after BROWSER_IDLE_TIMEOUT seconds. |
-| internal function | [`_idle_countdown`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L518) | `async _idle_countdown()` | Implement the idle countdown operation for `src/ui/web/backend/services/runtime/execution/workflow_runner.py`. |
-| function | [`reset_browser_idle_timer`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L563) | `reset_browser_idle_timer(execution_id: str, info: Optional[ExecutionInfo] = None) -> bool` | Reset the browser idle timer (called when user interacts with browser). |
-| function | [`cancel_browser_idle_timer`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L584) | `cancel_browser_idle_timer(execution_id: str) -> None` | Cancel browser idle timer (e.g. |
+| internal function | [`_auto_blueprint_feedback`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L171) | `async _auto_blueprint_feedback(info: ExecutionInfo, workflow_data: Optional[Dict[str, Any]]) -> None` | System-level blueprint feedback — no LLM dependency. |
+| internal function | [`_ensure_module_registry`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L225) | `_ensure_module_registry()` | Ensure ModuleRegistry is populated; force re-registration if near-empty. |
+| internal function | [`_import_workflow_engine`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L242) | `_import_workflow_engine()` | Import WorkflowEngine from the installed flyto-core package. |
+| function | [`create_workflow_engine`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L248) | `async create_workflow_engine(manager: Any, info: ExecutionInfo, workflow_yaml: str, variables: Dict[str, Any], workflow_data: Optional[Dict[str, Any]], start_step: Optional[int], end_step: Optional[int], hooks: Optional[Any]) -> Any` | Create and configure WorkflowEngine. |
+| function | [`resolve_ui_vars_in_steps`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L357) | `resolve_ui_vars_in_steps(steps: List[Dict[str, Any]], ui_values: Dict[str, Any]) -> None` | Replace [[variable]] and {{variable}} placeholders in step params with actual UI input values. |
+| internal function | [`_resolve_mustache`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L373) | `_resolve_mustache(value)` | Phase 2: Replace {{var}} using ui_values. |
+| internal function | [`_sub`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L376) | `_sub(m)` | Implement the sub operation for `src/ui/web/backend/services/runtime/execution/workflow_runner.py`. |
+| internal function | [`_create_pause_callback`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L412) | `async _create_pause_callback(info: ExecutionInfo) -> Optional[callable]` | Create pause callback for execution control. |
+| function | [`on_state_change`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L425) | `on_state_change(exec_id: str, state)` | Implement the on state change operation for `src/ui/web/backend/services/runtime/execution/workflow_runner.py`. |
+| function | [`pause_callback`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L434) | `async pause_callback(step_index, step_id, variables, node_outputs, internal_should_pause = False)` | Implement the pause callback operation for `src/ui/web/backend/services/runtime/execution/workflow_runner.py`. |
+| internal function | [`_create_checkpoint_callback`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L450) | `async _create_checkpoint_callback(execution_id: str, workflow_yaml: str = '') -> Optional[callable]` | Create checkpoint callback for state snapshots. |
+| function | [`checkpoint_callback`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L458) | `async checkpoint_callback(step_index, step_id, checkpoint_data, status)` | Implement the checkpoint callback operation for `src/ui/web/backend/services/runtime/execution/workflow_runner.py`. |
+| internal function | [`_cleanup_execution`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L474) | `async _cleanup_execution(info: ExecutionInfo) -> None` | Clean up resources after execution. |
+| internal function | [`_start_browser_idle_timer`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L515) | `async _start_browser_idle_timer(execution_id: str, info: ExecutionInfo) -> None` | Start an idle timer that closes the browser after BROWSER_IDLE_TIMEOUT seconds. |
+| internal function | [`_idle_countdown`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L526) | `async _idle_countdown()` | Implement the idle countdown operation for `src/ui/web/backend/services/runtime/execution/workflow_runner.py`. |
+| function | [`reset_browser_idle_timer`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L571) | `reset_browser_idle_timer(execution_id: str, info: Optional[ExecutionInfo] = None) -> bool` | Reset the browser idle timer (called when user interacts with browser). |
+| function | [`cancel_browser_idle_timer`](../../src/ui/web/backend/services/runtime/execution/workflow_runner.py#L592) | `cancel_browser_idle_timer(execution_id: str) -> None` | Cancel browser idle timer (e.g. |
 
 ## `src/ui/web/backend/services/runtime/execution/yaml_security.py`
 

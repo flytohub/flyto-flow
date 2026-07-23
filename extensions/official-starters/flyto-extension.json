@@ -1,0 +1,16 @@
+{
+  "schema": "flyto.extension.v1",
+  "id": "flyto2.official-starters",
+  "name": "Flyto2 Official Starter Templates",
+  "version": "0.1.0",
+  "api_version": "v1",
+  "kind": "template-pack",
+  "permissions": [],
+  "artifacts": [
+    {
+      "path": "templates.json",
+      "sha256": "f14126d79e56067c72f903da2cd4d9d705ebdde2562633167315f6f04ed74b28"
+    }
+  ],
+  "connection_types": []
+}

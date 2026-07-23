@@ -117,12 +117,16 @@ async def run_workflow(
 
     except Exception as e:
         import traceback
+        from services.observability.structured_logging import redact_error_message
+
         tb = traceback.format_exc()
-        logger.error(f"Execution {execution_id} FAILED: {e}")
-        logger.error(f"Traceback: {tb}")
+        safe_error = redact_error_message(e)
+        safe_traceback = redact_error_message(tb, max_length=10000)
+        logger.error("Execution %s failed: %s", execution_id, safe_error)
+        logger.debug("Execution %s traceback: %s", execution_id, safe_traceback)
         if info.status != ExecutionStatus.CANCELLED:
             info.status = ExecutionStatus.FAILED
-            info.error = str(e)
+            info.error = safe_error
             # Extract step_id from error chain
             cause = e
             while cause:
@@ -131,11 +135,15 @@ async def run_workflow(
                     break
                 cause = cause.__cause__
 
-            logger.error(f"Execution {execution_id} failed: {e}")
-
             # Trigger error workflow if configured (and not already an error workflow)
             if not info.metadata.get(ERROR_WORKFLOW_MARKER):
-                await trigger_error_workflow(manager, info, str(e), tb, workflow_data)
+                await trigger_error_workflow(
+                    manager,
+                    info,
+                    safe_error,
+                    safe_traceback,
+                    workflow_data,
+                )
 
     finally:
         info.end_time = utc_now()

@@ -55,8 +55,8 @@
     {
       "id": "release-tooling",
       "description": "Owns self-hosted packaging, deterministic checks, dependency policy, SBOM generation, and release validation.",
-      "paths": ["install/**", "scripts/**", "Makefile", "dependency-license-overrides.json", "src/ui/web/backend/requirements-ce.lock", "src/ui/web/frontend/package-lock.json"],
-      "documentation": ["docs/FEATURES.md#packaging-and-release-evidence", "install/README.md", "scripts/README.md", "tests/README.md"]
+      "paths": ["install/**", "scripts/**", "Makefile", "dependency-license-overrides.json", "src/ui/web/backend/requirements-ce.in", "src/ui/web/backend/requirements-ce.lock", "src/ui/web/frontend/package-lock.json"],
+      "documentation": ["docs/FEATURES.md#packaging-and-release-evidence", "docs/operations.md", "docs/extension-sdk.md", "install/README.md", "scripts/README.md", "tests/README.md"]
     },
     {
       "id": "edition-and-license-boundary",

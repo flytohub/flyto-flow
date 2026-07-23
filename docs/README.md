@@ -27,6 +27,12 @@ Choose the shortest path for the task at hand.
   names with sensitive-value handling guidance.
 - [Versioning and compatibility](versioning-and-compatibility.md): stored-data,
   API, and workflow compatibility.
+- [Operations](operations.md): backup, restore, migrations, workers, audit
+  export, metrics, and alerts.
+- [Enterprise readiness](enterprise-readiness.md): SSO, SCIM, RBAC, tenant,
+  queue, secret, and adapter conformance contracts.
+- [Extension SDK](extension-sdk.md): signed connector, plugin, and template
+  bundle manifests.
 - [Flow and Cloud synchronization](flow-cloud-sync.md): complete shared-file
   allowlist and ownership rules.
 - [Connection injection contract](architecture/connection-injection-contract.md):

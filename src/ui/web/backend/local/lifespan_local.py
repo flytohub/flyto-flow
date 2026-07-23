@@ -41,6 +41,7 @@ def init_breakpoint_manager() -> None:
 
 _STARTER_TEMPLATES = [
     {
+        "id": "flyto2.http-get-mcp",
         "name": "HTTP GET Request Tool",
         "description": (
             "Starter template: expose an HTTP GET request as a callable MCP tool. "
@@ -91,6 +92,7 @@ _STARTER_TEMPLATES = [
         "ui": {"components": [], "sections": [], "viewport": {"x": 0, "y": 0, "zoom": 1}},
     },
     {
+        "id": "flyto2.browser-screenshot-mcp",
         "name": "Browser Screenshot Tool",
         "description": (
             "Starter template: expose a headless-browser screenshot as a callable "
@@ -167,6 +169,7 @@ _STARTER_TEMPLATES = [
         "ui": {"components": [], "sections": [], "viewport": {"x": 0, "y": 0, "zoom": 1}},
     },
     {
+        "id": "flyto2.json-to-csv-mcp",
         "name": "JSON to CSV Tool",
         "description": (
             "Starter template: expose a JSON-to-CSV converter as a callable "
@@ -218,12 +221,13 @@ _STARTER_TEMPLATES = [
 ]
 
 
-async def seed_starter_templates() -> None:
+async def seed_starter_templates(extensions=()) -> None:
     """Create official starter templates on first run (empty template library only)."""
     try:
         from gateway.local_context import LOCAL_WORKSPACE
         from gateway.providers.data.offline.template import OfflineTemplateProvider
         from gateway.providers.data.models import TemplateCreateDTO
+        from services.extensions.templates import load_template_packs
 
         provider = OfflineTemplateProvider()
         existing = await provider.list_workspace_templates(
@@ -232,11 +236,28 @@ async def seed_starter_templates() -> None:
         if existing.total > 0:
             return
 
-        for starter in _STARTER_TEMPLATES:
+        starters = [*(_STARTER_TEMPLATES)]
+        starters.extend(
+            {
+                "id": template.id,
+                **template.create_payload(),
+            }
+            for template in load_template_packs(extensions)
+        )
+        identifiers = [starter["id"] for starter in starters]
+        if len(identifiers) != len(set(identifiers)):
+            raise ValueError("Starter template IDs must be unique")
+
+        for starter in starters:
             await provider.create_template(
                 workspace_id=LOCAL_WORKSPACE.id,
-                data=TemplateCreateDTO(**starter),
+                data=TemplateCreateDTO(
+                    **{key: value for key, value in starter.items() if key != "id"}
+                ),
             )
-        logger.info(f"Seeded {len(_STARTER_TEMPLATES)} starter template(s)")
+        logger.info("Seeded %s starter template(s)", len(starters))
     except Exception as exc:
-        logger.warning(f"Starter template seed skipped: {exc}")
+        logger.warning(
+            "Starter template seed skipped (%s)",
+            type(exc).__name__,
+        )

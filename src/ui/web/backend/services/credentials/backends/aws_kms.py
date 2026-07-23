@@ -8,6 +8,8 @@ from typing import Optional
 from services.credentials.backends.base import KeyManagementBackend
 
 logger = logging.getLogger(__name__)
+ENVELOPE_MAGIC = b"FKMS1"
+ENCRYPTION_CONTEXT = {"application": "flyto2-flow", "purpose": "credentials"}
 
 # Check for cryptography library
 try:
@@ -47,16 +49,32 @@ class AWSKMSBackend(KeyManagementBackend):
         except ImportError:
             raise ImportError("boto3 library required for AWS KMS backend")
 
+    def validate_configuration(self) -> None:
+        """Verify the configured key exists and can encrypt and decrypt."""
+        try:
+            response = self._client.describe_key(KeyId=self._key_id)
+            metadata = response.get("KeyMetadata", {})
+            if metadata.get("KeyState") != "Enabled":
+                raise RuntimeError("AWS KMS key is not enabled")
+            if metadata.get("KeyUsage") != "ENCRYPT_DECRYPT":
+                raise RuntimeError("AWS KMS key does not support encryption")
+            probe = b"flyto2-kms-readiness"
+            if self.decrypt(self.encrypt(probe)) != probe:
+                raise RuntimeError("AWS KMS readiness round trip failed")
+        except Exception as exc:
+            raise RuntimeError("AWS KMS key validation failed") from exc
+
     def get_key(self, version: int) -> bytes:
         """Generate data key from KMS."""
         try:
             response = self._client.generate_data_key(
                 KeyId=self._key_id,
                 KeySpec="AES_256",
+                EncryptionContext=ENCRYPTION_CONTEXT,
             )
             return response["Plaintext"]
-        except Exception as e:
-            logger.error(f"Failed to generate KMS data key: {e}")
+        except Exception:
+            logger.error("Failed to generate KMS data key")
             raise
 
     def get_current_version(self) -> int:
@@ -75,6 +93,7 @@ class AWSKMSBackend(KeyManagementBackend):
             response = self._client.generate_data_key(
                 KeyId=self._key_id,
                 KeySpec="AES_256",
+                EncryptionContext=ENCRYPTION_CONTEXT,
             )
             data_key = response["Plaintext"]
             encrypted_key = response["CiphertextBlob"]
@@ -86,15 +105,31 @@ class AWSKMSBackend(KeyManagementBackend):
 
             # Format: key_len (2 bytes) + encrypted_key + nonce + ciphertext
             key_len = len(encrypted_key)
-            return key_len.to_bytes(2, "big") + encrypted_key + nonce + ciphertext
-        except Exception as e:
-            logger.error(f"KMS encryption failed: {e}")
+            if key_len > 65535:
+                raise ValueError("KMS encrypted data key is too large")
+            return ENVELOPE_MAGIC + key_len.to_bytes(2, "big") + encrypted_key + nonce + ciphertext
+        except Exception:
+            logger.error("KMS encryption failed")
             raise
 
     def decrypt(self, ciphertext: bytes) -> bytes:
         """Decrypt using AWS KMS (envelope encryption)."""
         try:
             # Parse format
+            modern = ciphertext.startswith(ENVELOPE_MAGIC)
+            if modern:
+                ciphertext = ciphertext[len(ENVELOPE_MAGIC):]
+            elif (
+                os.environ.get(
+                    "FLYTO_KMS_ALLOW_LEGACY_CIPHERTEXT",
+                    "false",
+                ).strip().lower()
+                != "true"
+            ):
+                raise ValueError(
+                    "Legacy KMS ciphertext requires "
+                    "FLYTO_KMS_ALLOW_LEGACY_CIPHERTEXT=true"
+                )
             if len(ciphertext) < 2:
                 raise ValueError("KMS ciphertext is too short")
             key_len = int.from_bytes(ciphertext[:2], "big")
@@ -106,14 +141,18 @@ class AWSKMSBackend(KeyManagementBackend):
             encrypted_data = ciphertext[2 + key_len + 12 :]
 
             # Decrypt data key
-            response = self._client.decrypt(
-                CiphertextBlob=encrypted_key,
-            )
+            decrypt_args = {
+                "CiphertextBlob": encrypted_key,
+                "KeyId": self._key_id,
+            }
+            if modern:
+                decrypt_args["EncryptionContext"] = ENCRYPTION_CONTEXT
+            response = self._client.decrypt(**decrypt_args)
             data_key = response["Plaintext"]
 
             # Decrypt data
             aesgcm = AESGCM(data_key)
             return aesgcm.decrypt(nonce, encrypted_data, None)
-        except Exception as e:
-            logger.error(f"KMS decryption failed: {e}")
+        except Exception:
+            logger.error("KMS decryption failed")
             raise

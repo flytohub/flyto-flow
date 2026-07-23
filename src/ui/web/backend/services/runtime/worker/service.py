@@ -205,9 +205,9 @@ class Worker:
         Returns:
             True if found and cancelled
         """
-        from gateway.storage.job_queue import JobQueueRepository
+        from gateway.storage.queue_factory import get_queue
 
-        job = JobQueueRepository.get_by_execution_id(execution_id)
+        job = await get_queue().get_by_execution_id(execution_id)
         if job and job.id in self._cancellation_tokens:
             return await self.cancel_job(job.id, reason)
         return False

@@ -162,16 +162,24 @@ def _ensure_table() -> None:
 
 
 def _encrypt(value: str) -> str:
-    """Encrypt a secret value (placeholder - use proper encryption in production)."""
-    return base64.b64encode(value.encode()).decode()
+    """Encrypt a secret variable with the configured key-management backend."""
+    from services.credentials.encryption import EncryptionKey
+
+    encrypted = EncryptionKey.encrypt(value.encode())
+    return "enc:v1:" + base64.b64encode(encrypted).decode()
 
 
 def _decrypt(encrypted: str) -> str:
-    """Decrypt a secret value (placeholder - use proper encryption in production)."""
-    try:
-        return base64.b64decode(encrypted.encode()).decode()
-    except Exception:
-        return ""
+    """Decrypt secret variables, including the legacy base64-only format."""
+    if encrypted.startswith("enc:v1:"):
+        from services.credentials.encryption import EncryptionKey
+
+        payload = base64.b64decode(
+            encrypted.removeprefix("enc:v1:").encode(),
+            validate=True,
+        )
+        return EncryptionKey.decrypt(payload).decode()
+    return base64.b64decode(encrypted.encode(), validate=True).decode()
 
 
 def _row_to_variable(row, include_secrets: bool = False) -> Variable:
@@ -376,9 +384,18 @@ class VariableRepository:
         if not updates:
             return False
 
-        if "value" in updates and updates.get("is_secret", False):
-            updates["encrypted_value"] = _encrypt(updates["value"])
-            updates["value"] = ""
+        existing = VariableRepository.get(variable_id)
+        if existing is None:
+            return False
+        target_is_secret = bool(updates.get("is_secret", existing.is_secret))
+        if "value" in updates:
+            if target_is_secret:
+                updates["encrypted_value"] = _encrypt(updates["value"])
+                updates["value"] = ""
+            else:
+                updates["encrypted_value"] = None
+        elif "is_secret" in updates and target_is_secret != existing.is_secret:
+            raise ValueError("Changing secret state requires a replacement value")
 
         updates["updated_at"] = datetime.now(timezone.utc).isoformat()
 
@@ -412,6 +429,7 @@ class VariableRepository:
         project_id: Optional[str] = None,
         workspace_id: Optional[str] = None,
         environment: Environment = Environment.DEVELOPMENT,
+        include_secrets: bool = True,
     ) -> Dict[str, Any]:
         """
         Resolve all variables for a workflow execution.
@@ -430,28 +448,31 @@ class VariableRepository:
                 scope=VariableScope.WORKSPACE,
                 scope_id=workspace_id,
                 environment=environment,
-                include_secrets=True,
+                include_secrets=include_secrets,
             )
             for var in workspace_vars:
-                resolved[var.name] = _parse_value(var)
+                if include_secrets or not var.is_secret:
+                    resolved[var.name] = _parse_value(var)
 
         if project_id:
             proj_vars = VariableRepository.list_variables(
                 scope=VariableScope.PROJECT,
                 scope_id=project_id,
                 environment=environment,
-                include_secrets=True,
+                include_secrets=include_secrets,
             )
             for var in proj_vars:
-                resolved[var.name] = _parse_value(var)
+                if include_secrets or not var.is_secret:
+                    resolved[var.name] = _parse_value(var)
 
         wf_vars = VariableRepository.list_variables(
             scope=VariableScope.WORKFLOW,
             scope_id=workflow_id,
             environment=environment,
-            include_secrets=True,
+            include_secrets=include_secrets,
         )
         for var in wf_vars:
-            resolved[var.name] = _parse_value(var)
+            if include_secrets or not var.is_secret:
+                resolved[var.name] = _parse_value(var)
 
         return resolved

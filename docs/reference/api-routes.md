@@ -5,7 +5,7 @@
 Routes are extracted from static FastAPI/Starlette decorators. Prefixes created
 outside the defining module remain explicit as `{dynamic-prefix}`.
 
-Inventory: **207 route declarations**.
+Inventory: **212 route declarations**.
 
 | Method | Path | Handler | Purpose |
 |---|---|---|---|
@@ -23,8 +23,8 @@ Inventory: **207 route declarations**.
 | `POST` | `/alerts/{alert_id}/acknowledge` | [`acknowledge_alert`](../../src/ui/web/backend/api/observability/alerts.py#L236) | Acknowledge an alert. |
 | `POST` | `/alerts/{alert_id}/mute` | [`mute_alert`](../../src/ui/web/backend/api/observability/alerts.py#L253) | Mute an alert (alias for silence). |
 | `POST` | `/alerts/{alert_id}/silence` | [`silence_alert`](../../src/ui/web/backend/api/observability/alerts.py#L222) | Silence an alert until specified time. |
-| `GET` | `/api/health` | [`health_check`](../../src/ui/web/backend/main_offline.py#L233) | Implement the health check operation for `src/ui/web/backend/main_offline.py`. |
-| `GET` | `/app/version` | [`app_version`](../../src/ui/web/backend/api/__init__.py#L82) | Implement the app version operation for `src/ui/web/backend/api/__init__.py`. |
+| `GET` | `/api/health` | [`health_check`](../../src/ui/web/backend/main_offline.py#L297) | Implement the health check operation for `src/ui/web/backend/main_offline.py`. |
+| `GET` | `/app/version` | [`app_version`](../../src/ui/web/backend/api/__init__.py#L84) | Implement the app version operation for `src/ui/web/backend/api/__init__.py`. |
 | `POST` | `/autocomplete` | [`get_autocomplete`](../../src/ui/web/backend/api/engine/routes.py#L316) | Get autocomplete suggestions for an expression prefix. |
 | `GET` | `/breakpoints/execution/{execution_id}` | [`get_execution_breakpoints`](../../src/ui/web/backend/api/breakpoint/routes.py#L107) | Return execution breakpoints for `src/ui/web/backend/api/breakpoint/routes.py`. |
 | `GET` | `/breakpoints/pending` | [`list_pending_breakpoints`](../../src/ui/web/backend/api/breakpoint/routes.py#L95) | List pending breakpoints for `src/ui/web/backend/api/breakpoint/routes.py`. |
@@ -35,7 +35,7 @@ Inventory: **207 route declarations**.
 | `POST` | `/breakpoints/{breakpoint_id}/respond` | [`respond_to_breakpoint`](../../src/ui/web/backend/api/breakpoint/routes.py#L122) | Implement the respond to breakpoint operation for `src/ui/web/backend/api/breakpoint/routes.py`. |
 | `GET` | `/breakpoints/{breakpoint_id}/status` | [`get_breakpoint_status`](../../src/ui/web/backend/api/breakpoint/routes.py#L189) | Return breakpoint status for `src/ui/web/backend/api/breakpoint/routes.py`. |
 | `GET` | `/browser/{execution_id}/screencast/status` | [`screencast_status`](../../src/ui/web/backend/api/browser/routes.py#L13) | Implement the screencast status operation for `src/ui/web/backend/api/browser/routes.py`. |
-| `GET` | `/catalog` | [`get_module_catalog`](../../src/ui/web/backend/api/modules/catalog.py#L327) | Get complete atomic module catalog for frontend (Level 2) Returns all registered atomic modules with metadata formatted for frontend. |
+| `GET` | `/catalog` | [`get_module_catalog`](../../src/ui/web/backend/api/modules/catalog.py#L333) | Get complete atomic module catalog for frontend (Level 2) Returns all registered atomic modules with metadata formatted for frontend. |
 | `GET` | `/categories` | [`get_categories`](../../src/ui/web/backend/api/modules/version.py#L85) | Get all available module categories. |
 | `POST` | `/cleanup` | [`cleanup_executions`](../../src/ui/web/backend/api/executions/routes_basic.py#L155) | Clean up old completed/failed/cancelled executions. |
 | `POST` | `/compare` | [`compare_executions`](../../src/ui/web/backend/api/replay/routes.py#L447) | Compare original execution with replay. |
@@ -47,6 +47,11 @@ Inventory: **207 route declarations**.
 | `GET` | `/connectable` | [`get_connectable_modules`](../../src/ui/web/backend/api/modules/validation.py#L204) | Get modules that can connect to/from a given module. |
 | `GET` | `/connectable-for-replacement` | [`get_connectable_for_replacement`](../../src/ui/web/backend/api/modules/validation.py#L464) | Get modules that can replace a node (compatible with both upstream and downstream). |
 | `GET` | `/connectable-summary` | [`get_connectable_summary`](../../src/ui/web/backend/api/modules/validation.py#L329) | Get category counts of connectable modules. |
+| `GET` | `/connections/catalog` | [`list_connection_types`](../../src/ui/web/backend/api/connections.py#L48) | List connection types for `src/ui/web/backend/api/connections.py`. |
+| `GET` | `/connections/profiles` | [`list_connection_profiles`](../../src/ui/web/backend/api/connections.py#L59) | List connection profiles for `src/ui/web/backend/api/connections.py`. |
+| `DELETE` | `/connections/profiles/{profile_id}` | [`delete_connection_profile`](../../src/ui/web/backend/api/connections.py#L97) | Delete connection profile for `src/ui/web/backend/api/connections.py`. |
+| `PUT` | `/connections/profiles/{profile_id}` | [`put_connection_profile`](../../src/ui/web/backend/api/connections.py#L68) | Implement the put connection profile operation for `src/ui/web/backend/api/connections.py`. |
+| `POST` | `/connections/profiles/{profile_id}/validate` | [`validate_connection_profile`](../../src/ui/web/backend/api/connections.py#L116) | Validate connection profile for `src/ui/web/backend/api/connections.py`. |
 | `POST` | `/debug/compare` | [`compare_executions`](../../src/ui/web/backend/api/debug.py#L192) | Compare two executions. |
 | `GET` | `/debug/error-analysis/{execution_id}` | [`get_error_analysis`](../../src/ui/web/backend/api/debug.py#L215) | Get detailed error analysis for a failed execution. |
 | `GET` | `/debug/history/{workflow_id}` | [`get_execution_history`](../../src/ui/web/backend/api/debug.py#L235) | Get execution history for a workflow. |
@@ -56,7 +61,7 @@ Inventory: **207 route declarations**.
 | `GET` | `/debug/timeline/{execution_id}` | [`get_execution_timeline`](../../src/ui/web/backend/api/debug.py#L62) | Get execution timeline for visualization. |
 | `GET` | `/debug/timeline/{execution_id}/node/{node_id}` | [`get_node_detail`](../../src/ui/web/backend/api/debug.py#L82) | Get detailed information about a specific node execution. |
 | `GET` | `/debug/timeline/{execution_id}/variables` | [`get_variables_at_step`](../../src/ui/web/backend/api/debug.py#L105) | Get all variables/context at a specific step. |
-| `GET` | `/environment` | [`get_module_environment`](../../src/ui/web/backend/api/modules/catalog.py#L223) | Get current module environment settings. |
+| `GET` | `/environment` | [`get_module_environment`](../../src/ui/web/backend/api/modules/catalog.py#L229) | Get current module environment settings. |
 | `POST` | `/execute` | [`execute_replay`](../../src/ui/web/backend/api/replay/routes.py#L170) | Execute workflow replay from a specific step. |
 | `GET` | `/executions/{execution_id}/focus/{node_id}` | [`get_node_focus`](../../src/ui/web/backend/api/lineage/routes/focus.py#L19) | Get focused lineage for a specific node. |
 | `GET` | `/executions/{execution_id}/graph` | [`get_lineage_graph`](../../src/ui/web/backend/api/lineage/routes/graph.py#L29) | Get full data lineage graph for an execution. |
@@ -119,7 +124,7 @@ Inventory: **207 route declarations**.
 | `GET` | `/results/{test_run_id}` | [`get_test_result`](../../src/ui/web/backend/api/testing/routes_tests.py#L131) | Get results of a test run. |
 | `POST` | `/run` | [`run_workflow`](../../src/ui/web/backend/api/executions/routes_basic.py#L24) | Start a new workflow execution. |
 | `POST` | `/run` | [`run_workflow_direct`](../../src/ui/web/backend/api/workflows/execution.py#L57) | Run workflow directly using Core engine. |
-| `GET` | `/runtime-config` | [`runtime_config`](../../src/ui/web/backend/api/runtime_config.py#L9) | Implement the runtime config operation for `src/ui/web/backend/api/runtime_config.py`. |
+| `GET` | `/runtime-config` | [`runtime_config`](../../src/ui/web/backend/api/runtime_config.py#L14) | Implement the runtime config operation for `src/ui/web/backend/api/runtime_config.py`. |
 | `POST` | `/schema/preview` | [`compute_schema_preview`](../../src/ui/web/backend/api/workflows/conversion_routes.py#L231) | Compute preview input schema from workflow and UI components. |
 | `GET` | `/screenshots/{filename}` | [`serve_screenshot`](../../src/ui/web/backend/api/breakpoint/screenshots.py#L21) | Serve a breakpoint screenshot file. |
 | `POST` | `/sort` | [`sort_workflow_steps`](../../src/ui/web/backend/api/workflows/conversion_routes.py#L73) | Topological sort workflow steps. |
@@ -134,7 +139,7 @@ Inventory: **207 route declarations**.
 | `DELETE` | `/templates/{template_id}` | [`delete_template`](../../src/ui/web/backend/api/templates_offline.py#L133) | Delete template for `src/ui/web/backend/api/templates_offline.py`. |
 | `GET` | `/templates/{template_id}` | [`get_template`](../../src/ui/web/backend/api/templates_offline.py#L75) | Return template for `src/ui/web/backend/api/templates_offline.py`. |
 | `PUT` | `/templates/{template_id}` | [`update_template`](../../src/ui/web/backend/api/templates_offline.py#L116) | Update template for `src/ui/web/backend/api/templates_offline.py`. |
-| `GET` | `/tiered` | [`get_tiered_catalog`](../../src/ui/web/backend/api/modules/catalog.py#L267) | Get tiered module catalog for frontend (ADR-001) Returns modules organized by visibility tier: - default: Composite modules visible in the local builder - expert: Atomic modules in collapsed section - my-templates: Workflows saved in this local workspace Modules are loaded from the bundled core, local plugins, and local templates. |
+| `GET` | `/tiered` | [`get_tiered_catalog`](../../src/ui/web/backend/api/modules/catalog.py#L273) | Get tiered module catalog for frontend (ADR-001) Returns modules organized by visibility tier: - default: Composite modules visible in the local builder - expert: Atomic modules in collapsed section - my-templates: Workflows saved in this local workspace Modules are loaded from the bundled core, local plugins, and local templates. |
 | `GET` | `/tools` | [`get_agent_tools`](../../src/ui/web/backend/api/modules/agent_tools.py#L20) | Get modules available as tools for AI Agent. |
 | `GET` | `/tools/resolve` | [`resolve_tool_patterns`](../../src/ui/web/backend/api/modules/agent_tools.py#L95) | Resolve tool patterns to actual module IDs. |
 | `GET` | `/traces/` | [`list_traces`](../../src/ui/web/backend/api/observability/traces.py#L243) | List traces with optional filtering. |
@@ -162,14 +167,14 @@ Inventory: **207 route declarations**.
 | `POST` | `/validate-start` | [`validate_workflow_start`](../../src/ui/web/backend/api/workflows/conversion_routes.py#L54) | Quick validation of start nodes only. |
 | `GET` | `/variables/` | [`list_variables`](../../src/ui/web/backend/api/variables.py#L176) | List variables with optional filters. |
 | `POST` | `/variables/` | [`create_variable`](../../src/ui/web/backend/api/variables.py#L118) | Create a new variable. |
-| `GET` | `/variables/credentials` | [`list_credentials`](../../src/ui/web/backend/api/variables.py#L388) | List credentials (metadata only, no values). |
-| `POST` | `/variables/credentials` | [`create_credential`](../../src/ui/web/backend/api/variables.py#L336) | Create a new credential (secret). |
-| `GET` | `/variables/credentials/audit` | [`get_credential_audit_log`](../../src/ui/web/backend/api/variables.py#L520) | Get credential access audit log. |
-| `DELETE` | `/variables/credentials/{name}` | [`delete_credential`](../../src/ui/web/backend/api/variables.py#L489) | Delete a credential. |
-| `POST` | `/variables/credentials/{name}/reveal` | [`reveal_credential`](../../src/ui/web/backend/api/variables.py#L452) | Reveal a credential value (requires reason for audit). |
+| `GET` | `/variables/credentials` | [`list_credentials`](../../src/ui/web/backend/api/variables.py#L389) | List credentials (metadata only, no values). |
+| `POST` | `/variables/credentials` | [`create_credential`](../../src/ui/web/backend/api/variables.py#L337) | Create a new credential (secret). |
+| `GET` | `/variables/credentials/audit` | [`get_credential_audit_log`](../../src/ui/web/backend/api/variables.py#L521) | Get credential access audit log. |
+| `DELETE` | `/variables/credentials/{name}` | [`delete_credential`](../../src/ui/web/backend/api/variables.py#L490) | Delete a credential. |
+| `POST` | `/variables/credentials/{name}/reveal` | [`reveal_credential`](../../src/ui/web/backend/api/variables.py#L453) | Reveal a credential value (requires reason for audit). |
 | `GET` | `/variables/resolve/{workflow_id}` | [`resolve_variables`](../../src/ui/web/backend/api/variables.py#L301) | Resolve all variables for a workflow execution. |
 | `DELETE` | `/variables/{variable_id}` | [`delete_variable`](../../src/ui/web/backend/api/variables.py#L287) | Delete a variable. |
-| `GET` | `/variables/{variable_id}` | [`get_variable`](../../src/ui/web/backend/api/variables.py#L549) | Get a variable by ID. |
+| `GET` | `/variables/{variable_id}` | [`get_variable`](../../src/ui/web/backend/api/variables.py#L550) | Get a variable by ID. |
 | `PATCH` | `/variables/{variable_id}` | [`update_variable`](../../src/ui/web/backend/api/variables.py#L261) | Update a variable. |
 | `GET` | `/vector/collections` | [`list_collections`](../../src/ui/web/backend/api/vector/routes.py#L144) | List collections for `src/ui/web/backend/api/vector/routes.py`. |
 | `POST` | `/vector/collections` | [`create_collection`](../../src/ui/web/backend/api/vector/routes.py#L156) | Create collection for `src/ui/web/backend/api/vector/routes.py`. |

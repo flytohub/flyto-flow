@@ -3,8 +3,10 @@ Application Constants
 Non-configurable constant values
 """
 
+from config.version import APP_VERSION
+
+
 APP_NAME = 'Flyto2'
-APP_VERSION = '0.3.1'  # keep in sync with frontend/package.json
 
 # Categories visible by default in the UI
 DEFAULT_VISIBILITY_CATEGORIES = frozenset({

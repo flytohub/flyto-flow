@@ -72,7 +72,7 @@ approval policy, execution history, lineage, and evidence.
 
 ## Deployment Contract
 
-- **Platform:** `linux/amd64`
+- **Platforms:** `linux/amd64`, `linux/arm64`
 - **Application port:** `9000`
 - **Health endpoint:** `/api/health`
 - **Persistent data:** `/data/flyto`
