@@ -8,6 +8,11 @@ recorded here. Historical Apache-2.0 revisions remain governed by
 
 ### Added
 
+- Complete Flyto2 project-memory scaffold, documentation index, feature/source
+  manifest, and repeatable agent workflows.
+- Source-backed feature reference covering the visual builder, local gateway,
+  Flyto2 Core execution, MCP Studio, evidence, packaging, and explicit
+  non-features.
 - Pain-led repository introduction, outcome-focused quick start, use cases,
   MCP client guidance, architecture, project state, roadmap, task, and decision
   documents.

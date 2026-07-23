@@ -176,6 +176,8 @@ flyto-index verify . --strict
 | [Getting Started](docs/getting-started.md) | Install, first tool, backup, update, and verification |
 | [MCP Studio](docs/mcp-studio.md) | Tool contract, client setup, access, and audit metadata |
 | [Use Cases](docs/use-cases.md) | Practical workflow patterns and guardrails |
+| [Documentation Index](docs/README.md) | Maintained operator, product, boundary, and release documentation |
+| [Feature Reference](docs/FEATURES.md) | Product surfaces mapped to source, limits, tests, and verification |
 | [Source Map](src/README.md) | Runtime ownership and source entry points |
 | [Script Guide](scripts/README.md) | Repository verification and release scripts |
 | [Test Guide](tests/README.md) | Test layers and commands |

@@ -43,6 +43,7 @@ private product plans or date commitments.
 
 ## P2: Maintainability
 
+- [x] Adopt the complete Flyto2 project-memory and documentation contract.
 - [ ] Reduce Indexer complexity hotspots in isolated behavior-preserving pull
   requests.
 - [ ] Add architecture references to runtime, evidence, replay, and provider

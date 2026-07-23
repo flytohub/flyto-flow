@@ -1,0 +1,83 @@
+{
+  "$schema": "https://docs.flyto2.com/schemas/documentation-contract-v1.json",
+  "schema_version": 1,
+  "repository": "flyto-flow",
+  "status": "active",
+  "audiences": [
+    "self-hosted operators",
+    "workflow builders",
+    "MCP developers",
+    "contributors",
+    "release maintainers"
+  ],
+  "documentation": {
+    "index": "docs/README.md",
+    "architecture": "ARCHITECTURE.md",
+    "state": "STATE.md",
+    "security": "SECURITY.md",
+    "changelog": "CHANGELOG.md",
+    "feature_reference": "docs/FEATURES.md",
+    "module_roots": ["docs", "install", "scripts", "src", "tests"]
+  },
+  "source_areas": [
+    {
+      "id": "visual-builder",
+      "description": "Owns visual workflow authoring, MCP Studio, run inspection, and local operator interaction surfaces.",
+      "paths": ["src/ui/web/frontend/**"],
+      "documentation": ["docs/FEATURES.md#visual-workflow-builder", "docs/mcp-studio.md", "src/README.md"]
+    },
+    {
+      "id": "local-gateway",
+      "description": "Owns accountless local APIs, MCP transport, persistence, execution integration, evidence, and replay services.",
+      "paths": ["src/ui/web/backend/**"],
+      "documentation": ["docs/FEATURES.md#local-gateway-and-storage", "docs/FEATURES.md#mcp-studio", "ARCHITECTURE.md"]
+    },
+    {
+      "id": "release-tooling",
+      "description": "Owns self-hosted packaging, deterministic checks, dependency policy, SBOM generation, and release validation.",
+      "paths": ["install/**", "scripts/**", "Makefile", "dependency-license-overrides.json", "src/ui/web/backend/requirements-ce.lock", "src/ui/web/frontend/package-lock.json"],
+      "documentation": ["docs/FEATURES.md#packaging-and-release-evidence", "scripts/README.md", "tests/README.md"]
+    },
+    {
+      "id": "edition-and-license-boundary",
+      "description": "Owns source-available licensing, historical grants, trademarks, contribution terms, and Flow-to-Cloud synchronization limits.",
+      "paths": ["LICENSE", "LICENSE_HISTORY.md", "COMMERCIAL_LICENSE.md", "CONTRIBUTOR_LICENSE_AGREEMENT.md", "TRADEMARKS.md", "FLOW_BOUNDARY.json", "FLOW_CLOUD_SYNC.json"],
+      "documentation": ["docs/ce-cloud-boundary.md", "docs/flow-cloud-sync.md", "docs/licensing-strategy.md", "docs/edition-matrix.md"]
+    }
+  ],
+  "feature_surfaces": [
+    {
+      "id": "visual-workflow-builder",
+      "title": "Visual workflow builder",
+      "kind": "ui",
+      "status": "active",
+      "description": "Builds, validates, runs, and inspects local browser, API, file, data, AI, and control-flow automations.",
+      "source": ["src/ui/web/frontend/**", "src/ui/web/backend/services/runtime/execution/workflow_runner.py"],
+      "documentation": ["docs/FEATURES.md#visual-workflow-builder", "docs/getting-started.md", "docs/use-cases.md"],
+      "tests": ["src/ui/web/frontend/tests/**/*.spec.js", "tests/ce/**"],
+      "verification": ["make frontend-verify", "make backend-smoke"]
+    },
+    {
+      "id": "local-mcp-studio",
+      "title": "Local MCP Studio",
+      "kind": "api",
+      "status": "active",
+      "description": "Turns MCP-triggered workflows into discoverable typed tools with local access controls and execution evidence.",
+      "source": ["src/ui/web/backend/mcp_server.py", "src/ui/web/backend/api/mcp.py", "src/ui/web/frontend/**"],
+      "documentation": ["docs/FEATURES.md#mcp-studio", "docs/mcp-studio.md"],
+      "tests": ["tests/ce/**", "src/ui/web/frontend/tests/**/*.spec.js"],
+      "verification": ["make backend-smoke", "make frontend-verify"]
+    },
+    {
+      "id": "self-hosted-release",
+      "title": "Self-hosted release",
+      "kind": "operations",
+      "status": "active",
+      "description": "Packages the local gateway, frontend, Flyto2 Core, Playwright, and Chromium with license, purity, and SBOM evidence.",
+      "source": ["install/**", "scripts/**", "Makefile"],
+      "documentation": ["docs/FEATURES.md#packaging-and-release-evidence", "docs/getting-started.md", "scripts/README.md"],
+      "tests": ["tests/ce/**"],
+      "verification": ["make verify"]
+    }
+  ]
+}

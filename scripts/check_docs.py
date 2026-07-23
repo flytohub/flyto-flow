@@ -14,6 +14,7 @@ from urllib.parse import unquote, urlsplit
 REQUIRED_FILES = (
     "README.md",
     "AGENTS.md",
+    "CLAUDE.md",
     "PROJECT.md",
     "ARCHITECTURE.md",
     "STATE.md",
@@ -24,6 +25,9 @@ REQUIRED_FILES = (
     "CONTRIBUTING.md",
     "CODE_OF_CONDUCT.md",
     "SECURITY.md",
+    "docs/README.md",
+    "docs/FEATURES.md",
+    "docs/documentation-manifest.json",
     "docs/getting-started.md",
     "docs/mcp-studio.md",
     "docs/use-cases.md",
@@ -33,6 +37,14 @@ REQUIRED_FILES = (
     "src/README.md",
     "scripts/README.md",
     "tests/README.md",
+    "workflows/idea-capture.md",
+    "workflows/planning.md",
+    "workflows/implementation.md",
+    "workflows/bugfix.md",
+    "workflows/refactor.md",
+    "workflows/investigation.md",
+    "workflows/wrap-up.md",
+    "handoffs/_registry.md",
 )
 
 README_MARKERS = (

@@ -28,6 +28,8 @@ issue tracker and commit history for work completed after this date.
 - CI covers boundary inventory, backend smoke, frontend tests and build,
   dependency licenses, SBOM generation, contribution terms, and container
   construction.
+- The shared Flyto2 documentation contract now passes with a documentation
+  index, feature/source manifest, workflow guides, and handoff registry.
 
 These results describe one revision and must be regenerated after changes.
 They are not a warranty that every workflow or external service will succeed.
